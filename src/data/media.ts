@@ -86,7 +86,7 @@ export const images: MediaImage[] = [
       ru: 'Хендлер ставит рыжего той-пуделя в ринге',
       en: 'A handler stacking an apricot Toy Poodle in the judging ring',
     },
-    { x: 0.5, y: 0.6 },
+    { x: 0.5, y: 0.5 },
     {
       chapter: 'ring',
       breeds: ['poodle'],
@@ -105,7 +105,7 @@ export const images: MediaImage[] = [
       ru: 'Хендлер с номером 044 держит йоркширского терьера на выставочном столе',
       en: 'Handler number 044 holding a Yorkshire Terrier on the show table',
     },
-    { x: 0.5, y: 0.45 },
+    { x: 0.5, y: 0.5 },
     {
       chapter: 'ring',
       breeds: ['yorkshire'],
@@ -180,7 +180,7 @@ export const images: MediaImage[] = [
       ru: 'Хендлер в синем жакете держит рыжего той-пуделя под выставочным шатром',
       en: 'A handler in a blue jacket holding an apricot Toy Poodle under a show tent',
     },
-    { x: 0.45, y: 0.4 },
+    { x: 0.45, y: 0.45 },
     { chapter: 'ring', breeds: ['poodle'] },
   ),
   img(

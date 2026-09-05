@@ -91,6 +91,10 @@ const title = v.caption?.[locale] ?? v.alt[locale];
     height: 100%;
     min-height: 12rem;
   }
+  :global(.gallery__item--full) .vtile__btn {
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
   .vtile__btn picture {
     position: absolute;
     inset: 0;

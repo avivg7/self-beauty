@@ -12,8 +12,11 @@ interface Props {
   puppy: Puppy;
   locale: Locale;
   eager?: boolean;
+  /** Heading level of the card title: 2 on listing pages (under the page h1), 3 inside home sections */
+  headingLevel?: 2 | 3;
 }
-const { puppy, locale, eager = false } = Astro.props;
+const { puppy, locale, eager = false, headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
 const t = getDictionary(locale);
 const d = puppy.data;
 const name = localizedField(d.name, locale);
@@ -41,7 +44,7 @@ const titleId = `puppy-${puppy.id}-title`;
   </a>
   <div class="card__body pcard__body">
     <p class="pcard__breed">{breed}</p>
-    <h3 class="pcard__title" id={titleId}><a href={url}>{name}</a></h3>
+    <Heading class="pcard__title" id={titleId}><a href={url}>{name}</a></Heading>
     <dl class="pcard__facts">
       {
         d.sex !== 'mixed' && (

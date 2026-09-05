@@ -49,7 +49,7 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
           <ul role="list" class="plist" data-puppy-list>
             {puppies.map((p, i) => (
               <li data-breed={p.data.breed}>
-                <PuppyCard puppy={p} locale={locale} eager={i < 2} />
+                <PuppyCard puppy={p} locale={locale} eager={i < 2} headingLevel={2} />
               </li>
             ))}
           </ul>

@@ -53,7 +53,7 @@ const prepared = await Promise.all(
 );
 // In a 3-column grid every wide tile (2 cols) pairs with one portrait tile (1 col). When wide tiles
 // outnumber portrait ones, the surplus would leave an empty column, so those are promoted to full rows
-// (2:1). Only the genuinely wide images are eligible (a 2:1 crop of a near-square photo would cut faces),
+// (16:9). Only the genuinely wide images are eligible (a 16:9 crop of a near-square photo would cut faces),
 // and the picks are spread evenly through the sequence.
 {
   const ratio = (p: (typeof prepared)[number]) =>
@@ -267,11 +267,6 @@ const uid = `g-${group}`;
   .gallery__item--full {
     grid-column: 1 / -1;
   }
-  .gallery__item--full .gtile__btn,
-  :global(.gallery__item--full) .vtile__btn {
-    aspect-ratio: 2 / 1;
-    height: auto;
-  }
   .gtile {
     display: grid;
     grid-template-rows: 1fr auto;
@@ -290,6 +285,11 @@ const uid = `g-${group}`;
     aspect-ratio: auto;
     height: 100%;
     min-height: 12rem;
+  }
+  /* Declared after the wide rule so full rows win the cascade (a full tile is also wide) */
+  .gallery__item--full .gtile__btn {
+    aspect-ratio: 16 / 9;
+    height: auto;
   }
   .gtile__btn :global(img) {
     position: absolute;
