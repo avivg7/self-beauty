@@ -159,7 +159,7 @@ const switchPath = alternates ? path : '/';
         }
       })();
     </script>
-    <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(ld)} />
   </head>
   <body class={bodyClass}>
     <a class="skip-link" href="#main">{dict.nav.skip}</a>
