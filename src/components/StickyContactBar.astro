@@ -1,0 +1,83 @@
+---
+import { getDictionary, type Locale } from '@/i18n';
+import { whatsappLink, telLink } from '@/lib/contact';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+  intent?: 'general' | 'grooming' | 'litters';
+}
+const { locale, intent = 'general' } = Astro.props;
+const t = getDictionary(locale);
+---
+
+<div class="sticky-bar no-print" data-sticky-bar>
+  <a class="sticky-bar__btn sticky-bar__btn--call" href={telLink}>
+    <Icon name="phone" />
+    <span>{t.cta.call}</span>
+  </a>
+  <a
+    class="sticky-bar__btn sticky-bar__btn--wa"
+    href={whatsappLink(locale, intent)}
+    target="_blank"
+    rel="noopener"
+  >
+    <Icon name="whatsapp" />
+    <span>{t.cta.whatsapp}</span>
+  </a>
+</div>
+
+<style>
+  .sticky-bar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: var(--z-sticky);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    padding-bottom: var(--safe-b);
+    background: var(--c-border);
+    box-shadow: 0 -6px 24px -12px rgb(0 0 0 / 35%);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .sticky-bar.is-hidden {
+    transform: translateY(110%);
+  }
+  .sticky-bar__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--sticky-bar-h);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: var(--fs-base);
+  }
+  .sticky-bar__btn svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  .sticky-bar__btn--call {
+    background: var(--c-charcoal);
+    color: var(--c-text-on-dark);
+  }
+  .sticky-bar__btn--wa {
+    background: var(--c-whatsapp);
+    color: #fff;
+  }
+  .sticky-bar__btn:active {
+    filter: brightness(1.1);
+  }
+  @media (min-width: 64rem) {
+    .sticky-bar {
+      display: none;
+    }
+  }
+</style>
+<style is:global>
+  @media (max-width: 63.98rem) {
+    body {
+      padding-bottom: calc(var(--sticky-bar-h) + var(--safe-b));
+    }
+  }
+</style>

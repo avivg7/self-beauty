@@ -1,0 +1,163 @@
+---
+import Base from '@/layouts/Base.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import PuppyCard from '@/components/PuppyCard.astro';
+import LitterBanner from '@/components/LitterBanner.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localePaths } from '@/lib/paths';
+import { getPuppies } from '@/lib/listings';
+import { whatsappLink } from '@/lib/contact';
+import { site } from '@/data/site';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const puppies = await getPuppies();
+const breedsPresent = site.breeds.filter((b) => puppies.some((p) => p.data.breed === b));
+const showFilters = puppies.length > 3 && breedsPresent.length > 1;
+---
+
+<Base locale={locale} title={t.puppies.title} description={t.puppies.description} path="/puppies/">
+  <section class="section">
+    <div class="container">
+      <SectionHeading level={1} eyebrow={t.puppies.eyebrow} title={t.puppies.h1} lede={t.puppies.lede} />
+
+      {
+        showFilters && (
+          <div class="pfilters" role="radiogroup" aria-label={t.puppies.filters.label} data-puppy-filters>
+            <label>
+              <>
+                <input type="radio" name="breed" value="all" checked />
+                <span>{t.puppies.filters.all}</span>
+              </>
+            </label>
+            {breedsPresent.map((b) => (
+              <label>
+                <input type="radio" name="breed" value={b} />
+                <span>{t.breeds[b].short}</span>
+              </label>
+            ))}
+            <p class="muted pfilters__count" data-count aria-live="polite" />
+          </div>
+        )
+      }
+
+      {
+        puppies.length ? (
+          <ul role="list" class="grid grid--3" data-puppy-list>
+            {puppies.map((p, i) => (
+              <li data-breed={p.data.breed}>
+                <PuppyCard puppy={p} locale={locale} eager={i < 2} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="empty">
+            <h2>{t.puppies.empty.title}</h2>
+            <p>{t.puppies.empty.text}</p>
+            <a
+              class="btn btn--whatsapp"
+              href={whatsappLink(locale, 'litters')}
+              target="_blank"
+              rel="noopener"
+            >
+              <Icon name="whatsapp" /> {t.cta.litterUpdates}
+            </a>
+          </div>
+        )
+      }
+      <p class="muted pnote" data-none hidden>{t.puppies.filters.none}</p>
+      <p class="muted pnote">{t.puppies.noPriceNote}</p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container"><LitterBanner locale={locale} /></div>
+  </section>
+
+  <CtaBand locale={locale} title={t.home.contactTitle} text={t.home.contactText} />
+</Base>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-puppy-filters]');
+  const list = document.querySelector<HTMLElement>('[data-puppy-list]');
+  const none = document.querySelector<HTMLElement>('[data-none]');
+  if (root && list) {
+    const inputs = root.querySelectorAll<HTMLInputElement>('input[name="breed"]');
+    const count = root.querySelector<HTMLElement>('[data-count]');
+    const tplMany = count?.dataset.many ?? '{count}';
+    const apply = () => {
+      const v = Array.from(inputs).find((i) => i.checked)?.value ?? 'all';
+      let n = 0;
+      list.querySelectorAll<HTMLElement>('li').forEach((li) => {
+        const show = v === 'all' || li.dataset.breed === v;
+        li.hidden = !show;
+        if (show) n++;
+      });
+      if (count) count.textContent = tplMany.replace('{count}', String(n));
+      if (none) none.hidden = n > 0;
+    };
+    inputs.forEach((i) => i.addEventListener('change', apply));
+  }
+</script>
+
+<style>
+  .pfilters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: var(--sp-5);
+  }
+  .pfilters label {
+    position: relative;
+  }
+  .pfilters input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+  .pfilters span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.3rem 1rem;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--c-border-strong);
+    font-weight: 500;
+    font-size: var(--fs-sm);
+    background: var(--c-surface);
+  }
+  .pfilters input:checked + span {
+    background: var(--c-charcoal);
+    color: var(--c-text-on-dark);
+    border-color: var(--c-charcoal);
+  }
+  .pfilters input:focus-visible + span {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+  .pfilters__count {
+    margin-inline-start: auto;
+    font-size: var(--fs-sm);
+  }
+  .pnote {
+    margin-top: var(--sp-4);
+    font-size: var(--fs-sm);
+  }
+  .empty {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    padding: var(--sp-6);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+  }
+</style>

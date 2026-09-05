@@ -1,0 +1,125 @@
+---
+import Base from '@/layouts/Base.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, localizedField, LOCALE_META, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { localePaths } from '@/lib/paths';
+import { getTestimonials } from '@/lib/listings';
+import { whatsappLink } from '@/lib/contact';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const stories = await getTestimonials();
+---
+
+<Base
+  locale={locale}
+  title={t.stories.title}
+  description={t.stories.description}
+  path="/stories/"
+  ogType="article"
+>
+  <section class="section">
+    <div class="container container--narrow">
+      <SectionHeading level={1} eyebrow={t.stories.eyebrow} title={t.stories.h1} lede={t.stories.lede} />
+      {
+        stories.map((s) => {
+          const translated = s.data.sourceLang !== locale;
+          const who = localizedField(s.data.attribution, locale) || t.stories.anonymous;
+          return (
+            <article class="tale">
+              {s.data.headline && <h2 class="tale__h">{localizedField(s.data.headline, locale)}</h2>}
+              <p class="tale__meta muted">
+                {s.data.breed && <span>{t.breeds[s.data.breed].name}</span>}
+                {translated && (
+                  <span>
+                    {' '}
+                    · {t.stories.translatedFrom.replace(
+                      '{lang}',
+                      t.stories.langNames[s.data.sourceLang],
+                    )} ·{' '}
+                    <a
+                      href={localeHref(s.data.sourceLang, 'stories')}
+                      hreflang={LOCALE_META[s.data.sourceLang].hreflang}
+                      lang={s.data.sourceLang}
+                    >
+                      {t.stories.original}
+                    </a>
+                  </span>
+                )}
+                {s.data.demo && <span class="chip chip--demo chip--plain">{t.common.demoBadge}</span>}
+              </p>
+              <blockquote class="tale__body">
+                {s.data.text[locale].map((p) => (
+                  <p>{p}</p>
+                ))}
+              </blockquote>
+              <p class="tale__who">
+                <cite>{who}</cite>
+              </p>
+            </article>
+          );
+        })
+      }
+
+      <aside class="share">
+        <h2>{t.stories.shareTitle}</h2>
+        <p>{t.stories.shareText}</p>
+        <a class="btn btn--secondary" href={whatsappLink(locale, 'general')} target="_blank" rel="noopener"
+          ><Icon name="whatsapp" /> {t.cta.whatsappUs}</a
+        >
+      </aside>
+    </div>
+  </section>
+  <CtaBand locale={locale} title={t.stories.ctaTitle} text={t.stories.ctaText} intent="story" tone="dark" />
+</Base>
+<style>
+  .tale {
+    display: grid;
+    gap: var(--sp-4);
+    padding-block: var(--sp-5);
+    border-top: 1px solid var(--c-gold);
+  }
+  .tale__h {
+    font-size: var(--fs-2xl);
+  }
+  .tale__meta {
+    font-size: var(--fs-sm);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .tale__body {
+    display: grid;
+    gap: var(--sp-4);
+    border-inline-start: 2px solid var(--c-gold);
+    padding-inline-start: var(--sp-5);
+  }
+  .tale__body p {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    line-height: 1.55;
+    max-width: none;
+  }
+  .tale__who cite {
+    font-style: normal;
+    font-weight: 600;
+  }
+  .share {
+    margin-top: var(--sp-8);
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    padding: var(--sp-6);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+    background: var(--c-cream);
+  }
+  .share h2 {
+    font-size: var(--fs-xl);
+  }
+</style>

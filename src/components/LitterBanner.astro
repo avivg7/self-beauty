@@ -1,0 +1,54 @@
+---
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { whatsappLink } from '@/lib/contact';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+---
+
+<aside class="litter" aria-labelledby="litter-banner-title">
+  <div class="litter__text">
+    <h2 id="litter-banner-title">{t.puppies.litterBanner.title}</h2>
+    <p>{t.puppies.litterBanner.text}</p>
+  </div>
+  <div class="litter__actions">
+    <a class="btn btn--whatsapp" href={whatsappLink(locale, 'litters')} target="_blank" rel="noopener"
+      ><Icon name="whatsapp" /> {t.cta.litterUpdates}</a
+    >
+    <a class="btn btn--ghost" href={localeHref(locale, 'litters')}
+      >{t.nav.litters} <Icon name="arrow" class="rtl-flip" /></a
+    >
+  </div>
+</aside>
+<style>
+  .litter {
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    border: 1px solid var(--c-gold);
+    border-radius: var(--r-lg);
+    background: var(--c-gold-soft);
+    align-items: center;
+  }
+  @media (min-width: 48rem) {
+    .litter {
+      grid-template-columns: 1fr auto;
+      padding: var(--sp-6);
+    }
+  }
+  .litter h2 {
+    font-size: var(--fs-xl);
+  }
+  .litter p {
+    color: var(--c-text-2);
+  }
+  .litter__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

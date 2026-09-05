@@ -1,0 +1,95 @@
+---
+import Base from '@/layouts/Base.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, formatters, type Locale } from '@/i18n';
+import { localePaths } from '@/lib/paths';
+import { whatsappLink, telLink } from '@/lib/contact';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const updated = '2026-09-05';
+---
+
+<Base locale={locale} title={t.a11y.title} description={t.a11y.description} path="/accessibility/">
+  <section class="section">
+    <div class="container container--narrow stmt">
+      <SectionHeading level={1} title={t.a11y.h1} lede={t.a11y.intro} />
+      <h2>{t.a11y.doneTitle}</h2>
+      <ul class="stmt__list" role="list">
+        {
+          t.a11y.done.map((x) => (
+            <li>
+              <>
+                <Icon name="check" />
+                <span>{x}</span>
+              </>
+            </li>
+          ))
+        }
+      </ul>
+      <h2>{t.a11y.controlsTitle}</h2>
+      <p>{t.a11y.controlsText}</p>
+      <p>
+        <button type="button" class="btn btn--secondary" data-a11y-open
+          ><Icon name="accessibility" /> {t.a11y.panel.open}</button>
+      </p>
+      <h2>{t.a11y.limitsTitle}</h2>
+      <ul class="stmt__list stmt__list--plain" role="list">
+        {
+          t.a11y.limits.map((x) => (
+            <li>
+              <span>{x}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <h2>{t.a11y.contactTitle}</h2>
+      <p>{t.a11y.contactText}</p>
+      <p class="cluster">
+        <a class="btn btn--whatsapp" href={whatsappLink(locale)} target="_blank" rel="noopener"
+          ><Icon name="whatsapp" /> {t.cta.whatsappUs}</a
+        >
+        <a class="btn btn--secondary" href={telLink}><Icon name="phone" /> {t.cta.callFull}</a>
+      </p>
+      <p class="muted stmt__note">{t.a11y.noCertNote}</p>
+      <p class="muted stmt__note">
+        {t.a11y.updated}: <time datetime={updated}>{formatters.date(locale, updated)}</time>
+      </p>
+    </div>
+  </section>
+</Base>
+<style>
+  .stmt {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .stmt h2 {
+    font-size: var(--fs-xl);
+    margin-top: var(--sp-4);
+  }
+  .stmt__list {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .stmt__list li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+  }
+  .stmt__list svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: var(--c-gold-text);
+    flex: none;
+    margin-top: 0.25rem;
+  }
+  .stmt__list--plain li {
+    padding-inline-start: 1rem;
+    border-inline-start: 2px solid var(--c-gold);
+  }
+  .stmt__note {
+    font-size: var(--fs-sm);
+  }
+</style>

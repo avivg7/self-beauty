@@ -1,0 +1,7 @@
+dist
+.astro
+node_modules
+.tools
+public/media
+src/assets
+package-lock.json

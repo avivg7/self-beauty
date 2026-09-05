@@ -1,0 +1,12 @@
+---
+import { getDictionary, type Locale } from '@/i18n';
+interface Props {
+  status: 'available' | 'reserved' | 'planned' | 'placed' | 'coming-soon';
+  locale: Locale;
+  class?: string;
+}
+const { status, locale, class: className } = Astro.props;
+const t = getDictionary(locale);
+---
+
+<span class:list={['chip', `chip--${status}`, className]}>{t.status[status]}</span>

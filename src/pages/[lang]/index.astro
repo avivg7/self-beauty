@@ -1,0 +1,586 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import PuppyCard from '@/components/PuppyCard.astro';
+import BreedGrid from '@/components/BreedGrid.astro';
+import StoryExcerpt from '@/components/StoryExcerpt.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { whatsappLink } from '@/lib/contact';
+import { localePaths } from '@/lib/paths';
+import { getFeaturedPuppies, getTestimonials } from '@/lib/listings';
+import { images } from '@/data/media';
+import { site } from '@/data/site';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const puppies = await getFeaturedPuppies(3);
+const story = (await getTestimonials()).find((s) => s.data.featured);
+const strip = [
+  'years/bichon-puppy-bows',
+  'years/poodle-red-heart',
+  'shows/ring-red-poodle',
+  'years/bichon-puppies-pile',
+  'shows/trophies-rosette',
+  'years/pomeranian-puppy-blanket',
+]
+  .map((id) => images.find((i) => i.id === id)!)
+  .filter(Boolean);
+const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
+---
+
+<Base locale={locale} title={t.home.title} description={t.home.description} path="/">
+  <!-- Hero: the thesis. Copy first on every viewport; the mounted photograph is the signature. -->
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__top">
+        <p class="eyebrow hero__anim" style="--i:0">{t.home.heroEyebrow}</p>
+        <h1 class="hero__title hero__anim" style="--i:1">{t.home.heroTitle}</h1>
+      </div>
+      <div class="hero__media hero__anim" style="--i:2">
+        <div class="frame">
+          <Picture
+            id="brand/hero-red-poodle"
+            locale={locale}
+            sizes="(min-width: 64rem) 520px, (min-width: 40rem) 60vw, 100vw"
+            widths={[420, 640, 740]}
+            loading="eager"
+            fetchpriority="high"
+            class="hero__img"
+          />
+        </div>
+      </div>
+      <div class="hero__bottom">
+        <p class="lede hero__anim" style="--i:2">{t.home.heroLede}</p>
+        <div class="hero__actions hero__anim" style="--i:3">
+          <a class="btn btn--lg" href={localeHref(locale, 'puppies')}
+            >{t.cta.puppies} <Icon name="arrow" class="rtl-flip" /></a
+          >
+          <a class="btn btn--lg btn--secondary" href={localeHref(locale, 'grooming')}>{t.cta.bookGrooming}</a>
+        </div>
+        <p class="hero__facts hero__anim muted" style="--i:4">
+          <span>{t.meta.cityCountry}</span><span class="hero__dot" aria-hidden="true"></span><span
+            >{t.meta.since}</span
+          ><span class="hero__dot" aria-hidden="true"></span><span>{breedNames}</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Promise -->
+  <section class="section section--cream">
+    <div class="container">
+      <SectionHeading eyebrow={t.home.promiseEyebrow} title={t.home.promiseTitle} />
+      <ul role="list" class="grid grid--3 promise">
+        {
+          t.home.promise.map((p, i) => (
+            <li class="promise__item reveal" data-delay={String(i)}>
+              <span class="promise__rule" aria-hidden="true" />
+              <h3>{p.title}</h3>
+              <p>{p.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Available puppies -->
+  <section class="section" aria-labelledby="home-puppies">
+    <div class="container">
+      <SectionHeading
+        id="home-puppies"
+        eyebrow={t.home.puppiesEyebrow}
+        title={t.home.puppiesTitle}
+        lede={t.home.puppiesLede}
+      />
+      {
+        puppies.length ? (
+          <div class="grid grid--3">
+            {puppies.map((p, i) => (
+              <div class="reveal" data-delay={String(i)}>
+                <PuppyCard puppy={p} locale={locale} eager={i === 0} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="empty">
+            <h3>{t.puppies.empty.title}</h3>
+            <p>{t.puppies.empty.text}</p>
+            <a
+              class="btn btn--whatsapp"
+              href={whatsappLink(locale, 'litters')}
+              target="_blank"
+              rel="noopener"
+            >
+              <Icon name="whatsapp" /> {t.cta.litterUpdates}
+            </a>
+          </div>
+        )
+      }
+      <p class="section__more">
+        <a class="btn btn--ghost" href={localeHref(locale, 'puppies')}
+          >{t.cta.viewAll} <Icon name="arrow" class="rtl-flip" /></a>
+      </p>
+    </div>
+  </section>
+
+  <!-- About the breeder -->
+  <section class="section section--cream">
+    <div class="container about">
+      <div class="about__media reveal">
+        <div class="frame">
+          <Picture
+            id="brand/owner-portrait"
+            locale={locale}
+            alt={t.home.ownerImageAlt}
+            sizes="(min-width: 64rem) 440px, (min-width: 40rem) 50vw, 100vw"
+            widths={[420, 640, 886]}
+          />
+        </div>
+      </div>
+      <div class="about__copy reveal" data-delay="1">
+        <SectionHeading eyebrow={t.home.aboutEyebrow} title={t.home.aboutTitle} />
+        <p class="lede">{t.home.aboutText}</p>
+        <p>
+          <a class="btn btn--secondary" href={localeHref(locale, 'about')}
+            >{t.cta.aboutUs} <Icon name="arrow" class="rtl-flip" /></a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Breeds -->
+  <section class="section">
+    <div class="container">
+      <SectionHeading eyebrow={t.home.breedsEyebrow} title={t.home.breedsTitle} />
+      <div class="reveal"><BreedGrid locale={locale} /></div>
+    </div>
+  </section>
+
+  <!-- Shows: prestige band -->
+  <section class="section dark shows-band">
+    <div class="container shows-band__grid">
+      <div class="shows-band__copy reveal">
+        <SectionHeading eyebrow={t.home.showsEyebrow} title={t.home.showsTitle} />
+        <p class="lede">{t.home.showsText}</p>
+        <ul role="list" class="titles">
+          {
+            t.shows.titles.map((x) => (
+              <li class="rosette">
+                <>
+                  <Icon name="rosette" />
+                  <span>{x.title}</span>
+                </>
+              </li>
+            ))
+          }
+        </ul>
+        <p>
+          <a class="btn btn--on-dark" href={localeHref(locale, 'shows')}
+            >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a>
+        </p>
+      </div>
+      <div class="shows-band__media reveal" data-delay="1">
+        <div class="frame">
+          <Picture
+            id="shows/owner-yorkie-portrait"
+            locale={locale}
+            alt={t.home.showsImageAlt}
+            sizes="(min-width: 64rem) 440px, (min-width: 40rem) 50vw, 100vw"
+            widths={[420, 640, 990]}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Grooming -->
+  <section class="section" aria-labelledby="home-grooming">
+    <div class="container groom">
+      <div class="groom__copy reveal">
+        <SectionHeading
+          id="home-grooming"
+          eyebrow={t.home.groomingEyebrow}
+          title={t.home.groomingTitle}
+          lede={t.home.groomingText}
+        />
+        <ul role="list" class="checks">
+          {
+            t.grooming.services.map((s) => (
+              <li>
+                <>
+                  <Icon name="check" />
+                  <span>{s.title}</span>
+                </>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="cluster">
+          <a class="btn btn--whatsapp" href={whatsappLink(locale, 'grooming')} target="_blank" rel="noopener"
+            ><Icon name="whatsapp" /> {t.cta.bookGroomingWa}</a
+          >
+          <a class="btn btn--ghost" href={localeHref(locale, 'grooming')}
+            >{t.cta.details} <Icon name="arrow" class="rtl-flip" /></a
+          >
+        </div>
+      </div>
+      <div class="groom__media reveal" data-delay="1">
+        <div class="ratio ratio--4x5 groom__img">
+          <Picture
+            id="years/red-poodle-show-table"
+            locale={locale}
+            sizes="(min-width: 64rem) 480px, (min-width: 40rem) 50vw, 100vw"
+            widths={[420, 640, 1020]}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery strip -->
+  <section class="section section--cream section--tight">
+    <div class="container">
+      <SectionHeading eyebrow={t.home.galleryEyebrow} title={t.home.galleryTitle} />
+      <ul role="list" class="strip reveal">
+        {
+          strip.map((m) => (
+            <li class="strip__item">
+              <a
+                href={localeHref(locale, m.set === 'shows' ? 'shows' : 'gallery')}
+                class="strip__link"
+                aria-label={m.alt[locale]}
+              >
+                <Picture
+                  id={m.id}
+                  locale={locale}
+                  alt=""
+                  sizes="(min-width: 64rem) 180px, 45vw"
+                  widths={[240, 420]}
+                />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="section__more">
+        <a class="btn btn--ghost" href={localeHref(locale, 'gallery')}
+          >{t.cta.viewGallery} <Icon name="arrow" class="rtl-flip" /></a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Story -->
+  {
+    story && (
+      <section class="section">
+        <div class="container">
+          <SectionHeading eyebrow={t.home.storyEyebrow} title={t.home.storyTitle} align="center" />
+          <div class="reveal">
+            <StoryExcerpt story={story} locale={locale} paragraphs={2} />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand
+    locale={locale}
+    eyebrow={t.home.contactEyebrow}
+    title={t.home.contactTitle}
+    text={t.home.contactText}
+  />
+</Base>
+
+<style>
+  /* Hero */
+  .hero {
+    padding-block: clamp(1.5rem, 4vw, 4rem) var(--section);
+    overflow: clip;
+  }
+  .hero__grid {
+    display: grid;
+    gap: var(--sp-5);
+  }
+  .hero__top,
+  .hero__bottom {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .hero__title {
+    font-size: var(--fs-hero);
+    line-height: 1.05;
+    max-width: 14ch;
+  }
+  html[lang='ru'] .hero__title {
+    max-width: 16ch;
+    font-size: clamp(2rem, 1.3rem + 3vw, 3.9rem);
+  }
+  .hero__media {
+    max-width: 34rem;
+  }
+  .hero__img {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    object-fit: cover;
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+  }
+  @media (max-width: 30rem) {
+    .hero__actions .btn {
+      width: 100%;
+    }
+  }
+  .hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.7rem;
+    font-size: var(--fs-sm);
+  }
+  .hero__dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--c-gold);
+  }
+  @media (min-width: 64rem) {
+    .hero {
+      padding-block: clamp(2rem, 5vw, 5rem) var(--section);
+    }
+    .hero__grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      grid-template-areas: 'top media' 'bottom media';
+      column-gap: var(--sp-8);
+      align-items: center;
+    }
+    .hero__top {
+      grid-area: top;
+      align-self: end;
+    }
+    .hero__bottom {
+      grid-area: bottom;
+      align-self: start;
+    }
+    .hero__media {
+      grid-area: media;
+      justify-self: end;
+      width: 100%;
+    }
+  }
+  .hero__anim {
+    animation: rise 640ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .hero__media.hero__anim {
+    animation-name: rise-frame;
+    animation-duration: 900ms;
+  }
+  @keyframes rise-frame {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Promise */
+  .promise__item {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+  }
+  .promise__rule {
+    width: 2.5rem;
+    height: 2px;
+    background: var(--c-gold);
+    margin-bottom: 0.25rem;
+  }
+  .promise__item p {
+    color: var(--c-text-2);
+  }
+
+  .section__more {
+    margin-top: var(--sp-5);
+  }
+  .empty {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    padding: var(--sp-6);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+  }
+
+  /* About */
+  .about {
+    display: grid;
+    gap: var(--sp-6);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .about {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: var(--sp-9);
+    }
+  }
+  .about__media {
+    max-width: 28rem;
+  }
+  .about__copy {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .about__copy :global(.sh) {
+    margin-bottom: 0;
+  }
+
+  /* Shows band */
+  .shows-band {
+    background: var(--c-charcoal);
+  }
+  .shows-band__grid {
+    display: grid;
+    gap: var(--sp-6);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .shows-band__grid {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: var(--sp-9);
+    }
+  }
+  .shows-band__copy {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .shows-band__copy :global(.sh) {
+    margin-bottom: 0;
+  }
+  .shows-band__media {
+    max-width: 26rem;
+    justify-self: center;
+  }
+  .titles {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .titles .rosette {
+    font-size: var(--fs-base);
+    color: var(--c-gold-bright);
+  }
+
+  /* Grooming */
+  .groom {
+    display: grid;
+    gap: var(--sp-6);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .groom {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: var(--sp-9);
+    }
+  }
+  .groom__copy {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .groom__copy :global(.sh) {
+    margin-bottom: 0;
+  }
+  .groom__img {
+    border-radius: var(--r-md);
+    max-width: 30rem;
+  }
+  .groom__img :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .checks {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .checks li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 500;
+  }
+  .checks svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--c-gold-text);
+    flex: none;
+  }
+
+  /* Strip */
+  .strip {
+    display: flex;
+    gap: var(--sp-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scrollbar-width: thin;
+  }
+  .strip__item {
+    flex: 0 0 min(45vw, 13rem);
+    scroll-snap-align: start;
+  }
+  .strip__link {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--c-cream);
+  }
+  .strip__link :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .strip__link:hover :global(img) {
+    transform: scale(1.04);
+  }
+  @media (min-width: 64rem) {
+    .strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+    .strip__item {
+      flex: auto;
+    }
+  }
+</style>

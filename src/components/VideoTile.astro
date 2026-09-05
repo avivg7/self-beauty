@@ -1,0 +1,137 @@
+---
+/**
+ * Poster-first video. Nothing loads until the visitor presses play; the source tier (480/720)
+ * is chosen at play time from viewport width and the Save-Data hint. Never autoplays with sound.
+ */
+import { getVideo, type MediaVideo } from '@/data/media';
+import { getDictionary, type Locale } from '@/i18n';
+import { href } from '@/lib/urls';
+import Icon from './Icon.astro';
+import generated from '@/data/video.generated.json';
+
+interface Props {
+  id: string;
+  locale: Locale;
+  class?: string;
+  group?: string;
+}
+const { id, locale, class: className, group } = Astro.props;
+const v: MediaVideo = getVideo(id);
+const t = getDictionary(locale);
+const base = id.split('/')[1]!;
+const meta720 = (generated as Record<string, { width: number; height: number; duration: number }>)[
+  `${base}-720`
+];
+const w = meta720?.width ?? (v.orientation === 'portrait' ? 720 : 1280);
+const h = meta720?.height ?? (v.orientation === 'portrait' ? 1280 : 720);
+const src720 = href(`/media/video/${base}-720.mp4`);
+const src480 = href(`/media/video/${base}-480.mp4`);
+const poster = href(`/media/video/${base}-poster.jpg`);
+const posterWebp = href(`/media/video/${base}-poster.webp`);
+const mins = Math.floor(v.duration / 60),
+  secs = Math.round(v.duration % 60);
+const dur = `${mins}:${String(secs).padStart(2, '0')}`;
+const title = v.caption?.[locale] ?? v.alt[locale];
+---
+
+<figure
+  class:list={['vtile', className]}
+  data-video-tile
+  data-src720={src720}
+  data-src480={src480}
+  data-poster={poster}
+  data-orientation={v.orientation}
+>
+  <button
+    type="button"
+    class="vtile__btn"
+    data-lb-item
+    data-lb-type="video"
+    data-lb-group={group}
+    data-lb-src720={src720}
+    data-lb-src480={src480}
+    data-lb-poster={poster}
+    data-lb-alt={v.alt[locale]}
+    data-lb-caption={title}
+    data-lb-w={w}
+    data-lb-h={h}
+    aria-label={t.gallery_ui.videoLabel.replace('{title}', title)}
+    style={`aspect-ratio:${w}/${h}`}
+  >
+    <picture>
+      <source srcset={posterWebp} type="image/webp" />
+      <img src={poster} alt="" width={w} height={h} loading="lazy" decoding="async" />
+    </picture>
+    <span class="vtile__play" aria-hidden="true"><Icon name="play" /></span>
+    <span class="vtile__dur num" aria-hidden="true">{dur}</span>
+  </button>
+  {v.caption && <figcaption class="vtile__cap">{v.caption[locale]}</figcaption>}
+</figure>
+
+<style>
+  .vtile {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .vtile__btn {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--r-sm);
+    background: var(--c-charcoal);
+  }
+  .vtile__btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      opacity var(--dur-slow) var(--ease-out);
+  }
+  .vtile__btn:hover img {
+    transform: scale(1.03);
+    opacity: 0.92;
+  }
+  .vtile__play {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgb(12 9 9 / 65%);
+    color: #fff;
+    border: 1px solid var(--c-gold);
+    backdrop-filter: blur(4px);
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      background var(--dur-fast) var(--ease-out);
+  }
+  .vtile__play svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-inline-start: 0.15rem;
+  }
+  .vtile__btn:hover .vtile__play {
+    transform: scale(1.06);
+    background: var(--c-burgundy);
+  }
+  .vtile__dur {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    bottom: 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: #fff;
+    background: rgb(12 9 9 / 65%);
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--r-sm);
+  }
+  .vtile__cap {
+    font-size: var(--fs-sm);
+    color: var(--c-text-2);
+  }
+</style>

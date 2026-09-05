@@ -1,0 +1,181 @@
+---
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale).a11y.panel;
+---
+
+<dialog class="a11y" id="a11y-panel" data-a11y-panel aria-labelledby="a11y-title">
+  <form method="dialog" class="a11y__inner" data-a11y-form>
+    <div class="a11y__head">
+      <h2 id="a11y-title">{t.title}</h2>
+      <button type="submit" class="icon-btn" value="close"
+        ><Icon name="close" /><span class="sr-only">{t.close}</span></button
+      >
+    </div>
+
+    <fieldset class="a11y__group">
+      <legend>{t.textSize}</legend>
+      <div class="a11y__seg" role="radiogroup" aria-label={t.textSize}>
+        <label><input type="radio" name="text" value="" /><span>{t.textNormal}</span></label>
+        <label><input type="radio" name="text" value="lg" /><span>{t.textLarge}</span></label>
+        <label><input type="radio" name="text" value="xl" /><span>{t.textXl}</span></label>
+      </div>
+    </fieldset>
+
+    <label class="a11y__switch">
+      <span>{t.contrast}</span>
+      <input type="checkbox" name="contrast" role="switch" />
+      <span class="a11y__track" aria-hidden="true"></span>
+    </label>
+    <label class="a11y__switch">
+      <span>{t.motion}</span>
+      <input type="checkbox" name="motion" role="switch" />
+      <span class="a11y__track" aria-hidden="true"></span>
+    </label>
+
+    <div class="a11y__foot">
+      <button type="button" class="btn btn--ghost btn--sm" data-a11y-reset>{t.reset}</button>
+      <a class="btn btn--secondary btn--sm" href={localeHref(locale, 'accessibility')}>{t.statement}</a>
+    </div>
+  </form>
+</dialog>
+<script>
+  import '@/scripts/a11y';
+</script>
+
+<style>
+  .a11y {
+    border: 0;
+    padding: 0;
+    background: var(--c-surface);
+    color: var(--c-text);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg);
+    width: min(92vw, 24rem);
+  }
+  .a11y::backdrop {
+    background: rgb(12 9 9 / 55%);
+  }
+  .a11y__inner {
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+  }
+  .a11y__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .a11y__head h2 {
+    font-size: var(--fs-xl);
+  }
+  .a11y__group {
+    border: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .a11y__group legend {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    margin-bottom: 0.25rem;
+  }
+  .a11y__seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+  .a11y__seg label {
+    position: relative;
+  }
+  .a11y__seg input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+  .a11y__seg span {
+    display: grid;
+    place-items: center;
+    min-height: 2.75rem;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--r-sm);
+    font-weight: 500;
+    font-size: var(--fs-sm);
+  }
+  .a11y__seg input:checked + span {
+    background: var(--c-burgundy);
+    color: #fff;
+    border-color: var(--c-burgundy);
+  }
+  .a11y__seg input:focus-visible + span {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+  .a11y__switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+  }
+  .a11y__switch input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .a11y__track {
+    width: 2.9rem;
+    height: 1.7rem;
+    border-radius: var(--r-pill);
+    background: var(--c-border-strong);
+    position: relative;
+    flex: none;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .a11y__track::after {
+    content: '';
+    position: absolute;
+    top: 0.2rem;
+    inset-inline-start: 0.2rem;
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .a11y__switch input:checked + .a11y__track {
+    background: var(--c-burgundy);
+  }
+  .a11y__switch input:checked + .a11y__track::after {
+    transform: translateX(1.2rem);
+  }
+  html[dir='rtl'] .a11y__switch input:checked + .a11y__track::after {
+    transform: translateX(-1.2rem);
+  }
+  .a11y__switch input:focus-visible + .a11y__track {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+  .a11y__foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: var(--sp-2);
+    border-top: 1px solid var(--c-border);
+  }
+</style>

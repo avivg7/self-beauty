@@ -1,0 +1,181 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import BreedGrid from '@/components/BreedGrid.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { localePaths } from '@/lib/paths';
+import { site } from '@/data/site';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+---
+
+<Base locale={locale} title={t.about.title} description={t.about.description} path="/about/">
+  <section class="section">
+    <div class="container container--narrow">
+      <SectionHeading level={1} eyebrow={t.about.eyebrow} title={t.about.h1} lede={t.about.lede} />
+    </div>
+  </section>
+
+  <section class="section section--cream">
+    <div class="container owner">
+      <div class="owner__media reveal">
+        <div class="frame">
+          <Picture
+            id="brand/owner-portrait"
+            locale={locale}
+            alt={t.about.ownerImageAlt}
+            sizes="(min-width: 64rem) 420px, (min-width: 40rem) 60vw, 100vw"
+            widths={[420, 640, 886]}
+            loading="eager"
+          />
+        </div>
+      </div>
+      <div class="owner__copy reveal" data-delay="1">
+        <p class="eyebrow">{t.about.ownerTitle}</p>
+        {site.ownerDisplayName && <h2>{site.ownerDisplayName}</h2>}
+        {t.about.ownerText.map((p) => <p>{p}</p>)}
+        <ol class="timeline" aria-label={t.about.timelineTitle}>
+          {
+            t.about.timeline.map((m) => (
+              <li>
+                <>
+                  <span class="timeline__year num">{m.year}</span>
+                  <span>{m.text}</span>
+                </>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <SectionHeading title={t.about.valuesTitle} />
+      <ul role="list" class="grid grid--2 values">
+        {
+          t.about.values.map((v, i) => (
+            <li class="value reveal" data-delay={String(i % 2)}>
+              <span class="value__rule" aria-hidden="true" />
+              <h3>{v.title}</h3>
+              <p>{v.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--cream">
+    <div class="container">
+      <SectionHeading title={t.about.breedsTitle} />
+      <BreedGrid locale={locale} />
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container container--narrow docs">
+      <h2>{t.about.docsTitle}</h2>
+      <p>{t.about.docsText}</p>
+      {
+        site.kennelClubUrl && (
+          <p>
+            <a href={site.kennelClubUrl} target="_blank" rel="noopener">
+              {site.kennelClubName} <Icon name="external" />
+            </a>
+          </p>
+        )
+      }
+      <p>
+        <a class="btn btn--secondary" href={localeHref(locale, 'shows')}
+          >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a>
+      </p>
+    </div>
+  </section>
+
+  <CtaBand locale={locale} title={t.home.contactTitle} text={t.home.contactText} />
+</Base>
+<style>
+  .owner {
+    display: grid;
+    gap: var(--sp-6);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .owner {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      gap: var(--sp-9);
+    }
+  }
+  .owner__media {
+    max-width: 26rem;
+  }
+  .owner__copy {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .owner__copy h2 {
+    font-size: var(--fs-2xl);
+  }
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin-top: var(--sp-3);
+    display: grid;
+    gap: 0.5rem;
+    border-inline-start: 1px solid var(--c-gold);
+    padding-inline-start: var(--sp-4);
+  }
+  .timeline li {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 0.75rem;
+    position: relative;
+  }
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(var(--sp-4) * -1 - 4px);
+    top: 0.6rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c-gold);
+  }
+  .timeline__year {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--c-burgundy);
+  }
+  .value {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: var(--sp-5);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+  }
+  .value__rule {
+    width: 2.5rem;
+    height: 2px;
+    background: var(--c-gold);
+  }
+  .value p {
+    color: var(--c-text-2);
+  }
+  .docs {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .docs h2 {
+    font-size: var(--fs-xl);
+  }
+</style>

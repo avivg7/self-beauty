@@ -1,0 +1,177 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import GalleryGrid from '@/components/GalleryGrid.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { localePaths } from '@/lib/paths';
+import { images, videos } from '@/data/media';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const order = [
+  'shows/owner-yorkie-stage',
+  'shows/ring-red-poodle',
+  'shows/trophies-rosette',
+  'shows/yorkie-ring-044',
+  'shows/best-of-breed',
+  'shows/judging-outdoor',
+  'shows/shih-tzu-ring',
+  'shows/tent-red-poodle',
+  'shows/group-awards',
+  'shows/owner-two-yorkies',
+  'shows/owner-yorkie-portrait',
+];
+const showImages = order.map((id) => images.find((i) => i.id === id)!).filter(Boolean);
+const showVideos = videos.filter((v) => v.set === 'shows');
+// Interleave the two videos into the photo flow so the page rhythm mixes motion and stills.
+const items = [
+  ...showImages.slice(0, 3),
+  showVideos[0]!,
+  ...showImages.slice(3, 8),
+  showVideos[1]!,
+  ...showImages.slice(8),
+];
+---
+
+<Base locale={locale} title={t.shows.title} description={t.shows.description} path="/shows/">
+  <section class="shero dark">
+    <div class="shero__bg" aria-hidden="true">
+      <Picture
+        id="shows/trophy-hall"
+        locale={locale}
+        alt=""
+        sizes="100vw"
+        widths={[640, 1200, 2000]}
+        loading="eager"
+        fetchpriority="high"
+        formats={['webp']}
+      />
+    </div>
+    <div class="container shero__inner">
+      <SectionHeading
+        level={1}
+        eyebrow={t.shows.eyebrow}
+        title={t.shows.h1}
+        lede={t.shows.lede}
+        class="shero__head"
+      />
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <h2 class="titles__h">{t.shows.titlesTitle}</h2>
+      <ul role="list" class="titles">
+        {
+          t.shows.titles.map((x, i) => (
+            <li class="title reveal" data-delay={String(i)}>
+              <Icon name="rosette" />
+              <span class="title__name">{x.title}</span>
+              {x.text !== x.title && <span class="title__en ltr muted">{x.text}</span>}
+            </li>
+          ))
+        }
+      </ul>
+      <p class="muted titles__note">{t.shows.titlesNote}</p>
+    </div>
+  </section>
+
+  <section class="section section--cream" aria-labelledby="shows-gallery">
+    <div class="container">
+      <SectionHeading id="shows-gallery" title={t.shows.galleryTitle} />
+      <GalleryGrid items={items} locale={locale} group="shows" filters breedFilter columns={3} />
+    </div>
+  </section>
+
+  <CtaBand
+    locale={locale}
+    title={t.shows.closingTitle}
+    text={t.shows.closingText}
+    tone="dark"
+    secondaryHref={localeHref(locale, 'puppies')}
+    secondaryLabel={t.cta.findYourPuppy}
+  />
+</Base>
+<style>
+  .shero {
+    position: relative;
+    overflow: hidden;
+    background: var(--c-black);
+    color: var(--c-text-on-dark);
+    min-height: 52vh;
+    display: grid;
+    align-items: end;
+  }
+  .shero__bg {
+    position: absolute;
+    inset: 0;
+  }
+  .shero__bg :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.55;
+    filter: saturate(0.85);
+  }
+  .shero__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(12 9 9 / 92%) 0%, rgb(12 9 9 / 55%) 45%, rgb(12 9 9 / 20%) 100%);
+  }
+  .shero__inner {
+    position: relative;
+    padding-block: clamp(4rem, 12vw, 8rem) clamp(2.5rem, 6vw, 4rem);
+  }
+  .shero__head {
+    margin-bottom: 0;
+  }
+  .shero :global(.lede) {
+    color: var(--c-text-2-on-dark);
+  }
+  .titles__h {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--sp-4);
+  }
+  .titles {
+    display: grid;
+    gap: var(--sp-3);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 48rem) {
+    .titles {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .title {
+    display: grid;
+    gap: 0.25rem;
+    padding: var(--sp-4);
+    border: 1px solid var(--c-gold);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+  }
+  .title svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--c-gold-text);
+    margin-bottom: 0.25rem;
+  }
+  .title__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+  }
+  .title__en {
+    font-size: var(--fs-xs);
+  }
+  .titles__note {
+    font-size: var(--fs-sm);
+    margin-top: var(--sp-3);
+  }
+</style>

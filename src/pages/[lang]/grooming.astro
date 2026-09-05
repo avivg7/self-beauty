@@ -1,0 +1,275 @@
+---
+import Base from '@/layouts/Base.astro';
+import Picture from '@/components/Picture.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { localePaths } from '@/lib/paths';
+import { whatsappLink, telLink } from '@/lib/contact';
+import { images } from '@/data/media';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const showPrep = ['years/red-poodle-show-table', 'years/poodle-red-heart', 'shows/ring-red-poodle'].map(
+  (id) => images.find((i) => i.id === id)!,
+);
+const services = t.grooming.services.map((s) => ({
+  '@type': 'Service',
+  name: s.title,
+  description: s.text,
+  provider: { '@id': `${Astro.site?.origin ?? ''}${import.meta.env.BASE_URL.replace(/\/$/, '')}/#business` },
+  areaServed: t.meta.city,
+}));
+---
+
+<Base
+  locale={locale}
+  title={t.grooming.title}
+  description={t.grooming.description}
+  path="/grooming/"
+  waIntent="grooming"
+  jsonLd={[{ '@context': 'https://schema.org', '@graph': services }]}
+>
+  <section class="section ghero">
+    <div class="container ghero__grid">
+      <div class="ghero__copy">
+        <SectionHeading level={1} eyebrow={t.grooming.eyebrow} title={t.grooming.h1} lede={t.grooming.lede} />
+        <div class="cluster">
+          <a
+            class="btn btn--lg btn--whatsapp"
+            href={whatsappLink(locale, 'grooming')}
+            target="_blank"
+            rel="noopener"><Icon name="whatsapp" /> {t.cta.bookGroomingWa}</a
+          >
+          <a class="btn btn--lg btn--secondary" href={telLink}><Icon name="phone" /> {t.cta.callToBook}</a>
+        </div>
+      </div>
+      <div class="ghero__media">
+        <div class="frame">
+          <Picture
+            id="brand/hero-red-poodle"
+            locale={locale}
+            alt={t.grooming.heroImageAlt}
+            sizes="(min-width: 64rem) 440px, (min-width: 40rem) 60vw, 100vw"
+            widths={[420, 640, 740]}
+            loading="eager"
+            fetchpriority="high"
+            class="ghero__img"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--cream">
+    <div class="container">
+      <SectionHeading title={t.grooming.servicesTitle} />
+      <ul role="list" class="grid grid--2 services">
+        {
+          t.grooming.services.map((s, i) => (
+            <li class="service reveal" data-delay={String(i % 2)}>
+              <span class="service__rule" aria-hidden="true" />
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container prep">
+      <div class="prep__copy reveal">
+        <SectionHeading
+          eyebrow={t.nav.shows}
+          title={t.grooming.showPrepTitle}
+          lede={t.grooming.showPrepText}
+        />
+        <p>
+          <a class="btn btn--secondary" href={localeHref(locale, 'shows')}
+            >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a>
+        </p>
+      </div>
+      <ul role="list" class="prep__imgs reveal" data-delay="1">
+        {
+          showPrep.map((m, i) => (
+            <li class:list={['prep__img', i === 0 && 'prep__img--lead']}>
+              <div class="ratio ratio--4x5">
+                <Picture
+                  id={m.id}
+                  locale={locale}
+                  sizes="(min-width: 64rem) 260px, 45vw"
+                  widths={[300, 520, 740]}
+                />
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--cream section--tight">
+    <div class="container">
+      <SectionHeading title={t.grooming.portfolioTitle} />
+      <!-- Honest state: no real before/after material exists yet (TODO-003). Nothing here pretends otherwise. -->
+      <div class="portfolio-soon">
+        <Icon name="photo" />
+        <p>{t.grooming.portfolioSoon}</p>
+        <a class="btn btn--ghost" href={localeHref(locale, 'shows')}
+          >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container container--narrow">
+      <SectionHeading title={t.grooming.tipsTitle} />
+      <ul role="list" class="tips">
+        {
+          t.grooming.tips.map((tip) => (
+            <li>
+              <>
+                <Icon name="check" />
+                <span>{tip}</span>
+              </>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand
+    locale={locale}
+    title={t.grooming.ctaTitle}
+    text={t.grooming.ctaText}
+    intent="grooming"
+    waLabel={t.cta.bookGroomingWa}
+  />
+</Base>
+<style>
+  .ghero {
+    padding-top: clamp(1.5rem, 4vw, 4rem);
+  }
+  .ghero__grid {
+    display: grid;
+    gap: var(--sp-6);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .ghero__grid {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: var(--sp-9);
+    }
+  }
+  .ghero__copy {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .ghero__copy :global(.sh) {
+    margin-bottom: 0;
+  }
+  .ghero__media {
+    max-width: 30rem;
+  }
+  .ghero__img {
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    width: 100%;
+  }
+  .service {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: var(--sp-5);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+  }
+  .service__rule {
+    width: 2.5rem;
+    height: 2px;
+    background: var(--c-gold);
+  }
+  .service p {
+    color: var(--c-text-2);
+  }
+  .prep {
+    display: grid;
+    gap: var(--sp-6);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .prep {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--sp-9);
+    }
+  }
+  .prep__copy :global(.sh) {
+    margin-bottom: var(--sp-4);
+  }
+  .prep__imgs {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--sp-3);
+  }
+  .prep__img {
+    min-width: 0;
+  }
+  .prep__img--lead {
+    grid-row: span 2;
+  }
+  .prep__img .ratio {
+    border-radius: var(--r-sm);
+  }
+  /* The lead tile takes its height from the two small tiles, so its aspect ratio must not drive width */
+  .prep__img--lead .ratio {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+  .prep__img :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .portfolio-soon {
+    display: grid;
+    justify-items: start;
+    gap: var(--sp-3);
+    padding: var(--sp-6);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+  }
+  .portfolio-soon > svg {
+    width: 2rem;
+    height: 2rem;
+    color: var(--c-gold-text);
+  }
+  .tips {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .tips li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .tips svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--c-gold-text);
+    flex: none;
+    margin-top: 0.2rem;
+  }
+</style>

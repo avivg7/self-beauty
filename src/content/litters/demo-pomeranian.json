@@ -1,0 +1,8 @@
+{
+  "breed": "pomeranian",
+  "expectedLabel": { "he": "חורף 2026 (דמו)", "ru": "Зима 2026 (демо)", "en": "Winter 2026 (demo)" },
+  "note": { "he": "רשומת דמו.", "ru": "Демо-запись.", "en": "Demo record." },
+  "published": true,
+  "demo": true,
+  "order": 1
+}

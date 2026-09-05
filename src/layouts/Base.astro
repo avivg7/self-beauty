@@ -1,0 +1,161 @@
+---
+import '@fontsource/bona-nova/400.css';
+import '@fontsource/bona-nova/700.css';
+import '@fontsource/bona-nova/400-italic.css';
+import '@fontsource-variable/ibm-plex-sans';
+import '@fontsource/ibm-plex-sans-hebrew/400.css';
+import '@fontsource/ibm-plex-sans-hebrew/500.css';
+import '@fontsource/ibm-plex-sans-hebrew/600.css';
+import '@/styles/global.css';
+import { getImage } from 'astro:assets';
+import { getDictionary, LOCALE_META, LOCALES, DEFAULT_LOCALE, type Locale } from '@/i18n';
+import { absoluteUrl, href, pagePath } from '@/lib/urls';
+import { site } from '@/data/site';
+import logoSrc from '@/assets/media/brand/logo.png';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import StickyContactBar from '@/components/StickyContactBar.astro';
+import A11yPanel from '@/components/A11yPanel.astro';
+import Lightbox from '@/components/Lightbox.astro';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  /** Locale-less page path, e.g. "/puppies/" or "/" */
+  path: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+  bodyClass?: string;
+  /** Which prefilled WhatsApp message the sticky mobile bar uses */
+  waIntent?: 'general' | 'grooming' | 'litters';
+  /** Emit hreflang alternates (off for pages that exist once, like 404) */
+  alternates?: boolean;
+}
+const {
+  locale,
+  title,
+  description,
+  path,
+  ogImage,
+  ogType = 'website',
+  jsonLd = [],
+  noindex = false,
+  bodyClass = '',
+  waIntent = 'general',
+  alternates = true,
+} = Astro.props;
+const dict = getDictionary(locale);
+const meta = LOCALE_META[locale];
+const canonical = alternates
+  ? absoluteUrl(Astro.site, pagePath(locale, path))
+  : absoluteUrl(Astro.site, pagePath(DEFAULT_LOCALE));
+const logo = await getImage({ src: logoSrc, width: 512, format: 'png' });
+const ogImageUrl = ogImage ?? absoluteUrl(Astro.site, '/og.jpg');
+const logoAbs = absoluteUrl(Astro.site, logo.src.replace(href('/'), '/'));
+
+const business = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  '@id': absoluteUrl(Astro.site, '/#business'),
+  name: site.name,
+  description: dict.meta.tagline,
+  url: absoluteUrl(Astro.site, pagePath(locale)),
+  telephone: site.phone.e164,
+  image: logoAbs,
+  logo: logoAbs,
+  address: { '@type': 'PostalAddress', addressLocality: site.city.en, addressCountry: 'IL' },
+  geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng },
+  sameAs: [site.facebook],
+  foundingDate: String(site.established),
+  knowsLanguage: ['he', 'ru', 'en'],
+  priceRange: undefined,
+};
+const ld = [business, ...jsonLd];
+// Pages that exist once (404) switch language to the home page instead of a non-existent sibling.
+const switchPath = alternates ? path : '/';
+---
+
+<!doctype html>
+<html lang={locale} dir={meta.dir} class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {
+      alternates &&
+        LOCALES.map((l) => (
+          <link
+            rel="alternate"
+            hreflang={LOCALE_META[l].hreflang}
+            href={absoluteUrl(Astro.site, pagePath(l, path))}
+          />
+        ))
+    }
+    {
+      alternates && (
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={absoluteUrl(Astro.site, pagePath(DEFAULT_LOCALE, path))}
+        />
+      )
+    }
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={meta.ogLocale} />
+    {
+      LOCALES.filter((l) => l !== locale).map((l) => (
+        <meta property="og:locale:alternate" content={LOCALE_META[l].ogLocale} />
+      ))
+    }
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f8f4ec" />
+    <link rel="icon" href={href('/favicon.ico')} sizes="32x32" />
+    <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
+    <link rel="manifest" href={href('/site.webmanifest')} />
+    <link rel="sitemap" href={href('/sitemap-index.xml')} />
+    <script is:inline>
+      /* Apply saved accessibility preferences before first paint; mark JS availability. */
+      (function () {
+        const h = document.documentElement;
+        h.classList.remove('no-js');
+        try {
+          const p = JSON.parse(localStorage.getItem('sb:a11y') || '{}');
+          if (p.text === 'lg' || p.text === 'xl') h.setAttribute('data-text', p.text);
+          if (p.contrast) h.setAttribute('data-contrast', 'high');
+          if (p.motion) h.setAttribute('data-motion', 'reduce');
+        } catch {
+          /* storage unavailable */
+        }
+      })();
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">{dict.nav.skip}</a>
+    <Header locale={locale} path={switchPath} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer locale={locale} path={switchPath} />
+    <StickyContactBar locale={locale} intent={waIntent} />
+    <A11yPanel locale={locale} />
+    <Lightbox locale={locale} />
+    <script>
+      import '@/scripts/reveal';
+    </script>
+  </body>
+</html>

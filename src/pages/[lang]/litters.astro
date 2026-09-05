@@ -1,0 +1,138 @@
+---
+import Base from '@/layouts/Base.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Icon from '@/components/Icon.astro';
+import { getDictionary, localizedField, type Locale } from '@/i18n';
+import { localePaths } from '@/lib/paths';
+import { getLitters } from '@/lib/listings';
+import { whatsappLink } from '@/lib/contact';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const litters = await getLitters();
+---
+
+<Base
+  locale={locale}
+  title={t.litters.title}
+  description={t.litters.description}
+  path="/litters/"
+  waIntent="litters"
+>
+  <section class="section">
+    <div class="container">
+      <SectionHeading level={1} eyebrow={t.litters.eyebrow} title={t.litters.h1} lede={t.litters.lede}>
+        <p class="litters__cta">
+          <a
+            class="btn btn--lg btn--whatsapp"
+            href={whatsappLink(locale, 'litters')}
+            target="_blank"
+            rel="noopener"><Icon name="whatsapp" /> {t.cta.litterUpdates}</a>
+        </p>
+      </SectionHeading>
+
+      <h2 class="litters__h">{t.litters.howTitle}</h2>
+      <ol class="steps">
+        {
+          t.litters.how.map((s, i) => (
+            <li class="step reveal" data-delay={String(i)}>
+              <span class="step__n num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <h2 class="litters__h">{t.litters.listTitle}</h2>
+      {
+        litters.length ? (
+          <ul role="list" class="grid grid--2">
+            {litters.map((l) => (
+              <li class="card lcard">
+                <div class="card__body">
+                  <p class="cluster">
+                    <span class="chip chip--planned">{t.status.planned}</span>
+                    {l.data.demo && <span class="chip chip--demo chip--plain">{t.common.demoBadge}</span>}
+                  </p>
+                  <h3>{t.breeds[l.data.breed].name}</h3>
+                  {(l.data.expectedLabel || l.data.expected) && (
+                    <p>
+                      <strong>{t.litters.expected}:</strong>{' '}
+                      {localizedField(l.data.expectedLabel, locale) || l.data.expected}
+                    </p>
+                  )}
+                  {l.data.note && <p class="muted">{localizedField(l.data.note, locale)}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="litters__empty">{t.litters.empty}</p>
+        )
+      }
+    </div>
+  </section>
+  <CtaBand
+    locale={locale}
+    title={t.puppies.litterBanner.title}
+    text={t.puppies.litterBanner.text}
+    intent="litters"
+    waLabel={t.cta.litterUpdates}
+    tone="dark"
+  />
+</Base>
+<style>
+  .litters__cta {
+    margin-top: var(--sp-2);
+  }
+  .litters__h {
+    font-size: var(--fs-xl);
+    margin: var(--sp-7) 0 var(--sp-4);
+  }
+  .steps {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-4);
+    counter-reset: step;
+  }
+  @media (min-width: 48rem) {
+    .steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .step {
+    display: grid;
+    gap: 0.5rem;
+    padding: var(--sp-5);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    background: var(--c-surface);
+    align-content: start;
+  }
+  .step__n {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--c-burgundy);
+    border: 1px solid var(--c-gold);
+  }
+  .step p {
+    color: var(--c-text-2);
+  }
+  .litters__empty {
+    padding: var(--sp-5);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--r-md);
+    color: var(--c-text-2);
+  }
+</style>

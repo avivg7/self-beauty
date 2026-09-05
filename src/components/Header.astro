@@ -1,0 +1,365 @@
+---
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { whatsappLink, telLink } from '@/lib/contact';
+import { Image } from 'astro:assets';
+import logo from '@/assets/brand/logo-transparent.png';
+import Icon from './Icon.astro';
+import LangSwitcher from './LangSwitcher.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+}
+const { locale, path } = Astro.props;
+const t = getDictionary(locale);
+const items: { key: string; label: string; rest: string }[] = [
+  { key: 'puppies', label: t.nav.puppies, rest: 'puppies' },
+  { key: 'grooming', label: t.nav.grooming, rest: 'grooming' },
+  { key: 'shows', label: t.nav.shows, rest: 'shows' },
+  { key: 'gallery', label: t.nav.gallery, rest: 'gallery' },
+  { key: 'about', label: t.nav.about, rest: 'about' },
+  { key: 'contact', label: t.nav.contact, rest: 'contact' },
+];
+const isCurrent = (rest: string) => path === `/${rest}/` || path.startsWith(`/${rest}/`);
+---
+
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <a class="brand" href={localeHref(locale)} aria-label={`${t.meta.siteName} — ${t.nav.home}`}>
+      <Image
+        src={logo}
+        alt=""
+        width={112}
+        height={112}
+        densities={[1, 2]}
+        loading="eager"
+        class="brand__badge"
+      />
+      <span class="brand__word ltr">Self Beauty</span>
+    </a>
+
+    <nav class="site-nav" aria-label={t.nav.mainNav}>
+      <ul role="list" class="site-nav__list">
+        {
+          items.map((it) => (
+            <li>
+              <a href={localeHref(locale, it.rest)} aria-current={isCurrent(it.rest) ? 'page' : undefined}>
+                {it.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <button
+        type="button"
+        class="icon-btn a11y-open"
+        data-a11y-open
+        aria-haspopup="dialog"
+        aria-controls="a11y-panel"
+      >
+        <Icon name="accessibility" />
+        <span class="sr-only">{t.a11y.panel.open}</span>
+      </button>
+      <LangSwitcher locale={locale} path={path} />
+      <a
+        class="btn btn--whatsapp site-header__cta"
+        href={whatsappLink(locale)}
+        target="_blank"
+        rel="noopener"
+      >
+        <Icon name="whatsapp" />
+        <span>{t.cta.whatsapp}</span>
+      </a>
+      <button
+        type="button"
+        class="icon-btn menu-btn"
+        data-menu-open
+        aria-haspopup="dialog"
+        aria-controls="menu-sheet"
+        aria-expanded="false"
+      >
+        <Icon name="menu" />
+        <span class="sr-only">{t.nav.openMenu}</span>
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="sheet"
+    id="menu-sheet"
+    data-menu-sheet
+    role="dialog"
+    aria-modal="true"
+    aria-label={t.nav.menu}
+    hidden
+  >
+    <div class="sheet__top container">
+      <span class="brand__word ltr display">Self Beauty</span>
+      <button type="button" class="icon-btn" data-menu-close>
+        <Icon name="close" />
+        <span class="sr-only">{t.nav.closeMenu}</span>
+      </button>
+    </div>
+    <nav class="sheet__nav container" aria-label={t.nav.mainNav}>
+      <ul role="list">
+        <li>
+          <a href={localeHref(locale)} aria-current={path === '/' ? 'page' : undefined}>{t.nav.home}</a>
+        </li>
+        {
+          items.map((it) => (
+            <li>
+              <a href={localeHref(locale, it.rest)} aria-current={isCurrent(it.rest) ? 'page' : undefined}>
+                {it.label}
+              </a>
+            </li>
+          ))
+        }
+        <li class="sheet__minor"><a href={localeHref(locale, 'litters')}>{t.nav.litters}</a></li>
+        <li class="sheet__minor"><a href={localeHref(locale, 'stories')}>{t.nav.stories}</a></li>
+      </ul>
+    </nav>
+    <div class="sheet__bottom container">
+      <div class="sheet__langs" aria-label={t.lang.label}>
+        <LangSwitcher locale={locale} path={path} variant="inline" />
+      </div>
+      <button type="button" class="btn btn--secondary btn--block" data-a11y-open>
+        <Icon name="accessibility" />
+        {t.a11y.panel.open}
+      </button>
+      <div class="sheet__contact">
+        <a class="btn btn--secondary" href={telLink}><Icon name="phone" /> {t.cta.call}</a>
+        <a class="btn btn--whatsapp" href={whatsappLink(locale)} target="_blank" rel="noopener"
+          ><Icon name="whatsapp" /> {t.cta.whatsapp}</a
+        >
+      </div>
+    </div>
+  </div>
+</header>
+<script>
+  import '@/scripts/nav';
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: color-mix(in srgb, var(--c-bg) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid transparent;
+    transition:
+      border-color var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out);
+  }
+  .site-header.is-scrolled {
+    border-color: var(--c-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    min-height: 4rem;
+  }
+  @media (min-width: 64rem) {
+    .site-header__inner {
+      min-height: 4.75rem;
+      gap: var(--sp-5);
+    }
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--c-text);
+    margin-inline-end: auto;
+    min-height: 2.75rem;
+  }
+  .brand__badge {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  @media (min-width: 64rem) {
+    .brand__badge {
+      width: 3.25rem;
+      height: 3.25rem;
+    }
+  }
+  .brand__word {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: 0.01em;
+    line-height: 1;
+  }
+  @media (max-width: 22.5rem) {
+    .brand__word {
+      display: none;
+    }
+  }
+
+  .site-nav {
+    display: none;
+  }
+  .site-nav__list {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .site-nav__list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.8rem;
+    border-radius: var(--r-pill);
+    color: var(--c-text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--fs-sm);
+    position: relative;
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .site-nav__list a:hover {
+    background: var(--c-cream);
+  }
+  .site-nav__list a[aria-current='page'] {
+    color: var(--c-burgundy);
+    font-weight: 600;
+  }
+  .site-nav__list a[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0.8rem;
+    bottom: 0.35rem;
+    height: 2px;
+    background: var(--c-gold);
+    border-radius: 2px;
+  }
+  @media (min-width: 64rem) {
+    .site-nav {
+      display: block;
+    }
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .site-header__cta {
+    display: none;
+    min-height: 2.75rem;
+    padding-block: 0.4rem;
+    font-size: var(--fs-sm);
+  }
+  .a11y-open {
+    display: none;
+  }
+  @media (min-width: 64rem) {
+    .site-header__cta {
+      display: inline-flex;
+      margin-inline-start: 0.5rem;
+    }
+    .a11y-open {
+      display: inline-grid;
+    }
+    .menu-btn {
+      display: none;
+    }
+  }
+
+  /* Mobile sheet */
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-sheet);
+    background: var(--c-bg);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-top: var(--safe-t);
+    padding-bottom: max(var(--safe-b), 1rem);
+    animation: sheet-in var(--dur-base) var(--ease-out);
+  }
+  .sheet[hidden] {
+    display: none;
+  }
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .sheet__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 4rem;
+  }
+  .sheet__nav ul {
+    display: grid;
+    gap: 0.25rem;
+    padding-block: var(--sp-4);
+  }
+  .sheet__nav a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3.25rem;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--c-text);
+    text-decoration: none;
+    border-radius: var(--r-sm);
+  }
+  .sheet__nav a:hover {
+    background: var(--c-cream);
+  }
+  .sheet__nav a[aria-current='page'] {
+    color: var(--c-burgundy);
+  }
+  .sheet__nav a[aria-current='page']::after {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--c-gold);
+  }
+  .sheet__minor a {
+    font-family: var(--font-body);
+    font-size: var(--fs-base);
+    font-weight: 500;
+    min-height: 2.75rem;
+    color: var(--c-text-2);
+  }
+  .sheet__bottom {
+    margin-top: auto;
+    display: grid;
+    gap: var(--sp-3);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+  }
+  .sheet__contact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+  }
+  body.menu-open {
+    overflow: hidden;
+  }
+</style>

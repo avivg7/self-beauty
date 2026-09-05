@@ -1,0 +1,148 @@
+---
+import { getDictionary, type Locale } from '@/i18n';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale).gallery_ui;
+---
+
+<dialog class="lb dark" id="lightbox" data-lightbox aria-label={t.lightboxLabel}>
+  <div class="lb__bar">
+    <span class="lb__counter num" data-lb-counter data-tpl={t.counter} aria-live="polite"></span>
+    <button type="button" class="icon-btn lb__close" data-lb-close
+      ><Icon name="close" /><span class="sr-only">{t.close}</span></button
+    >
+  </div>
+  <figure class="lb__stage" data-lb-stage>
+    <div class="lb__media" data-lb-media></div>
+    <figcaption class="lb__cap" data-lb-cap></figcaption>
+  </figure>
+  <button type="button" class="lb__nav lb__nav--prev" data-lb-prev
+    ><Icon name="arrow" /><span class="sr-only">{t.prev}</span></button
+  >
+  <button type="button" class="lb__nav lb__nav--next" data-lb-next
+    ><Icon name="arrow" /><span class="sr-only">{t.next}</span></button
+  >
+</dialog>
+<script>
+  import '@/scripts/lightbox';
+</script>
+
+<style>
+  .lb {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    background: var(--c-black);
+    color: var(--c-text-on-dark);
+    overflow: hidden;
+  }
+  .lb::backdrop {
+    background: var(--c-black);
+  }
+  .lb__bar {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: max(0.5rem, var(--safe-t)) 0.75rem 0.5rem;
+    z-index: 2;
+  }
+  .lb__counter {
+    font-size: var(--fs-sm);
+    color: var(--c-text-2-on-dark);
+    padding-inline-start: 0.5rem;
+  }
+  .lb__close {
+    color: #fff;
+  }
+  .lb__close:hover {
+    background: rgb(255 255 255 / 12%);
+    border-color: transparent;
+  }
+  .lb__stage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 3.5rem 0.5rem calc(0.75rem + var(--safe-b));
+    gap: 0.5rem;
+  }
+  .lb__media {
+    display: grid;
+    place-items: center;
+    min-height: 0;
+  }
+  .lb__media img,
+  .lb__media video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--r-sm);
+  }
+  .lb__media img {
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .lb__media.is-loading img {
+    opacity: 0.4;
+  }
+  .lb__cap {
+    text-align: center;
+    font-size: var(--fs-sm);
+    color: var(--c-text-2-on-dark);
+    min-height: 1.5rem;
+    padding-inline: 3rem;
+  }
+  .lb__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgb(255 255 255 / 10%);
+    color: #fff;
+    z-index: 2;
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+  .lb__nav:hover {
+    background: var(--c-burgundy);
+  }
+  .lb__nav svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  .lb__nav--prev {
+    inset-inline-start: 0.5rem;
+  }
+  .lb__nav--next {
+    inset-inline-end: 0.5rem;
+  }
+  html[dir='ltr'] .lb__nav--prev svg {
+    transform: scaleX(-1);
+  }
+  html[dir='rtl'] .lb__nav--next svg {
+    transform: scaleX(-1);
+  }
+  .lb__nav[disabled] {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  @media (min-width: 48rem) {
+    .lb__stage {
+      padding: 4rem 4.5rem calc(1rem + var(--safe-b));
+    }
+  }
+</style>

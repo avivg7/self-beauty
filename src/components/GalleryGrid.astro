@@ -1,0 +1,283 @@
+---
+/**
+ * Masonry-style gallery (CSS columns) mixing photos and videos, with an accessible lightbox and
+ * optional type/breed filters. Each tile knows its intrinsic aspect ratio, so nothing shifts on load.
+ */
+import { getImage as astroGetImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { getDictionary, type Locale } from '@/i18n';
+import type { MediaItem, Breed } from '@/data/media';
+import Picture from './Picture.astro';
+import VideoTile from './VideoTile.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  items: MediaItem[];
+  locale: Locale;
+  group: string;
+  filters?: boolean;
+  breedFilter?: boolean;
+  columns?: 2 | 3 | 4;
+  class?: string;
+}
+const {
+  items,
+  locale,
+  group,
+  filters = false,
+  breedFilter = false,
+  columns = 3,
+  class: className,
+} = Astro.props;
+const t = getDictionary(locale);
+const assets = import.meta.glob<{ default: ImageMetadata }>('/src/assets/media/**/*.{jpg,png}', {
+  eager: true,
+});
+
+async function large(id: string) {
+  const key = `/src/assets/media/${id}.jpg`;
+  const src = assets[key]?.default;
+  if (!src) throw new Error(`No asset for ${id}`);
+  const w = Math.min(1800, src.width);
+  const img = await astroGetImage({ src, width: w, format: 'webp', quality: 82 });
+  return { src: img.src, w: img.attributes.width as number, h: img.attributes.height as number };
+}
+const prepared = await Promise.all(
+  items.map(async (m) => (m.kind === 'image' ? { m, lg: await large(m.id) } : { m, lg: null })),
+);
+const breeds = Array.from(new Set(items.flatMap((m) => m.breeds ?? []))) as Breed[];
+const hasVideos = items.some((m) => m.kind === 'video');
+const uid = `g-${group}`;
+---
+
+<div class:list={['gallery', className]} data-gallery={group}>
+  {
+    filters && (
+      <div class="gallery__filters" role="group" aria-label={t.shows.filters.all}>
+        <div
+          class="gallery__seg"
+          role="radiogroup"
+          aria-label={`${t.gallery_ui.photo} / ${t.gallery_ui.video}`}
+        >
+          <label>
+            <>
+              <input type="radio" name={`${uid}-type`} value="all" checked data-filter="type" />
+              <span>{t.shows.filters.all}</span>
+            </>
+          </label>
+          <label>
+            <>
+              <input type="radio" name={`${uid}-type`} value="image" data-filter="type" />
+              <span>{t.shows.filters.photos}</span>
+            </>
+          </label>
+          {hasVideos && (
+            <label>
+              <input type="radio" name={`${uid}-type`} value="video" data-filter="type" />
+              <span>{t.shows.filters.videos}</span>
+            </label>
+          )}
+        </div>
+        {breedFilter && breeds.length > 1 && (
+          <label class="gallery__breed">
+            <span class="sr-only">{t.shows.filters.breed}</span>
+            <select class="select" data-filter="breed" aria-label={t.shows.filters.breed}>
+              <option value="all">{t.puppies.filters.all}</option>
+              {breeds.map((b) => (
+                <option value={b}>{t.breeds[b].short}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <p class="gallery__count muted" data-gallery-count aria-live="polite" />
+      </div>
+    )
+  }
+  <ul role="list" class={`gallery__grid gallery__grid--${columns}`}>
+    {
+      prepared.map(({ m, lg }) => (
+        <li
+          class="gallery__item"
+          data-type={m.kind}
+          data-breeds={(m.breeds ?? []).join(' ')}
+          data-chapter={m.chapter ?? ''}
+        >
+          {m.kind === 'image' && lg ? (
+            <figure class="gtile">
+              <button
+                type="button"
+                class="gtile__btn"
+                data-lb-item
+                data-lb-type="image"
+                data-lb-group={group}
+                data-lb-src={lg.src}
+                data-lb-w={lg.w}
+                data-lb-h={lg.h}
+                data-lb-alt={m.alt[locale]}
+                data-lb-caption={m.caption?.[locale] ?? ''}
+                aria-label={t.gallery_ui.open.replace('{title}', m.caption?.[locale] ?? m.alt[locale])}
+              >
+                <Picture
+                  id={m.id}
+                  locale={locale}
+                  sizes={`(min-width: 64rem) ${Math.round(1152 / columns)}px, (min-width: 40rem) 50vw, 100vw`}
+                  widths={[420, 640, 900]}
+                  class="gtile__img"
+                />
+                <span class="gtile__zoom" aria-hidden="true">
+                  <Icon name="photo" />
+                </span>
+              </button>
+              {m.caption && (
+                <figcaption class="gtile__cap">
+                  {m.caption[locale]}
+                  {m.year ? <span class="num muted"> · {m.year}</span> : null}
+                </figcaption>
+              )}
+            </figure>
+          ) : (
+            <VideoTile id={m.id} locale={locale} group={group} />
+          )}
+        </li>
+      ))
+    }
+  </ul>
+  <p class="gallery__empty muted" data-gallery-empty hidden>{t.puppies.filters.none}</p>
+</div>
+{filters && <script>import '@/scripts/filters';</script>}
+
+<style>
+  .gallery {
+    display: grid;
+    gap: var(--sp-5);
+  }
+  .gallery__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .gallery__seg {
+    display: inline-flex;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--r-pill);
+    padding: 0.2rem;
+    background: var(--c-surface);
+  }
+  .gallery__seg label {
+    position: relative;
+  }
+  .gallery__seg input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+  .gallery__seg span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.25rem 1rem;
+    border-radius: var(--r-pill);
+    font-weight: 500;
+    font-size: var(--fs-sm);
+  }
+  .gallery__seg input:checked + span {
+    background: var(--c-charcoal);
+    color: var(--c-text-on-dark);
+  }
+  .gallery__seg input:focus-visible + span {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+  }
+  .gallery__breed .select {
+    min-height: 2.9rem;
+    width: auto;
+    border-radius: var(--r-pill);
+    padding-inline: 1rem;
+  }
+  .gallery__count {
+    font-size: var(--fs-sm);
+    margin-inline-start: auto;
+  }
+  .gallery__grid {
+    columns: 2;
+    column-gap: var(--sp-3);
+  }
+  @media (min-width: 40rem) {
+    .gallery__grid {
+      column-gap: var(--sp-4);
+    }
+    .gallery__grid--3,
+    .gallery__grid--4 {
+      columns: 3;
+    }
+  }
+  @media (min-width: 64rem) {
+    .gallery__grid--4 {
+      columns: 4;
+    }
+    .gallery__grid--2 {
+      columns: 2;
+    }
+  }
+  .gallery__item {
+    break-inside: avoid;
+    margin-bottom: var(--sp-3);
+  }
+  @media (min-width: 40rem) {
+    .gallery__item {
+      margin-bottom: var(--sp-4);
+    }
+  }
+  .gtile {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .gtile__btn {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--r-sm);
+    background: var(--c-cream);
+  }
+  .gtile__btn :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .gtile__btn:hover :global(img) {
+    transform: scale(1.03);
+  }
+  .gtile__zoom {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    top: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgb(12 9 9 / 55%);
+    color: #fff;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .gtile__zoom svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .gtile__btn:hover .gtile__zoom,
+  .gtile__btn:focus-visible .gtile__zoom {
+    opacity: 1;
+  }
+  .gtile__cap {
+    font-size: var(--fs-sm);
+    color: var(--c-text-2);
+  }
+</style>

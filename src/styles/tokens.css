@@ -1,0 +1,156 @@
+/* Self Beauty design tokens — derived from images/site_logo.png (see docs/DESIGN_SYSTEM.md). */
+:root {
+  color-scheme: light;
+
+  /* Grounds */
+  --c-bg: #f8f4ec;
+  --c-cream: #f1eae0;
+  --c-surface: #fffdf9;
+  --c-border: #e2d8c8;
+  --c-border-strong: #cdbfa8;
+
+  /* Brand */
+  --c-burgundy: #7b1b22;
+  --c-burgundy-deep: #4f0d14;
+  --c-burgundy-soft: #f3e3e3;
+  --c-crimson: #a8121a;
+  --c-charcoal: #1f1b1a;
+  --c-black: #0c0909;
+  --c-gold: #c9a46a;
+  --c-gold-bright: #ddb877;
+  --c-gold-text: #7e603a;
+  --c-gold-soft: #f0e4cd;
+  --c-ivory: #f8f4ec;
+
+  /* Text */
+  --c-text: #1f1b1a;
+  --c-text-2: #5c544f;
+  --c-text-on-dark: #f8f4ec;
+  --c-text-2-on-dark: #c9c0b6;
+
+  /* Semantic */
+  --c-success: #2f6f4e;
+  --c-success-soft: #e3efe7;
+  --c-warning: #8a5e0e;
+  --c-warning-soft: #f6ecd6;
+  --c-error: #a8232b;
+  --c-error-soft: #f6e1e2;
+  --c-info: #3d4f6b;
+  --c-info-soft: #e5e9f0;
+  --c-focus: var(--c-burgundy);
+  --c-whatsapp: #176d47; /* 5.3:1 with white text */
+  --c-whatsapp-hover: #115535;
+
+  /* Type */
+  --font-display: 'Bona Nova', 'Frank Ruhl Libre', 'Times New Roman', Georgia, serif;
+  --font-body: 'IBM Plex Sans Variable', 'IBM Plex Sans Hebrew', 'Segoe UI', Arial, sans-serif;
+  --font-body-he: 'IBM Plex Sans Hebrew', 'IBM Plex Sans Variable', 'Segoe UI', Arial, sans-serif;
+
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9rem;
+  --fs-base: 1rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.3rem);
+  --fs-xl: clamp(1.35rem, 1.2rem + 0.8vw, 1.75rem);
+  --fs-2xl: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  --fs-3xl: clamp(2.125rem, 1.6rem + 2.6vw, 3.5rem);
+  --fs-hero: clamp(2.25rem, 1.5rem + 3.6vw, 4.5rem);
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.25;
+  --lh-body: 1.6;
+
+  /* Space (4pt rhythm) */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-9: 6rem;
+  --section: clamp(3.5rem, 8vw, 7rem);
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --container: 72rem;
+  --container-narrow: 46rem;
+
+  /* Shape */
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+  --frame-offset: 8px;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgb(31 27 26 / 6%), 0 1px 1px rgb(31 27 26 / 4%);
+  --shadow-md: 0 6px 20px -8px rgb(31 27 26 / 22%);
+  --shadow-lg: 0 24px 48px -20px rgb(31 27 26 / 35%);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+
+  /* Layers */
+  --z-header: 40;
+  --z-sticky: 30;
+  --z-sheet: 50;
+  --z-lightbox: 60;
+  --z-toast: 70;
+
+  /* Safe areas */
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --sticky-bar-h: 3.75rem;
+}
+
+/* Dark surfaces (sections, footer, lightbox) opt in with .dark */
+.dark {
+  --c-bg: var(--c-charcoal);
+  --c-cream: #2a2523;
+  --c-surface: #2a2523;
+  --c-border: #3d3634;
+  --c-border-strong: #57504c;
+  --c-text: var(--c-text-on-dark);
+  --c-text-2: var(--c-text-2-on-dark);
+  --c-gold-text: var(--c-gold-bright);
+  --c-focus: var(--c-gold-bright);
+  --c-burgundy-soft: #3a1c1f;
+  color-scheme: dark;
+}
+
+/* Accessibility panel: text size */
+html[data-text='lg'] {
+  font-size: 112.5%;
+}
+html[data-text='xl'] {
+  font-size: 125%;
+}
+
+/* Accessibility panel: high contrast */
+html[data-contrast='high'] {
+  --c-bg: #ffffff;
+  --c-cream: #f4f4f4;
+  --c-surface: #ffffff;
+  --c-border: #333333;
+  --c-border-strong: #000000;
+  --c-text: #000000;
+  --c-text-2: #1a1a1a;
+  --c-burgundy: #5a0a10;
+  --c-gold-text: #4a3818;
+  --c-gold: #8a6a30;
+  --c-focus: #0000ee;
+}
+html[data-contrast='high'] .dark {
+  --c-bg: #000000;
+  --c-cream: #111111;
+  --c-surface: #111111;
+  --c-border: #cccccc;
+  --c-text: #ffffff;
+  --c-text-2: #f0f0f0;
+  --c-gold-text: #ffd479;
+  --c-focus: #ffff00;
+}

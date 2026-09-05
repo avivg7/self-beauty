@@ -1,0 +1,23 @@
+{
+  "name": { "he": "דמו — יורקשייר (זכר)", "ru": "ДЕМО — йорк (мальчик)", "en": "DEMO — Yorkshire (male)" },
+  "breed": "yorkshire",
+  "sex": "male",
+  "birthDate": "2026-06-14",
+  "status": "reserved",
+  "description": {
+    "he": "רשומת דמו לבדיקת עיצוב בלבד. הטקסט הזה אינו מתאר כלב אמיתי.",
+    "ru": "Демо-запись только для проверки дизайна. Этот текст не описывает реальную собаку.",
+    "en": "Demo record for design testing only. This text does not describe a real dog."
+  },
+  "pedigreeSummary": { "he": "דמו", "ru": "Демо", "en": "Demo" },
+  "parents": { "sire": { "name": "Demo Sire", "titles": ["Demo Title"], "verified": false }, "dam": { "name": "Demo Dam", "verified": false } },
+  "showProspect": true,
+  "images": [
+    { "media": "shows/owner-yorkie-stage", "alt": { "he": "דמו", "ru": "Демо", "en": "Demo" } },
+    { "media": "shows/yorkie-ring-044", "alt": { "he": "דמו", "ru": "Демо", "en": "Demo" } }
+  ],
+  "order": 50,
+  "published": true,
+  "demo": true,
+  "updatedAt": "2026-09-05"
+}

@@ -1,0 +1,50 @@
+{
+  "bichon-puppy-play-720": {
+    "width": 720,
+    "height": 1280,
+    "duration": 18.467,
+    "bytes": 4351620,
+    "codec": "h264",
+    "hasAudio": true
+  },
+  "bichon-puppy-play-480": {
+    "width": 480,
+    "height": 854,
+    "duration": 18.467,
+    "bytes": 1882062,
+    "codec": "h264",
+    "hasAudio": true
+  },
+  "poodle-ring-gait-720": {
+    "width": 1280,
+    "height": 720,
+    "duration": 13.6,
+    "bytes": 3829850,
+    "codec": "h264",
+    "hasAudio": true
+  },
+  "poodle-ring-gait-480": {
+    "width": 854,
+    "height": 480,
+    "duration": 13.6,
+    "bytes": 1391135,
+    "codec": "h264",
+    "hasAudio": true
+  },
+  "shih-tzu-ring-video-720": {
+    "width": 478,
+    "height": 850,
+    "duration": 32.434,
+    "bytes": 4985701,
+    "codec": "h264",
+    "hasAudio": false
+  },
+  "shih-tzu-ring-video-480": {
+    "width": 478,
+    "height": 850,
+    "duration": 32.434,
+    "bytes": 3693758,
+    "codec": "h264",
+    "hasAudio": false
+  }
+}

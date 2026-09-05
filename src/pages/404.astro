@@ -1,0 +1,56 @@
+---
+import Base from '@/layouts/Base.astro';
+import { getDictionary, LOCALES, LOCALE_META } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+const he = getDictionary('he');
+---
+
+<Base
+  locale="he"
+  title={`${he.common.notFoundTitle} · Self Beauty`}
+  description={he.common.notFoundText}
+  path="/404/"
+  noindex
+  alternates={false}
+>
+  <section class="section container container--narrow center">
+    <p class="eyebrow">404</p>
+    {
+      LOCALES.map((l) => {
+        const t = getDictionary(l);
+        return (
+          <div lang={l} dir={LOCALE_META[l].dir} class="nf">
+            <h1 class="nf__h">{t.common.notFoundTitle}</h1>
+            <p>{t.common.notFoundText}</p>
+            <p class="cluster nf__links">
+              <a class="btn btn--secondary" href={localeHref(l)}>
+                {t.common.goHome}
+              </a>
+              <a class="btn btn--ghost" href={localeHref(l, 'puppies')}>
+                {t.nav.puppies}
+              </a>
+            </p>
+          </div>
+        );
+      })
+    }
+  </section>
+</Base>
+<style>
+  .nf {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: center;
+    padding-block: var(--sp-5);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .nf:last-child {
+    border-bottom: 0;
+  }
+  .nf__h {
+    font-size: var(--fs-2xl);
+  }
+  .nf__links {
+    justify-content: center;
+  }
+</style>

@@ -1,0 +1,123 @@
+---
+/** Closing conversion band. tone=burgundy for contact, dark for prestige contexts. */
+import { getDictionary, type Locale } from '@/i18n';
+import { whatsappLink, telLink, type WaIntent } from '@/lib/contact';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+  eyebrow?: string;
+  title: string;
+  text?: string;
+  intent?: WaIntent;
+  waLabel?: string;
+  values?: Record<string, string>;
+  tone?: 'burgundy' | 'dark' | 'cream';
+  secondaryHref?: string;
+  secondaryLabel?: string;
+}
+const {
+  locale,
+  eyebrow,
+  title,
+  text,
+  intent = 'general',
+  waLabel,
+  values = {},
+  tone = 'burgundy',
+  secondaryHref,
+  secondaryLabel,
+} = Astro.props;
+const t = getDictionary(locale);
+---
+
+<section class:list={['cta', `cta--${tone}`, tone !== 'cream' && 'dark']}>
+  <div class="container cta__inner">
+    <div class="cta__text">
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      <h2>{title}</h2>
+      {text && <p class="lede">{text}</p>}
+    </div>
+    <div class="cta__actions">
+      <a
+        class="btn btn--lg btn--whatsapp"
+        href={whatsappLink(locale, intent, values)}
+        target="_blank"
+        rel="noopener"
+      >
+        <Icon name="whatsapp" />
+        {waLabel ?? t.cta.whatsappUs}
+      </a>
+      {
+        secondaryHref ? (
+          <a
+            class:list={['btn', 'btn--lg', 'btn--secondary', tone !== 'cream' && 'btn--on-dark']}
+            href={secondaryHref}
+          >
+            {secondaryLabel}
+          </a>
+        ) : (
+          <a
+            class:list={['btn', 'btn--lg', 'btn--secondary', tone !== 'cream' && 'btn--on-dark']}
+            href={telLink}
+          >
+            <Icon name="phone" /> {t.cta.callFull}
+          </a>
+        )
+      }
+    </div>
+  </div>
+</section>
+<style>
+  .cta {
+    padding-block: var(--section);
+  }
+  .cta--burgundy {
+    background: var(--c-burgundy-deep);
+    color: var(--c-text-on-dark);
+    --c-text: var(--c-text-on-dark);
+    --c-text-2: #e8d6d0;
+    --c-gold-text: var(--c-gold-bright);
+  }
+  .cta--burgundy .btn--whatsapp {
+    --btn-bg: var(--c-gold-bright);
+    --btn-fg: var(--c-black);
+    --btn-bd: var(--c-gold-bright);
+  }
+  .cta--burgundy .btn--whatsapp:hover {
+    --btn-bg: #ecc98a;
+    --btn-bd: #ecc98a;
+  }
+  .cta--dark {
+    background: var(--c-charcoal);
+  }
+  .cta--cream {
+    background: var(--c-cream);
+  }
+  .cta__inner {
+    display: grid;
+    gap: var(--sp-5);
+    align-items: center;
+  }
+  @media (min-width: 64rem) {
+    .cta__inner {
+      grid-template-columns: 1.4fr 1fr;
+    }
+    .cta__actions {
+      justify-content: flex-end;
+    }
+  }
+  .cta__text {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+  }
+  @media (max-width: 30rem) {
+    .cta__actions .btn {
+      width: 100%;
+    }
+  }
+</style>

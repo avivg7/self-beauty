@@ -1,0 +1,84 @@
+import { describe, expect, it } from 'vitest';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { images, videos, media } from '@/data/media';
+
+const ROOT = process.cwd();
+const manifest = JSON.parse(readFileSync(path.join(ROOT, 'scripts/media/manifest.json'), 'utf8')) as {
+  images: { id: string; set: string; src: string; format?: string }[];
+  videos: { id: string; set: string }[];
+  excluded: { src: string; reason: string }[];
+};
+
+describe('media manifest ↔ committed derivatives ↔ catalogue', () => {
+  it('every manifest image has a committed web master', () => {
+    for (const m of manifest.images) {
+      const f = path.join(ROOT, 'src/assets/media', m.set, `${m.id}.${m.format ?? 'jpg'}`);
+      expect(existsSync(f), f).toBe(true);
+    }
+  });
+  it('every catalogue image exists in the manifest and on disk', () => {
+    const ids = new Set(manifest.images.map((m) => `${m.set}/${m.id}`));
+    for (const im of images) {
+      expect(ids.has(im.id), im.id).toBe(true);
+      expect(
+        existsSync(path.join(ROOT, 'src/assets/media', `${im.id}.jpg`)) ||
+          existsSync(path.join(ROOT, 'src/assets/media', `${im.id}.png`)),
+        im.id,
+      ).toBe(true);
+    }
+  });
+  it('every catalogue video has 720/480 tiers and posters', () => {
+    for (const v of videos) {
+      const base = v.id.split('/')[1];
+      for (const suffix of ['-720.mp4', '-480.mp4', '-poster.jpg', '-poster.webp']) {
+        expect(
+          existsSync(path.join(ROOT, 'public/media/video', `${base}${suffix}`)),
+          `${base}${suffix}`,
+        ).toBe(true);
+      }
+    }
+  });
+  it('catalogue ids are unique and have all three alt texts', () => {
+    const ids = media.map((m) => m.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const m of media)
+      for (const l of ['he', 'ru', 'en'] as const) expect(m.alt[l].length, `${m.id} ${l}`).toBeGreaterThan(8);
+  });
+  it('excluded sources are never referenced', () => {
+    const srcs = new Set(manifest.images.map((m) => m.src));
+    for (const ex of manifest.excluded) expect(srcs.has(ex.src), ex.src).toBe(false);
+    expect(manifest.excluded.some((e) => e.src.includes('ChatGPT'))).toBe(true);
+  });
+  it('focal points are within bounds', () => {
+    for (const im of images) {
+      expect(im.focal.x).toBeGreaterThanOrEqual(0);
+      expect(im.focal.x).toBeLessThanOrEqual(1);
+      expect(im.focal.y).toBeGreaterThanOrEqual(0);
+      expect(im.focal.y).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('content honesty rules', () => {
+  const dir = path.join(ROOT, 'src/content/puppies');
+  const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
+  const ids = new Set(images.map((i) => i.id));
+  it('listings carry at most 3 images and reference known media', () => {
+    for (const f of files) {
+      const d = JSON.parse(readFileSync(path.join(dir, f), 'utf8'));
+      expect(d.images.length, f).toBeLessThanOrEqual(3);
+      expect(d.images.length, f).toBeGreaterThan(0);
+      for (const im of d.images) expect(ids.has(im.media), `${f} ${im.media}`).toBe(true);
+      expect(d).not.toHaveProperty('price');
+    }
+  });
+  it('demo listings are labelled as demo in every language', () => {
+    for (const f of files) {
+      const d = JSON.parse(readFileSync(path.join(dir, f), 'utf8'));
+      if (d.demo)
+        for (const l of ['he', 'ru', 'en'])
+          expect(String(d.name[l]).toLowerCase(), `${f} ${l}`).toMatch(/demo|דמו|демо/);
+    }
+  });
+});

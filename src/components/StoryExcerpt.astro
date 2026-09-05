@@ -1,0 +1,87 @@
+---
+import { getDictionary, localizedField, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import type { Testimonial } from '@/lib/listings';
+import Icon from './Icon.astro';
+interface Props {
+  story: Testimonial;
+  locale: Locale;
+  paragraphs?: number;
+}
+const { story, locale, paragraphs = 2 } = Astro.props;
+const t = getDictionary(locale);
+const text = story.data.text[locale].slice(0, paragraphs);
+const translated = story.data.sourceLang !== locale;
+const who = localizedField(story.data.attribution, locale) || t.stories.anonymous;
+---
+
+<blockquote class="story" cite={localeHref(locale, 'stories')}>
+  <span class="story__mark" aria-hidden="true">”</span>
+  {text.map((p) => <p>{p}</p>)}
+  <div class="story__foot">
+    <cite>{who}</cite>
+    {
+      translated && (
+        <span class="story__note muted">
+          {t.stories.translatedFrom.replace('{lang}', t.stories.langNames[story.data.sourceLang])}
+        </span>
+      )
+    }
+    <a class="btn btn--ghost" href={localeHref(locale, 'stories')}
+      >{t.cta.readStory} <Icon name="arrow" class="rtl-flip" /></a
+    >
+  </div>
+</blockquote>
+<style>
+  .story {
+    position: relative;
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-6) var(--sp-5);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+  @media (min-width: 48rem) {
+    .story {
+      padding: var(--sp-7) var(--sp-7);
+    }
+  }
+  .story p {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    line-height: 1.5;
+    max-width: none;
+  }
+  .story__mark {
+    position: absolute;
+    top: -0.5rem;
+    inset-inline-start: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 6rem;
+    line-height: 1;
+    color: var(--c-gold);
+    opacity: 0.6;
+  }
+  .story__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--c-border);
+  }
+  .story__foot cite {
+    font-style: normal;
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .story__note {
+    font-size: var(--fs-xs);
+  }
+  .story__foot .btn {
+    margin-inline-start: auto;
+  }
+</style>

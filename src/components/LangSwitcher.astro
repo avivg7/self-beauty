@@ -1,0 +1,169 @@
+---
+import { getDictionary, LOCALES, LOCALE_META, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+  variant?: 'menu' | 'inline';
+}
+const { locale, path, variant = 'menu' } = Astro.props;
+const t = getDictionary(locale);
+const rest = path.replace(/^\/+|\/+$/g, '');
+const uid = variant === 'inline' ? 'lang-inline' : 'lang-menu';
+---
+
+{
+  variant === 'inline' ? (
+    <ul role="list" class="lang-inline" aria-label={t.lang.label}>
+      {LOCALES.map((l) => (
+        <li>
+          <a
+            href={localeHref(l, rest)}
+            hreflang={LOCALE_META[l].hreflang}
+            lang={l}
+            dir={LOCALE_META[l].dir}
+            aria-current={l === locale ? 'true' : undefined}
+            data-lang-choice={l}
+          >
+            {LOCALE_META[l].name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div class="lang" data-lang>
+      <button
+        type="button"
+        class="lang__btn"
+        aria-haspopup="menu"
+        aria-expanded="false"
+        aria-controls={uid}
+        data-lang-btn
+      >
+        <Icon name="globe" />
+        <span class="lang__short" aria-hidden="true">
+          {LOCALE_META[locale].short}
+        </span>
+        <span class="sr-only">
+          {t.lang.switch}. {t.lang.current}: {LOCALE_META[locale].name}
+        </span>
+      </button>
+      <ul role="menu" id={uid} class="lang__menu" hidden data-lang-menu>
+        {LOCALES.map((l) => (
+          <li role="none">
+            <a
+              role="menuitem"
+              href={localeHref(l, rest)}
+              hreflang={LOCALE_META[l].hreflang}
+              lang={l}
+              dir={LOCALE_META[l].dir}
+              aria-current={l === locale ? 'true' : undefined}
+              data-lang-choice={l}
+            >
+              <span>{LOCALE_META[l].name}</span>
+              {l === locale && <Icon name="check" />}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+<style>
+  .lang {
+    position: relative;
+  }
+  .lang__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .lang__btn:hover,
+  .lang__btn[aria-expanded='true'] {
+    background: var(--c-cream);
+    border-color: var(--c-border-strong);
+  }
+  .lang__btn svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .lang__short {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+  .lang__menu {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    inset-inline-end: 0;
+    min-width: 11rem;
+    z-index: 1;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-md);
+    padding: 0.35rem;
+  }
+  .lang__menu[hidden] {
+    display: none;
+  }
+  .lang__menu a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--r-sm);
+    color: var(--c-text);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .lang__menu a:hover {
+    background: var(--c-cream);
+  }
+  .lang__menu a[aria-current='true'] {
+    color: var(--c-burgundy);
+    font-weight: 600;
+  }
+  .lang__menu a svg {
+    width: 1rem;
+    height: 1rem;
+    color: var(--c-gold-text);
+  }
+
+  .lang-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .lang-inline a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.35rem 1rem;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .lang-inline a[aria-current='true'] {
+    border-color: var(--c-burgundy);
+    color: var(--c-burgundy);
+    font-weight: 600;
+    background: var(--c-burgundy-soft);
+  }
+</style>

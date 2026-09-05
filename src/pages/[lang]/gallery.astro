@@ -1,0 +1,66 @@
+---
+import Base from '@/layouts/Base.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import GalleryGrid from '@/components/GalleryGrid.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { localePaths } from '@/lib/paths';
+import { images, videos, type MediaItem } from '@/data/media';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const years: MediaItem[] = [
+  ...images.filter((i) => i.set === 'years'),
+  ...videos.filter((v) => v.set === 'years'),
+];
+const chapters = ['puppies', 'home', 'table'] as const;
+const byChapter = chapters
+  .map((c) => ({ chapter: c, items: years.filter((m) => m.chapter === c) }))
+  .filter((c) => c.items.length);
+---
+
+<Base locale={locale} title={t.gallery.title} description={t.gallery.description} path="/gallery/">
+  <section class="section">
+    <div class="container">
+      <SectionHeading level={1} eyebrow={t.gallery.eyebrow} title={t.gallery.h1} lede={t.gallery.lede} />
+      {
+        byChapter.map(({ chapter, items }, i) => (
+          <section class:list={['chapter', i > 0 && 'chapter--next']} aria-labelledby={`ch-${chapter}`}>
+            <h2 id={`ch-${chapter}`} class="chapter__h">
+              <span class="chapter__rule" aria-hidden="true" />
+              {t.gallery.chapters[chapter]}
+            </h2>
+            <GalleryGrid items={items} locale={locale} group={`years-${chapter}`} columns={3} />
+          </section>
+        ))
+      }
+    </div>
+  </section>
+  <CtaBand
+    locale={locale}
+    title={t.shows.closingTitle}
+    text={t.shows.closingText}
+    tone="cream"
+    secondaryHref={localeHref(locale, 'puppies')}
+    secondaryLabel={t.cta.findYourPuppy}
+  />
+</Base>
+<style>
+  .chapter--next {
+    margin-top: var(--sp-8);
+  }
+  .chapter__h {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--fs-xl);
+    margin-bottom: var(--sp-4);
+  }
+  .chapter__rule {
+    width: 2rem;
+    height: 1px;
+    background: var(--c-gold);
+  }
+</style>

@@ -1,0 +1,98 @@
+---
+/**
+ * Language gateway. GitHub Pages cannot redirect server-side, so the root page:
+ *  1. meta-refreshes to Hebrew (the default) for crawlers and no-JS visitors,
+ *  2. lets JS send returning visitors to the language they explicitly chose earlier (sb:lang),
+ *  3. shows three visible links as a fallback.
+ * The canonical is the Hebrew home so this page never competes in search results.
+ */
+import { LOCALES, LOCALE_META, DEFAULT_LOCALE } from '@/i18n';
+import { absoluteUrl, href, localeHref, pagePath } from '@/lib/urls';
+const target = localeHref(DEFAULT_LOCALE);
+const base = href('/');
+---
+
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Self Beauty</title>
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={absoluteUrl(Astro.site, pagePath(DEFAULT_LOCALE))} />
+    {
+      LOCALES.map((l) => (
+        <link
+          rel="alternate"
+          hreflang={LOCALE_META[l].hreflang}
+          href={absoluteUrl(Astro.site, pagePath(l))}
+        />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={absoluteUrl(Astro.site, pagePath(DEFAULT_LOCALE))} />
+    <meta http-equiv="refresh" content={`1; url=${target}`} />
+    <script is:inline define:vars={{ base }}>
+      (function () {
+        let lang = 'he';
+        try {
+          const s = localStorage.getItem('sb:lang');
+          if (s === 'he' || s === 'ru' || s === 'en') lang = s;
+        } catch {
+          /* storage unavailable */
+        }
+        location.replace(base + lang + '/');
+      })();
+    </script>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: #f8f4ec;
+        color: #1f1b1a;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+      }
+      h1 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 700;
+        margin: 0 0 1rem;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      a {
+        display: inline-block;
+        padding: 0.75rem 1.25rem;
+        border: 1px solid #cdbfa8;
+        border-radius: 999px;
+        color: #7b1b22;
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Self Beauty</h1>
+      <p>בחרו שפה · Выберите язык · Choose a language</p>
+      <ul>
+        {
+          LOCALES.map((l) => (
+            <li>
+              <a href={localeHref(l)} hreflang={LOCALE_META[l].hreflang} lang={l} dir={LOCALE_META[l].dir}>
+                {LOCALE_META[l].name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </main>
+  </body>
+</html>

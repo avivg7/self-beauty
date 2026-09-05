@@ -1,0 +1,55 @@
+import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * E2E runs against the production build served by scripts/serve-dist.mjs, which mimics GitHub Pages
+ * (base path, trailing slashes, real 404 status) so the site is exercised exactly as deployed.
+ */
+const BASE = process.env.BASE ?? '/self-beauty';
+const PORT = 4321;
+
+export default defineConfig({
+  testDir: 'tests/e2e',
+  fullyParallel: true,
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  timeout: 30_000,
+  use: {
+    baseURL: `http://localhost:${PORT}`,
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+  },
+  webServer: {
+    command: `node scripts/serve-dist.mjs ${PORT}`,
+    url: `http://localhost:${PORT}${BASE}/he/`,
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
+  },
+  projects: [
+    {
+      name: 'mobile-360',
+      testIgnore: /(a11y|widths)\.spec\.ts/,
+      use: { ...devices['Pixel 5'], viewport: { width: 360, height: 780 } },
+    },
+    {
+      name: 'mobile-390',
+      testIgnore: /(a11y|widths)\.spec\.ts/,
+      use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium', viewport: { width: 390, height: 844 } },
+    },
+    {
+      name: 'tablet-768',
+      testIgnore: /(a11y|widths)\.spec\.ts/,
+      use: {
+        ...devices['iPad Mini'],
+        defaultBrowserType: 'chromium',
+        viewport: { width: 768, height: 1024 },
+      },
+    },
+    {
+      name: 'desktop-1440',
+      testIgnore: /(a11y|widths)\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    { name: 'a11y', testMatch: /a11y\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    { name: 'widths', testMatch: /widths\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+  ],
+});

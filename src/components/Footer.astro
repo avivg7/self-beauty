@@ -1,0 +1,211 @@
+---
+import { getDictionary, LOCALES, LOCALE_META, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { whatsappLink, telLink, phoneDisplay, facebookUrl } from '@/lib/contact';
+import { site } from '@/data/site';
+import { Image } from 'astro:assets';
+import logo from '@/assets/brand/logo-transparent.png';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  path: string;
+}
+const { locale, path } = Astro.props;
+const t = getDictionary(locale);
+const rest = path.replace(/^\/+|\/+$/g, '');
+const year = new Date().getFullYear();
+const links = [
+  ['puppies', t.nav.puppies],
+  ['litters', t.nav.litters],
+  ['grooming', t.nav.grooming],
+  ['shows', t.nav.shows],
+  ['gallery', t.nav.gallery],
+  ['about', t.nav.about],
+  ['stories', t.nav.stories],
+  ['contact', t.nav.contact],
+  ['accessibility', t.nav.accessibility],
+] as const;
+---
+
+<footer class="site-footer dark" id="footer">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <Image
+        src={logo}
+        alt={`${site.name} logo`}
+        width={160}
+        height={160}
+        densities={[1, 2]}
+        loading="lazy"
+        class="site-footer__logo"
+      />
+      <p class="site-footer__tagline">{t.footer.tagline}</p>
+      <p class="muted">{t.meta.cityCountry} · {t.meta.since}</p>
+    </div>
+
+    <nav class="site-footer__nav" aria-label={t.nav.footerNav}>
+      <h2 class="site-footer__h">{t.footer.navTitle}</h2>
+      <ul role="list">
+        {
+          links.map(([r, label]) => (
+            <li>
+              <a href={localeHref(locale, r)}>{label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div>
+      <h2 class="site-footer__h">{t.footer.contactTitle}</h2>
+      <ul role="list" class="site-footer__contact">
+        <li><a href={telLink}><Icon name="phone" /><span class="ltr">{phoneDisplay}</span></a></li>
+        <li>
+          <a href={whatsappLink(locale)} target="_blank" rel="noopener"
+            ><Icon name="whatsapp" /><span>WhatsApp</span></a>
+        </li>
+        <li>
+          <a href={facebookUrl} target="_blank" rel="noopener" aria-label={t.footer.facebookAria}
+            ><Icon name="facebook" /><span>Facebook</span></a>
+        </li>
+        <li><span class="site-footer__pin"><Icon name="pin" /><span>{t.meta.cityCountry}</span></span></li>
+      </ul>
+      {
+        site.kennelClubUrl ? (
+          <p class="site-footer__club">
+            <a href={site.kennelClubUrl} target="_blank" rel="noopener">
+              {site.kennelClubName}
+            </a>
+          </p>
+        ) : null
+      }
+    </div>
+
+    <div>
+      <h2 class="site-footer__h">{t.footer.langTitle}</h2>
+      <ul role="list" class="site-footer__langs">
+        {
+          LOCALES.map((l) => (
+            <li>
+              <a
+                href={localeHref(l, rest)}
+                hreflang={LOCALE_META[l].hreflang}
+                lang={l}
+                dir={LOCALE_META[l].dir}
+                aria-current={l === locale ? 'true' : undefined}
+                data-lang-choice={l}
+              >
+                {LOCALE_META[l].name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+  <div class="container site-footer__legal">
+    <p>{t.footer.legal.replace('{year}', String(year))}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--c-black);
+    color: var(--c-text-on-dark);
+    padding-block: var(--sp-8) var(--sp-6);
+    border-top: 1px solid var(--c-gold);
+    margin-top: auto;
+  }
+  .site-footer__grid {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  @media (min-width: 40rem) {
+    .site-footer__grid {
+      grid-template-columns: 1.4fr 1fr 1fr;
+    }
+    .site-footer__grid > :first-child {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 64rem) {
+    .site-footer__grid {
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    }
+    .site-footer__grid > :first-child {
+      grid-column: auto;
+    }
+  }
+  .site-footer__logo {
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: var(--sp-3);
+  }
+  .site-footer__tagline {
+    font-family: var(--font-display);
+    font-size: var(--fs-lg);
+    color: var(--c-gold-bright);
+    max-width: 24ch;
+  }
+  .site-footer__h {
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-gold-bright);
+    margin-bottom: var(--sp-3);
+  }
+  html[lang='he'] .site-footer__h,
+  html[lang='ru'] .site-footer__h {
+    letter-spacing: 0.04em;
+    text-transform: none;
+    font-size: var(--fs-sm);
+  }
+  .site-footer a {
+    color: var(--c-text-on-dark);
+    text-decoration: none;
+  }
+  .site-footer a:hover {
+    color: var(--c-gold-bright);
+    text-decoration: underline;
+  }
+  .site-footer__nav ul,
+  .site-footer__langs {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .site-footer__nav a,
+  .site-footer__langs a {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+  }
+  .site-footer__langs a[aria-current='true'] {
+    color: var(--c-gold-bright);
+  }
+  .site-footer__contact {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .site-footer__contact a,
+  .site-footer__pin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.5rem;
+  }
+  .site-footer__contact svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: var(--c-gold);
+  }
+  .site-footer__legal {
+    margin-top: var(--sp-6);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+    color: var(--c-text-2-on-dark);
+    font-size: var(--fs-sm);
+  }
+</style>

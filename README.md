@@ -1,0 +1,128 @@
+# Self Beauty — website
+
+Premium pedigree dog kennel and professional grooming studio in Bat Yam, Israel. Trilingual (Hebrew default,
+Russian, English), mobile-first, static, deployed to GitHub Pages. Two parts: the public website (this repo, built)
+and the owner admin (architecture gated; see below).
+
+## Stack
+
+Astro 7 · TypeScript (strictest) · plain CSS with design tokens · self-hosted fonts (Bona Nova, IBM Plex Sans,
+IBM Plex Sans Hebrew) · Astro content collections · sharp image pipeline · Vitest · Playwright + axe · ESLint · Prettier ·
+GitHub Actions → GitHub Pages.
+
+Details and reasoning: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) ·
+[docs/MEDIA.md](docs/MEDIA.md) · product spec [docs/superpowers/specs/2026-09-05-self-beauty-design.md](docs/superpowers/specs/2026-09-05-self-beauty-design.md).
+
+## Folder structure
+
+```
+.github/workflows/   ci.yml (lint, typecheck, unit, build, links, e2e) · deploy.yml (GitHub Pages)
+docs/                architecture, design system, media pipeline, spec
+images/ videos/      SOURCE VAULT — originals, git-ignored, never modified
+public/              favicons, OG image, manifest, media/video (committed MP4 tiers + posters)
+scripts/             media/ingest.mjs, media/brand.mjs, media/manifest.json, check-links.mjs
+src/
+  assets/media/      committed web masters (jpg/png) → Astro generates AVIF/WebP srcsets
+  assets/brand/      transparent logo
+  components/        Astro components (Header, Footer, Picture, GalleryGrid, Lightbox, PuppyCard, …)
+  content/           puppies/, litters/, testimonials/ (JSON, Zod-validated in content.config.ts)
+  data/              site.ts (business facts), media.ts (catalogue), video.generated.json
+  i18n/              he.ts (canonical), ru.ts, en.ts, locales.ts, index.ts
+  layouts/Base.astro head, SEO, JSON-LD, chrome
+  lib/               urls.ts, contact.ts (WhatsApp/tel), age.ts, listings.ts, paths.ts
+  pages/             index.astro (language gateway), 404.astro, robots.txt.ts, [lang]/…
+  scripts/           nav.ts, a11y.ts, lightbox.ts, filters.ts, reveal.ts (vanilla TS islands)
+  styles/            tokens.css, global.css
+tests/unit/          Vitest · tests/e2e/ Playwright
+```
+
+## Local setup
+
+Requires Node ≥ 22.12 (`.nvmrc` says 24). On a machine without it: `brew install node@24` or `nvm use`.
+
+```
+npm ci
+npm run dev            # http://localhost:4321/self-beauty/he/
+npm run build          # dist/
+npm run preview
+```
+
+Environment (all optional; see `.env.example`):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SITE` | `https://avivg7.github.io` | Absolute origin for canonical/OG/sitemap |
+| `BASE` | `/self-beauty` | Path prefix (GitHub project page). Use `/` for a custom domain. |
+| `SB_INCLUDE_DEMO` | unset | `1` includes records marked `demo: true` (dev always includes them) |
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm run verify` | lint → `astro check` → unit tests → build → link check (what CI runs) |
+| `npm run test:e2e` | Playwright on the production build at 360/390/768/1440 + axe on every page/locale + 320–1440 overflow checks. `SHOTS=1` saves full-page screenshots to `test-results/shots/`. |
+| `npm run media:ingest` | Convert new originals (HEIC/HEVC → web masters, MP4 tiers, posters). See docs/MEDIA.md. |
+| `node scripts/media/brand.mjs` | Regenerate favicons, OG image, web manifest |
+| `npm run lint` / `npm run format` | ESLint (astro + a11y rules) / Prettier |
+
+## Internationalisation
+
+Every route exists as `/he/…`, `/ru/…`, `/en/…`. Hebrew is the default and is RTL. The root `/` is a gateway that
+sends first-time visitors to Hebrew and returning visitors to the language they explicitly chose. Dictionaries are
+typed against the Hebrew one, so a missing translation fails `astro check` and the unit tests. Add copy in
+`src/i18n/he.ts` first, then mirror it in `ru.ts` and `en.ts`.
+
+## Content
+
+- **Puppies**: `src/content/puppies/*.json`. No price field exists. Max 3 images. `published: false` hides a
+  listing; `demo: true` excludes it from production builds entirely.
+- **Planned litters**: `src/content/litters/*.json`.
+- **Family stories**: `src/content/testimonials/*.json` — only real stories; translations are labelled as such.
+- **Business facts**: `src/data/site.ts`. Empty strings are TODOs, never placeholders that render.
+
+## Media pipeline
+
+Originals stay in `images/` and `videos/` (git-ignored). `npm run media:ingest` writes committed web derivatives;
+the build only ever sees JPEG/PNG/MP4. Rationale and per-file decisions in [docs/MEDIA.md](docs/MEDIA.md) and
+`scripts/media/manifest.json`.
+
+## Deployment (GitHub Pages)
+
+`deploy.yml` runs on pushes to `main`: CI gates → build with the Pages base path → `actions/deploy-pages`.
+Repository settings → Pages → Source: **GitHub Actions**. No secrets are needed.
+
+Custom domain later: add `public/CNAME`, set repository variables `SITE=https://example.co.il` and `BASE=/`,
+configure DNS. Nothing in the code changes.
+
+## Admin (owner interface)
+
+Not built yet. GitHub Pages cannot host authentication or uploads, so the admin needs an external backend.
+An architecture gate with 2–3 options (auth, database, storage, cost, security, backups) is presented before any
+integration; nothing is created or paid for without approval. Rules already fixed for the admin: max 3 images per
+listing enforced in UI **and** API, allowlisted image types (jpg/jpeg/png/heic/heif, optionally webp) validated by
+extension, MIME and magic bytes, 10 MB limit, server-side processing (orientation, metadata strip, derivatives),
+safe generated object keys, no storage credentials in the browser.
+
+## Security considerations
+
+Static site, no forms, no cookies, no third-party scripts, no analytics. Fonts are self-hosted. External links use
+`rel="noopener"`. The only outbound integrations are `tel:` and `wa.me` deep links. Secrets never live in this repo.
+
+## Testing
+
+See "Commands". CI fails on lint, type, unit, build, broken links, serious/critical axe violations, or a failing
+Playwright flow (navigation, language switch, RTL, CTAs, gallery keyboard flow, accessibility panel, overflow at
+nine widths, tap-target sizes).
+
+## Known TODOs
+
+| ID | Item |
+|---|---|
+| TODO-001 | Logo says "since 2014"; brief says established 2017. Site copy follows the brief — confirm with owner. |
+| TODO-002 | Verified kennel club / association URL (`site.kennelClubUrl`). |
+| TODO-003 | Real grooming before/after material for the grooming portfolio. |
+| TODO-004 | Confirm usage rights for the two watermarked show photos. |
+| TODO-005 | Owner display name (if she wants it shown). |
+| TODO-006 | Current Bichon litter: confirm photos, add names/birth dates through the admin when it exists. |
+| TODO-007 | Admin backend architecture gate → implementation. |
+| TODO-008 | Higher-resolution hero photo (current crop is 740×925). |

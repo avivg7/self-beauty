@@ -1,0 +1,29 @@
+{
+  "name": { "he": "גורי בישון פריזה", "ru": "Щенки бишон фризе", "en": "Bichon Frise puppies" },
+  "breed": "bichon",
+  "sex": "mixed",
+  "status": "available",
+  "description": {
+    "he": "המלטת בישון פריזה מבית Self Beauty. הגורים גדלים בבית, מטופלים ומטופחים מהיום הראשון, ונמסרים עם תעודת ייחוס רשומה. פרטים על ההורים, המין והמועד המשוער למסירה — בשיחה.",
+    "ru": "Помёт бишон фризе из питомника Self Beauty. Щенки растут дома, с первого дня под присмотром и с грумингом, передаются с зарегистрированной родословной. О родителях, поле и сроках передачи расскажем в разговоре.",
+    "en": "A Bichon Frise litter from Self Beauty. The puppies are raised at home, cared for and groomed from day one, and placed with registered pedigree papers. Details on the parents, sex and expected placement date are shared in conversation."
+  },
+  "pedigreeSummary": {
+    "he": "תעודת ייחוס רשומה. ההורים מקווי הדם של בית הגידול.",
+    "ru": "Зарегистрированная родословная. Родители из линий питомника.",
+    "en": "Registered pedigree. Parents from the kennel's own lines."
+  },
+  "showProspect": false,
+  "breedingProspect": false,
+  "images": [
+    { "media": "years/bichon-puppy-bows", "alt": { "he": "גור בישון פריזה לבן עם סרטים ורודים", "ru": "Белый щенок бишон фризе с розовыми бантиками", "en": "White Bichon Frise puppy with pink bows" } },
+    { "media": "years/bichon-puppies-pile", "alt": { "he": "גורי בישון פריזה ישנים בערימה ליד כדור", "ru": "Щенки бишон фризе спят рядом с мячиком", "en": "Bichon Frise puppies asleep in a pile beside a ball" } },
+    { "media": "years/bichon-puppy-hands", "alt": { "he": "גור בישון פריזה מוחזק בידיים", "ru": "Щенок бишон фризе на руках", "en": "Bichon Frise puppy held in two hands" } }
+  ],
+  "order": 1,
+  "featured": true,
+  "published": true,
+  "demo": false,
+  "internalNote": "Owner stated Bichon Frise puppies are currently available (Sep 2026). Photos are kennel bichon puppies from Jul–Aug 2026; confirm they show the current litter and add names/birth dates via admin — TODO-006.",
+  "updatedAt": "2026-09-05"
+}
