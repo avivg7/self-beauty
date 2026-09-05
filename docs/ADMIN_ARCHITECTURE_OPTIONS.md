@@ -1,6 +1,6 @@
 # Admin backend — architecture gate (Phase 4)
 
-Status: **awaiting approval**. Nothing external has been created. No account, key, or paid service exists.
+Status: superseded by the final design in `docs/superpowers/specs/2026-09-06-admin-supabase-design.md` (Stage 2). Nothing external has been created yet.
 
 ## The problem in one paragraph
 
