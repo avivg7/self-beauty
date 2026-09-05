@@ -21,23 +21,26 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  webServer: LIVE
-    ? undefined
-    : [
-        {
-          command: `node scripts/serve-dist.mjs ${PORT}`,
-          url: `http://localhost:${PORT}${BASE}/he/`,
-          reuseExistingServer: !process.env.CI,
-          timeout: 60_000,
-        },
-        {
-          // Demo build (SB_INCLUDE_DEMO=1 → .demo-dist/ci): long status strings, ten-card grids and filters in CI
-          command: `DIST=.demo-dist/ci node scripts/serve-dist.mjs ${DEMO_PORT}`,
-          url: `http://localhost:${DEMO_PORT}${BASE}/he/puppies/`,
-          reuseExistingServer: !process.env.CI,
-          timeout: 60_000,
-        },
-      ],
+  // Live mode (E2E_BASE_URL) runs without local servers; the key must be absent, not undefined (exactOptionalPropertyTypes)
+  ...(LIVE
+    ? {}
+    : {
+        webServer: [
+          {
+            command: `node scripts/serve-dist.mjs ${PORT}`,
+            url: `http://localhost:${PORT}${BASE}/he/`,
+            reuseExistingServer: !process.env.CI,
+            timeout: 60_000,
+          },
+          {
+            // Demo build (SB_INCLUDE_DEMO=1 → .demo-dist/ci): long status strings, ten-card grids and filters in CI
+            command: `DIST=.demo-dist/ci node scripts/serve-dist.mjs ${DEMO_PORT}`,
+            url: `http://localhost:${DEMO_PORT}${BASE}/he/puppies/`,
+            reuseExistingServer: !process.env.CI,
+            timeout: 60_000,
+          },
+        ],
+      }),
   projects: [
     {
       name: 'mobile-360',
