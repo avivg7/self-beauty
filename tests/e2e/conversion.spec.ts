@@ -24,7 +24,7 @@ test.describe('conversion paths', () => {
     await page.goto(u('/he/'));
     await page.locator('main a[href$="/he/puppies/"]').first().click();
     await expect(page).toHaveURL(/\/he\/puppies\/$/);
-    await page.locator('article h3 a').first().click();
+    await page.locator('article .pcard__title a').first().click();
     await expect(page).toHaveURL(/\/he\/puppies\/[\w-]+\/$/);
     const cta = page.locator('main a[href^="https://wa.me"]').first();
     await expect(cta).toContainText('דברו איתנו על הגור');
