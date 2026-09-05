@@ -1,0 +1,29 @@
+{
+  "name": {
+    "he": "דמו — בישון (זכר)",
+    "ru": "ДЕМО — бишон (мальчик)",
+    "en": "DEMO — Bichon (male)"
+  },
+  "breed": "bichon",
+  "sex": "male",
+  "status": "coming-soon",
+  "images": [
+    {
+      "media": "years/bichon-puppies-pen",
+      "alt": {
+        "he": "דמו",
+        "ru": "Демо",
+        "en": "Demo"
+      }
+    }
+  ],
+  "order": 93,
+  "description": {
+    "he": "רשומת דמו לבדיקת עיצוב בלבד.",
+    "ru": "Демо-запись только для проверки дизайна.",
+    "en": "Demo record for design testing only."
+  },
+  "published": true,
+  "demo": true,
+  "updatedAt": "2026-09-05"
+}

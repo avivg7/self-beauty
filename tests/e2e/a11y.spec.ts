@@ -25,6 +25,20 @@ for (const l of LOCALES) {
   }
 }
 
+test('axe: first puppy detail page (derived from the listing, skipped when none)', async ({ page }) => {
+  await page.goto(u('/he/puppies/'));
+  const link = page.locator('article .pcard__title a').first();
+  test.skip((await link.count()) === 0, 'no published listings');
+  await link.click();
+  await page.evaluate(() =>
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-visible')),
+  );
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+    .analyze();
+  expect(results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
+});
+
 test('accessibility panel changes text size and contrast and persists', async ({ page }) => {
   await page.goto(u('/he/'));
   await page.locator('[data-a11y-open]').first().click();

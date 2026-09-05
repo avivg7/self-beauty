@@ -53,6 +53,7 @@ const sizes = featured
     </span>
   </a>
   <div class="card__body pcard__body">
+    <p class="sr-only">{t.puppies.card.status}: {t.status[d.status]}</p>
     <p class="pcard__breed">{breed}</p>
     <Heading class="pcard__title" id={titleId}><a href={url}>{name}</a></Heading>
     <dl class="pcard__facts">
@@ -133,6 +134,7 @@ const sizes = featured
     pointer-events: none;
   }
   .pcard__chips :global(.chip) {
+    align-self: flex-start;
     background: rgb(255 253 249 / 94%);
     border-color: rgb(31 27 26 / 8%);
     box-shadow: var(--shadow-sm);
@@ -223,7 +225,7 @@ const sizes = featured
     padding-top: 0.5rem;
   }
   .pcard__actions :global(.btn--whatsapp) {
-    flex: 1 1 13rem;
+    flex: 1 1 11rem;
   }
 
   /* Featured (single listing): editorial two-column card */

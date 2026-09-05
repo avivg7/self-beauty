@@ -404,7 +404,6 @@ html[lang='ru'] .eyebrow {
   display: inline-flex;
   width: fit-content;
   height: auto;
-  align-self: flex-start;
   white-space: nowrap;
   align-items: center;
   gap: 0.4rem;

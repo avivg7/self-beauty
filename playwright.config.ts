@@ -6,6 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const BASE = process.env.BASE ?? '/self-beauty';
 const PORT = 4321;
+const DEMO_PORT = 4322;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -18,26 +19,35 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  webServer: {
-    command: `node scripts/serve-dist.mjs ${PORT}`,
-    url: `http://localhost:${PORT}${BASE}/he/`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: `node scripts/serve-dist.mjs ${PORT}`,
+      url: `http://localhost:${PORT}${BASE}/he/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+    {
+      // Demo build (SB_INCLUDE_DEMO=1 → .demo-dist/ci): long status strings, ten-card grids and filters in CI
+      command: `DIST=.demo-dist/ci node scripts/serve-dist.mjs ${DEMO_PORT}`,
+      url: `http://localhost:${DEMO_PORT}${BASE}/he/puppies/`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
+  ],
   projects: [
     {
       name: 'mobile-360',
-      testIgnore: /(a11y|widths)\.spec\.ts/,
+      testIgnore: /(a11y|widths|demo)\.spec\.ts/,
       use: { ...devices['Pixel 5'], viewport: { width: 360, height: 780 } },
     },
     {
       name: 'mobile-390',
-      testIgnore: /(a11y|widths)\.spec\.ts/,
+      testIgnore: /(a11y|widths|demo)\.spec\.ts/,
       use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium', viewport: { width: 390, height: 844 } },
     },
     {
       name: 'tablet-768',
-      testIgnore: /(a11y|widths)\.spec\.ts/,
+      testIgnore: /(a11y|widths|demo)\.spec\.ts/,
       use: {
         ...devices['iPad Mini'],
         defaultBrowserType: 'chromium',
@@ -46,10 +56,15 @@ export default defineConfig({
     },
     {
       name: 'desktop-1440',
-      testIgnore: /(a11y|widths)\.spec\.ts/,
+      testIgnore: /(a11y|widths|demo)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     { name: 'a11y', testMatch: /a11y\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
     { name: 'widths', testMatch: /widths\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'demo-listings',
+      testMatch: /demo\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${DEMO_PORT}` },
+    },
   ],
 });

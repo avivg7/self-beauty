@@ -1,0 +1,30 @@
+{
+  "name": {
+    "he": "דמו — פודל (זכר)",
+    "ru": "ДЕМО — пудель (мальчик)",
+    "en": "DEMO — Poodle (male)"
+  },
+  "breed": "poodle",
+  "sex": "male",
+  "birthDate": "2026-04-12",
+  "status": "reserved",
+  "images": [
+    {
+      "media": "years/poodle-white-venue",
+      "alt": {
+        "he": "דמו",
+        "ru": "Демо",
+        "en": "Demo"
+      }
+    }
+  ],
+  "order": 92,
+  "description": {
+    "he": "רשומת דמו לבדיקת עיצוב בלבד.",
+    "ru": "Демо-запись только для проверки дизайна.",
+    "en": "Demo record for design testing only."
+  },
+  "published": true,
+  "demo": true,
+  "updatedAt": "2026-09-05"
+}

@@ -2,7 +2,7 @@
 /**
  * Manual-review screenshots (not part of CI). Produces artifacts/review/*.png:
  *  1. production build: required pages/locales/widths, plus open menu / lightbox / a11y panel / language menu
- *  2. demo builds with SB_LISTING_LIMIT=1,2,3,6: puppies page layouts and every status chip variant
+ *  2. demo builds with SB_LISTING_LIMIT=1,2,3,6,10: puppies page layouts and every status chip variant
  * Usage: node scripts/review-shots.mjs [--skip-demo]
  */
 import { spawn } from 'node:child_process';
@@ -41,6 +41,18 @@ function serve(dist, port) {
   return { stop: () => p.kill() };
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function waitFor(url, tries = 50) {
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) return;
+    } catch {
+      /* not up yet */
+    }
+    await sleep(100);
+  }
+  throw new Error(`server not ready: ${url}`);
+}
 
 async function shot(page, url, file, { width, height = width < 700 ? 800 : 900, full = true, before } = {}) {
   await page.setViewportSize({ width, height });
@@ -78,13 +90,21 @@ const page = await browser.newPage();
 // ---------- 1. production build ----------
 if (!ONLY_DEMO) {
   const srv = serve(path.join(ROOT, 'dist'), 4610);
-  await sleep(800);
   const u = (p) => `http://localhost:4610${BASE}${p}`;
+  await waitFor(u('/he/'));
+  // First published listing (if any) — never a hard-coded id
+  await page.goto(u('/he/puppies/'));
+  const detailHref = await page
+    .locator('article .pcard__title a')
+    .first()
+    .getAttribute('href')
+    .catch(() => null);
+  const detail = detailHref ? `http://localhost:4610${detailHref}` : null;
   await shot(page, u('/he/'), 'he-home-desktop.png', { width: 1440 });
   await shot(page, u('/he/'), 'he-home-mobile.png', { width: 390 });
   await shot(page, u('/he/puppies/'), 'he-puppies-desktop.png', { width: 1440 });
   await shot(page, u('/he/puppies/'), 'he-puppies-mobile.png', { width: 390 });
-  await shot(page, u('/he/puppies/bichon-frise-2026/'), 'he-puppy-detail-mobile.png', { width: 390 });
+  if (detail) await shot(page, detail, 'he-puppy-detail-mobile.png', { width: 390 });
   await shot(page, u('/ru/'), 'ru-home-mobile.png', { width: 390 });
   await shot(page, u('/ru/puppies/'), 'ru-puppies-mobile.png', { width: 390 });
   await shot(page, u('/en/'), 'en-home-mobile.png', { width: 390 });
@@ -122,10 +142,7 @@ if (!ONLY_DEMO) {
       await sleep(200);
     },
   });
-  await shot(page, u('/he/puppies/bichon-frise-2026/'), 'he-puppy-detail-top-desktop.png', {
-    width: 1440,
-    full: false,
-  });
+  if (detail) await shot(page, detail, 'he-puppy-detail-top-desktop.png', { width: 1440, full: false });
   await shot(page, u('/he/contact/'), 'he-contact-mobile.png', { width: 390 });
   await shot(page, u('/he/puppies/'), 'he-puppies-320.png', { width: 320 });
   await shot(page, u('/he/puppies/'), 'he-puppies-768.png', { width: 768 });
@@ -134,7 +151,7 @@ if (!ONLY_DEMO) {
 
 // ---------- 2. demo builds: listing counts and status variants ----------
 if (!SKIP_DEMO) {
-  for (const limit of [1, 2, 3, 6]) {
+  for (const limit of [1, 2, 3, 6, 10]) {
     const dist = path.join(ROOT, `.demo-dist/limit-${limit}`);
     await rm(dist, { recursive: true, force: true });
     console.log(`[build] demo, SB_LISTING_LIMIT=${limit}`);
@@ -143,11 +160,15 @@ if (!SKIP_DEMO) {
       SB_LISTING_LIMIT: String(limit),
     });
     const srv = serve(dist, 4611);
-    await sleep(800);
     const u = (p) => `http://localhost:4611${BASE}${p}`;
+    await waitFor(u('/he/puppies/'));
     for (const l of ['he', 'ru', 'en']) {
       await shot(page, u(`/${l}/puppies/`), `demo-${limit}-${l}-puppies-1440.png`, { width: 1440 });
       await shot(page, u(`/${l}/puppies/`), `demo-${limit}-${l}-puppies-390.png`, { width: 390 });
+    }
+    if (limit === 10) {
+      await shot(page, u('/he/puppies/'), 'demo-10-he-puppies-768.png', { width: 768 });
+      await shot(page, u('/en/puppies/'), 'demo-10-en-puppies-1440.png', { width: 1440 });
     }
     if (limit === 6) {
       await shot(page, u('/he/puppies/'), 'demo-6-he-puppies-360.png', { width: 360 });

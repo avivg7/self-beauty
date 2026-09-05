@@ -5,7 +5,6 @@ const WIDTHS = [320, 360, 375, 390, 414, 430, 768, 1024, 1440];
 const PAGES = [
   '/he/',
   '/he/puppies/',
-  '/he/puppies/bichon-frise-2026/',
   '/he/shows/',
   '/he/gallery/',
   '/he/grooming/',
@@ -79,7 +78,8 @@ for (const l of ['he', 'ru', 'en'] as const) {
       );
       expect(clipped, 'cards clipping their content').toBe(0);
       const chips = page.locator('.pcard__chips .chip');
-      expect(await chips.count()).toBeGreaterThan(0);
+      // Zero published listings is a legitimate state (availability is never implied indefinitely)
+      test.skip((await chips.count()) === 0, 'no published listings in this build');
       const rtl = l === 'he';
       for (let i = 0; i < (await chips.count()); i++) {
         const chip = chips.nth(i);

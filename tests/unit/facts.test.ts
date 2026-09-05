@@ -46,7 +46,8 @@ describe('establishment year is 2014 everywhere', () => {
     ];
     for (const f of files) {
       const txt = readFileSync(path.join(ROOT, f), 'utf8');
-      expect(txt, f).not.toMatch(/(established|founded|since|operating since)\s+(in\s+)?2017/i);
+      // Strict: no 2015/2017 anywhere in docs (the business history only uses 2014 and 2016)
+      expect(txt, f).not.toMatch(/\\b(2015|2017)\\b/);
     }
   });
 });

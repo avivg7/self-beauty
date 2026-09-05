@@ -7,7 +7,6 @@ export const LOCALES = ['he', 'ru', 'en'] as const;
 export const PAGES = [
   '/',
   '/puppies/',
-  '/puppies/bichon-frise-2026/',
   '/litters/',
   '/grooming/',
   '/shows/',

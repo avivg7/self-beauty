@@ -67,4 +67,10 @@ const mode = count === 1 ? '1' : count === 2 ? '2' : 'n';
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
+  /* When a client-side filter leaves one or two cards, centre them like the 1/2 layouts */
+  .pgrid--n[data-visible='1'],
+  .pgrid--n[data-visible='2'] {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 24rem));
+    justify-content: center;
+  }
 </style>

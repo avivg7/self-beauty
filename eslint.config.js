@@ -14,6 +14,8 @@ export default defineConfig([
       'public/**',
       'playwright-report/**',
       'test-results/**',
+      '.demo-dist/**',
+      'artifacts/**',
     ],
   },
   js.configs.recommended,

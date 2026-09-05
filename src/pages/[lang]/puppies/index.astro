@@ -96,6 +96,7 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
         li.hidden = !show;
         if (show) n++;
       });
+      list.dataset.visible = String(n);
       if (count) count.textContent = tplMany.replace('{count}', String(n));
       if (none) none.hidden = n > 0;
     };

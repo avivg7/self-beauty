@@ -2,7 +2,7 @@
   "name": "self-beauty",
   "version": "0.1.0",
   "private": true,
-  "description": "Self Beauty — pedigree dog kennel and professional grooming, Bat Yam. Public website and owner admin.",
+  "description": "Self Beauty \u2014 pedigree dog kennel and professional grooming, Bat Yam. Public website and owner admin.",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
@@ -18,11 +18,12 @@
     "format:check": "prettier --check .",
     "test": "npm run test:unit",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run build:demo --silent && playwright test",
     "test:a11y": "playwright test --project=a11y",
     "links": "node scripts/check-links.mjs",
     "media:ingest": "node scripts/media/ingest.mjs",
-    "verify": "npm run lint && npm run check && npm run test:unit && npm run build && npm run links"
+    "verify": "npm run lint && npm run check && npm run test:unit && npm run build && npm run links",
+    "build:demo": "SB_INCLUDE_DEMO=1 astro build --outDir .demo-dist/ci"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

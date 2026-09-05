@@ -48,6 +48,14 @@ test.describe('conversion paths', () => {
     expect(decodeURIComponent((await wa.getAttribute('href'))!)).toContain('planned litters');
   });
 
+  test('production build contains no demo listings', async ({ page }) => {
+    for (const l of ['he', 'ru', 'en']) {
+      await page.goto(u(`/${l}/puppies/`));
+      await expect(page.locator('.chip--demo')).toHaveCount(0);
+      await expect(page.locator('main')).not.toContainText(/DEMO|דמו —|ДЕМО/);
+    }
+  });
+
   test('no e-commerce vocabulary anywhere on the puppies page', async ({ page }) => {
     await page.goto(u('/en/puppies/'));
     await expect(page.locator('main')).not.toContainText(/add to cart|buy now|checkout|sale/i);

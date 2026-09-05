@@ -73,12 +73,13 @@ describe('content honesty rules', () => {
       expect(d).not.toHaveProperty('price');
     }
   });
-  it('demo listings are labelled as demo in every language', () => {
+  it('demo fixtures are demo:true, named DEMO, and nothing else looks like a demo', () => {
     for (const f of files) {
       const d = JSON.parse(readFileSync(path.join(dir, f), 'utf8'));
-      if (d.demo)
-        for (const l of ['he', 'ru', 'en'])
-          expect(String(d.name[l]).toLowerCase(), `${f} ${l}`).toMatch(/demo|דמו|демо/);
+      const looksDemo = ['he', 'ru', 'en'].some((l) => /demo|דמו|демо/i.test(String(d.name[l])));
+      // filename ⇔ flag ⇔ visible label: a fixture can never silently become a real listing
+      expect(d.demo === true, `${f}: demo- filename must carry demo:true`).toBe(f.startsWith('demo-'));
+      expect(looksDemo, `${f}: DEMO label must match demo flag`).toBe(d.demo === true);
     }
   });
 });

@@ -5,3 +5,5 @@ node_modules
 public/media
 src/assets
 package-lock.json
+.demo-dist
+artifacts
