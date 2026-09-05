@@ -17,18 +17,18 @@ Date: 2026-09-05 (hardening pass) · Build: local `main` (pre-push) · Base path
 
 ## Lighthouse (production build served with gzip, Chrome headless, after the Arial switch)
 
-| Page | Form factor | Perf | A11y | Best practices | SEO | LCP | CLS |
-|---|---|---|---|---|---|---|---|
-| /he/ | mobile | 100 | 100 | 100 | 100 | 1.6 s | 0 |
-| /he/ | desktop | 100 | 100 | 100 | 100 | 0.4 s | 0 |
-| /he/puppies/ | mobile | 100 | 100 | 100 | 100 | 1.5 s | 0 |
-| /he/puppies/ | desktop | 100 | 100 | 100 | 100 | 0.4 s | 0 |
-| /he/puppies/bichon-frise-2026/ | mobile | 100 | 100 | 100 | 100 | 1.6 s | 0 |
-| /he/shows/ | mobile | 98 | 100 | 100 | 100 | 2.5 s | 0 |
-| /he/shows/ | desktop | 100 | 100 | 100 | 100 | 0.5 s | 0 |
-| /he/gallery/ | mobile | 100 | 100 | 100 | 100 | 1.6 s | 0 |
-| /ru/grooming/ | mobile | 100 | 100 | 100 | 100 | 1.7 s | 0 |
-| /en/contact/ | mobile | 100 | 100 | 100 | 100 | 1.3 s | 0 |
+| Page                           | Form factor | Perf | A11y | Best practices | SEO | LCP   | CLS |
+| ------------------------------ | ----------- | ---- | ---- | -------------- | --- | ----- | --- |
+| /he/                           | mobile      | 100  | 100  | 100            | 100 | 1.6 s | 0   |
+| /he/                           | desktop     | 100  | 100  | 100            | 100 | 0.4 s | 0   |
+| /he/puppies/                   | mobile      | 100  | 100  | 100            | 100 | 1.5 s | 0   |
+| /he/puppies/                   | desktop     | 100  | 100  | 100            | 100 | 0.4 s | 0   |
+| /he/puppies/bichon-frise-2026/ | mobile      | 100  | 100  | 100            | 100 | 1.6 s | 0   |
+| /he/shows/                     | mobile      | 98   | 100  | 100            | 100 | 2.5 s | 0   |
+| /he/shows/                     | desktop     | 100  | 100  | 100            | 100 | 0.5 s | 0   |
+| /he/gallery/                   | mobile      | 100  | 100  | 100            | 100 | 1.6 s | 0   |
+| /ru/grooming/                  | mobile      | 100  | 100  | 100            | 100 | 1.7 s | 0   |
+| /en/contact/                   | mobile      | 100  | 100  | 100            | 100 | 1.3 s | 0   |
 
 Mobile numbers use Lighthouse's simulated slow-4G throttling. Removing web fonts cut ~150–230 KB per page and
 brought mobile LCP from 2.6–3.7 s down to 1.3–2.5 s. Nothing was tuned for the test.
@@ -38,6 +38,7 @@ brought mobile LCP from 2.6–3.7 s down to 1.3–2.5 s. Nothing was tuned for t
 - Hebrew RTL, Russian and English reviewed at 390 px and 1440 px on home, puppies, puppy detail, shows,
   gallery, grooming, about, stories, contact, litters, accessibility.
 - Keyboard: skip link → main; header controls; menu sheet focus trap + Escape; lightbox arrows (mirrored in RTL), Home/End, Escape returns focus.
+- Independent reviewer pass (2026-09-05): five findings fixed — local lint ignores for demo builds, tests no longer assume a listing exists, demo-fixture guard made bidirectional, screen-reader status text on cards, filter-aware grid centring.
 - Hardening pass (2026-09-05): status chip rebuilt as a content-sized corner pill and verified in he/ru/en for available / reserved / coming soon / planned litter / placed; listing layouts reviewed with 1, 2, 3 and 6 demo listings at 320–1440 px; English card labels no longer clip; accessibility dialog centred.
 - Fixed during the first review: oversized inline icons (scoped-style/child-component mismatch), phone numbers wrapping at
   hyphens, ragged gallery masonry, single puppy card in a 3-column grid, lone 40 px header CTA, 1024 px icon-button shrink,
