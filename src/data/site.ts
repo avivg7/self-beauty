@@ -1,10 +1,12 @@
 /**
- * Business facts. Everything here was supplied by the owner or verified; nothing is invented.
+ * Business facts. Self Beauty was established in 2014 (matches the logo); the owner's professional canine
+ * education year is 2016 — keep the two distinct.
+ * Everything here was supplied by the owner or verified; nothing is invented.
  * Empty strings are deliberate TODOs and render as nothing (never as a fake link).
  */
 export const site = {
   name: 'Self Beauty',
-  established: 2017,
+  established: 2014,
   ownerEducationYear: 2016,
   city: { he: 'בת ים', ru: 'Бат-Ям', en: 'Bat Yam' },
   country: { he: 'ישראל', ru: 'Израиль', en: 'Israel' },

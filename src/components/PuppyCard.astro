@@ -1,5 +1,10 @@
 ---
-import { getDictionary, localizedField, type Locale } from '@/i18n';
+/**
+ * Puppy listing card. `variant="grid"` is the compact card used in grids; `variant="featured"` is the
+ * editorial two-column layout used when a page shows a single listing, so one puppy never sits alone in
+ * a third of the page.
+ */
+import { getDictionary, localizedField, formatters, type Locale } from '@/i18n';
 import { localeHref } from '@/lib/urls';
 import { whatsappLink } from '@/lib/contact';
 import { ageLabel } from '@/lib/age';
@@ -14,8 +19,9 @@ interface Props {
   eager?: boolean;
   /** Heading level of the card title: 2 on listing pages (under the page h1), 3 inside home sections */
   headingLevel?: 2 | 3;
+  variant?: 'grid' | 'featured';
 }
-const { puppy, locale, eager = false, headingLevel = 3 } = Astro.props;
+const { puppy, locale, eager = false, headingLevel = 3, variant = 'grid' } = Astro.props;
 const Heading = headingLevel === 2 ? 'h2' : 'h3';
 const t = getDictionary(locale);
 const d = puppy.data;
@@ -25,16 +31,20 @@ const cover = d.images[0]!;
 const url = localeHref(locale, `puppies/${puppy.id}`);
 const age = d.birthDate ? ageLabel(locale, d.birthDate) : '';
 const titleId = `puppy-${puppy.id}-title`;
+const featured = variant === 'featured';
+const sizes = featured
+  ? '(min-width: 64rem) 480px, (min-width: 48rem) 45vw, 100vw'
+  : '(min-width: 64rem) 380px, (min-width: 40rem) 50vw, 100vw';
 ---
 
-<article class="card pcard" aria-labelledby={titleId}>
+<article class:list={['card', 'pcard', featured && 'pcard--featured']} aria-labelledby={titleId}>
   <a class="pcard__media card__media ratio ratio--4x5" href={url} tabindex="-1" aria-hidden="true">
     <Picture
       id={cover.media}
       locale={locale}
       alt=""
-      sizes="(min-width: 64rem) 360px, (min-width: 40rem) 50vw, 100vw"
-      widths={[420, 640, 900]}
+      sizes={sizes}
+      widths={featured ? [420, 640, 900, 1200] : [420, 640, 900]}
       loading={eager ? 'eager' : 'lazy'}
     />
     <span class="pcard__chips">
@@ -49,45 +59,50 @@ const titleId = `puppy-${puppy.id}-title`;
       {
         d.sex !== 'mixed' && (
           <div>
-            <>
-              <dt>{t.puppies.card.sex}</dt>
-              <dd>{t.sex[d.sex]}</dd>
-            </>
+            <dt>{t.puppies.card.sex}</dt>
+            <dd>{t.sex[d.sex]}</dd>
           </div>
         )
       }
       {
         age && (
           <div>
-            <>
-              <dt>{t.puppies.card.age}</dt>
-              <dd>{age}</dd>
-            </>
+            <dt>{t.puppies.card.age}</dt>
+            <dd>{age}</dd>
           </div>
         )
       }
       {
         d.showProspect && (
           <div class="pcard__flag">
-            <>
-              <dt class="sr-only">{t.puppies.card.showProspect}</dt>
-              <dd>
-                <Icon name="rosette" /> {t.puppies.card.showProspect}
-              </dd>
-            </>
+            <dt class="sr-only">{t.puppies.card.showProspect}</dt>
+            <dd>
+              <Icon name="rosette" /> {t.puppies.card.showProspect}
+            </dd>
           </div>
         )
       }
     </dl>
-    <p class="pcard__desc">{localizedField(d.description, locale)}</p>
+    <p class:list={['pcard__desc', !featured && 'pcard__desc--clamp']}>
+      {localizedField(d.description, locale)}
+    </p>
+    <p class="pcard__updated muted">
+      {t.puppies.card.updated}: <time datetime={d.updatedAt}>{formatters.date(locale, d.updatedAt)}</time>
+    </p>
     <div class="pcard__actions">
       <a
         class="btn btn--whatsapp"
         href={whatsappLink(locale, 'puppy', { name, breed })}
         target="_blank"
-        rel="noopener"><Icon name="whatsapp" /> {t.cta.talkAboutPuppy}</a
+        rel="noopener"
       >
-      <a class="btn btn--ghost" href={url}>{t.cta.details} <Icon name="arrow" class="rtl-flip" /></a>
+        <Icon name="whatsapp" />
+        {t.cta.talkAboutPuppy}
+      </a>
+      <a class="btn btn--ghost" href={url}>
+        {t.cta.details}
+        <Icon name="arrow" class="rtl-flip" />
+      </a>
     </div>
   </div>
 </article>
@@ -96,38 +111,58 @@ const titleId = `puppy-${puppy.id}-title`;
   .pcard {
     display: flex;
     flex-direction: column;
+    min-width: 0;
   }
   .pcard__media {
     display: block;
   }
-  .pcard__media :global(img) {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  /* Status chips: small, content-sized, pinned to the top inline-start corner (top-right in Hebrew) */
   .pcard__chips {
     position: absolute;
     top: 0.75rem;
     inset-inline-start: 0.75rem;
+    inset-inline-end: auto;
+    bottom: auto;
+    width: auto;
+    height: auto;
     display: flex;
-    gap: 0.4rem;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    max-width: calc(100% - 1.5rem);
     z-index: 1;
+    pointer-events: none;
+  }
+  .pcard__chips :global(.chip) {
+    background: rgb(255 253 249 / 94%);
+    border-color: rgb(31 27 26 / 8%);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
   .pcard__body {
     display: grid;
     gap: 0.6rem;
     flex: 1;
     align-content: start;
+    min-width: 0;
+  }
+  .pcard__body > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* Long localized labels (English, Russian) wrap inside cards instead of forcing overflow */
+  .pcard :global(.btn) {
+    white-space: normal;
+    text-align: center;
   }
   .pcard__breed {
     font-size: var(--fs-sm);
-    font-weight: 600;
+    font-weight: 700;
     color: var(--c-gold-text);
   }
   .pcard__title {
     font-size: var(--fs-xl);
+    overflow-wrap: anywhere;
   }
   .pcard__title a {
     color: inherit;
@@ -153,7 +188,7 @@ const titleId = `puppy-${puppy.id}-title`;
     content: ':';
   }
   .pcard__facts dd {
-    font-weight: 500;
+    font-weight: 700;
   }
   .pcard__flag dd {
     display: inline-flex;
@@ -168,22 +203,62 @@ const titleId = `puppy-${puppy.id}-title`;
   .pcard__desc {
     color: var(--c-text-2);
     font-size: var(--fs-sm);
+  }
+  .pcard__desc--clamp {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .pcard__updated {
+    font-size: var(--fs-xs);
+  }
   .pcard__actions {
-    display: grid;
-    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    justify-content: space-between;
     margin-top: auto;
     padding-top: 0.5rem;
   }
-  @media (min-width: 26rem) {
-    .pcard__actions {
-      grid-template-columns: auto auto;
-      justify-content: space-between;
-      align-items: center;
+  .pcard__actions :global(.btn--whatsapp) {
+    flex: 1 1 13rem;
+  }
+
+  /* Featured (single listing): editorial two-column card */
+  .pcard--featured {
+    max-width: 68rem;
+    margin-inline: auto;
+  }
+  @media (min-width: 48rem) {
+    .pcard--featured {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      align-items: stretch;
+    }
+    .pcard--featured .pcard__media {
+      height: 100%;
+      aspect-ratio: auto;
+      min-height: 26rem;
+    }
+    .pcard--featured .pcard__body {
+      padding: var(--sp-6);
+      gap: 0.8rem;
+      align-content: center;
+    }
+    .pcard--featured .pcard__title {
+      font-size: var(--fs-2xl);
+    }
+    .pcard--featured .pcard__desc {
+      font-size: var(--fs-base);
+    }
+    .pcard--featured .pcard__actions {
+      justify-content: start;
+      gap: var(--sp-3);
+    }
+    .pcard--featured .pcard__actions :global(.btn--whatsapp) {
+      flex: 0 1 auto;
     }
   }
 </style>

@@ -1,0 +1,70 @@
+---
+/**
+ * Count-aware listing layout so the page looks intentional with 1, 2, 3 or many puppies:
+ *  1 → one editorial featured card (two columns on tablet+)
+ *  2 → two cards centred with a comfortable max width
+ *  3+ → responsive grid (3 columns on desktop, 2 on tablet, 1 on phones)
+ */
+import PuppyCard from './PuppyCard.astro';
+import type { Puppy } from '@/lib/listings';
+import type { Locale } from '@/i18n';
+
+interface Props {
+  puppies: Puppy[];
+  locale: Locale;
+  headingLevel?: 2 | 3;
+  /** Number of leading cards whose cover image loads eagerly */
+  eager?: number;
+  reveal?: boolean;
+  listAttrs?: Record<string, string>;
+}
+const { puppies, locale, headingLevel = 3, eager = 1, reveal = false, listAttrs = {} } = Astro.props;
+const count = puppies.length;
+const mode = count === 1 ? '1' : count === 2 ? '2' : 'n';
+---
+
+<ul role="list" class:list={['pgrid', `pgrid--${mode}`]} data-count={count} {...listAttrs}>
+  {
+    puppies.map((p, i) => (
+      <li
+        class:list={[reveal && 'reveal']}
+        data-delay={reveal ? String(i) : undefined}
+        data-breed={p.data.breed}
+      >
+        <PuppyCard
+          puppy={p}
+          locale={locale}
+          eager={i < eager}
+          headingLevel={headingLevel}
+          variant={mode === '1' ? 'featured' : 'grid'}
+        />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .pgrid {
+    display: grid;
+    gap: var(--sp-5);
+  }
+  .pgrid > li {
+    min-width: 0;
+    display: grid;
+  }
+  .pgrid--1 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pgrid--2 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 24rem));
+    justify-content: center;
+  }
+  .pgrid--n {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+  @media (min-width: 64rem) {
+    .pgrid--n {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

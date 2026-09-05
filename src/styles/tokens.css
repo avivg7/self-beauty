@@ -41,10 +41,8 @@
   --c-whatsapp: #176d47; /* 5.3:1 with white text */
   --c-whatsapp-hover: #115535;
 
-  /* Type */
-  --font-display: 'Bona Nova', 'Frank Ruhl Libre', 'Times New Roman', Georgia, serif;
-  --font-body: 'IBM Plex Sans Variable', 'IBM Plex Sans Hebrew', 'Segoe UI', Arial, sans-serif;
-  --font-body-he: 'IBM Plex Sans Hebrew', 'IBM Plex Sans Variable', 'Segoe UI', Arial, sans-serif;
+  /* Type — Arial everywhere (client decision); the logo image carries the brand's ornate lettering */
+  --font-sans: Arial, Helvetica, sans-serif;
 
   --fs-xs: 0.8125rem;
   --fs-sm: 0.9rem;
@@ -54,7 +52,7 @@
   --fs-xl: clamp(1.35rem, 1.2rem + 0.8vw, 1.75rem);
   --fs-2xl: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
   --fs-3xl: clamp(2.125rem, 1.6rem + 2.6vw, 3.5rem);
-  --fs-hero: clamp(2.25rem, 1.5rem + 3.6vw, 4.5rem);
+  --fs-hero: clamp(2.1rem, 1.4rem + 3.3vw, 4.1rem);
 
   --lh-tight: 1.1;
   --lh-snug: 1.25;

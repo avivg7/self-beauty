@@ -7,7 +7,7 @@ export const en: Dictionary = {
     city: 'Bat Yam',
     country: 'Israel',
     cityCountry: 'Bat Yam, Israel',
-    since: 'since 2017',
+    since: 'since 2014',
   },
   nav: {
     home: 'Home',
@@ -90,7 +90,7 @@ export const en: Dictionary = {
     aboutEyebrow: 'Who is behind Self Beauty',
     aboutTitle: 'Breeder, professional groomer, and the person who answers your call',
     aboutText:
-      'A graduate of professional canine studies (2016), professional groomer and home breeder in Bat Yam since 2017. Her work spans grooming, show preparation and guiding new owners — from choosing the puppy to keeping its coat in shape at home.',
+      'A graduate of professional canine studies (2016), professional groomer and home breeder in Bat Yam since 2014. Her work spans grooming, show preparation and guiding new owners — from choosing the puppy to keeping its coat in shape at home.',
     ownerImageAlt: 'The Self Beauty breeder hugging a Yorkshire Terrier wearing a red bow',
     breedsEyebrow: 'Our breeds',
     breedsTitle: 'Five small breeds. Real familiarity with each of them.',
@@ -149,6 +149,7 @@ export const en: Dictionary = {
       photos: 'Photos',
       video: 'Video',
       contactForDetails: 'Contact us for details',
+      updated: 'Updated',
       demo: 'Demo',
       demoNote: 'Demo record for design testing. Not shown on the live site.',
     },
@@ -301,13 +302,13 @@ export const en: Dictionary = {
   about: {
     title: 'About Self Beauty · Home-based kennel in Bat Yam',
     description:
-      'Self Beauty: a home-based pedigree kennel in Bat Yam since 2017, led by a professional groomer with canine studies (2016). Registered pedigrees, champion lines and personal guidance for owners.',
+      'Self Beauty: a home-based pedigree kennel in Bat Yam since 2014, led by a professional groomer with canine studies (2016). Registered pedigrees, champion lines and personal guidance for owners.',
     eyebrow: 'About',
     h1: 'A small home, a high standard',
-    lede: 'Self Beauty was founded in 2017 as a home-based kennel in Bat Yam. The puppies grow up in a home, not a facility; the parents are chosen for health, temperament and fit to the standard; and the person who raises them is the one who guides you afterwards.',
+    lede: 'Self Beauty was founded in 2014 as a home-based kennel in Bat Yam. The puppies grow up in a home, not a facility; the parents are chosen for health, temperament and fit to the standard; and the person who raises them is the one who guides you afterwards.',
     ownerTitle: 'The breeder',
     ownerText: [
-      'A graduate of professional canine studies through the Israeli canine community (2016), professional groomer, and breeder since 2017.',
+      'A graduate of professional canine studies through the Israeli canine community (2016), professional groomer, and home breeder since 2014.',
       'Her work moves between the grooming table and the show ring: preparing dogs for judging, breed-specific coat care, and guiding new owners — from how to brush to what to watch for in the first weeks.',
       'The Self Beauty lines include dogs with Israeli and international champion titles, and every puppy leaves with registered pedigree papers.',
     ],
@@ -337,8 +338,8 @@ export const en: Dictionary = {
       'Puppies are placed with registered pedigree papers and documentation of the parents. A link to the official kennel club page will be added here once verified.',
     timelineTitle: 'Milestones',
     timeline: [
+      { year: '2014', text: 'Self Beauty founded as a home-based kennel in Bat Yam.' },
       { year: '2016', text: 'Completed professional canine studies.' },
-      { year: '2017', text: 'Self Beauty founded as a home-based kennel in Bat Yam.' },
     ],
   },
   stories: {
@@ -451,6 +452,29 @@ export const en: Dictionary = {
     title: 'Self Beauty',
     text: 'בחרו שפה · Выберите язык · Choose a language',
     continue: 'Continue in English',
+  },
+  admin: {
+    upload: {
+      title: 'Photos',
+      counter: '{count}/3 photos',
+      add: 'Add photos',
+      remove: 'Remove',
+      replace: 'Replace',
+      setPrimary: 'Set as main photo',
+      primary: 'Main photo',
+      moveUp: 'Move forward',
+      moveDown: 'Move back',
+      uploading: 'Uploading…',
+      uploaded: 'Uploaded',
+      failed: 'Upload failed',
+      retry: 'Try again',
+      maxImages: 'You can upload up to 3 photos per dog.',
+      unsupportedType: "This file type isn't supported. You can upload JPG, JPEG, PNG, HEIC or HEIF.",
+      tooLarge: 'This photo is too large. The maximum file size is 10 MB.',
+      invalidImage: 'This file is not a valid image.',
+      tooSmall: 'This photo is too small to look good on the site. At least 400 pixels is recommended.',
+      hint: 'JPG, PNG or iPhone photos (HEIC). Up to 10 MB each, up to 3 photos.',
+    },
   },
   common: {
     newWindow: 'opens in a new window',

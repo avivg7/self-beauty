@@ -4,44 +4,259 @@
     "Source paths are relative to the repository root and point into the git-ignored source vault (images/, videos/).",
     "Originals are never modified. `npm run media:ingest` writes web masters to src/assets/media/<set>/<id>.jpg and videos/posters to public/media/video/.",
     "crop = {x,y,w,h} in display-orientation pixels of the ORIGINAL (after EXIF rotation). Omit for no crop.",
-    "excluded items are documented but never processed."
+    "excluded items are documented but never processed.",
+    "status: included | needs_review | excluded. needs_review items are used on the site but carry an open question for the owner (see note). excluded items are documented, never processed, and NEVER deleted from the source vault."
   ],
   "images": [
-    { "id": "logo", "set": "brand", "src": "images/site_logo.png", "maxEdge": 1254, "format": "png", "note": "Official logo. Opaque white background; a transparent variant is produced separately (see ingest.mjs)." },
-    { "id": "owner-portrait", "set": "brand", "src": "images/profile_pic.jpg", "maxEdge": 886 },
-    { "id": "hero-red-poodle", "set": "brand", "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23.jpeg", "crop": { "x": 170, "y": 0, "w": 740, "h": 925 }, "note": "Home hero. Crop removes handwritten text and timestamp at the bottom-left." },
-
-    { "id": "ring-red-poodle", "set": "shows", "src": "images/shows/1068.jpg" },
-    { "id": "yorkie-ring-044", "set": "shows", "src": "images/shows/1086.jpg" },
-    { "id": "owner-yorkie-stage", "set": "shows", "src": "images/shows/127448.jpg", "note": "Photographer watermark bottom-left (Svetlana Zohar Photography). Confirm usage rights with owner — TODO-004." },
-    { "id": "trophy-hall", "set": "shows", "src": "images/shows/23670.jpg", "note": "Wide 16:9; used as the Shows page backdrop." },
-    { "id": "group-awards", "set": "shows", "src": "images/shows/806.jpg" },
-    { "id": "owner-two-yorkies", "set": "shows", "src": "images/shows/812.jpg", "note": "Low resolution (640x960). Only used at card size." },
-    { "id": "tent-red-poodle", "set": "shows", "src": "images/shows/877.jpg" },
-    { "id": "judging-outdoor", "set": "shows", "src": "images/shows/878.jpg" },
-    { "id": "best-of-breed", "set": "shows", "src": "images/shows/906.jpg" },
-    { "id": "trophies-rosette", "set": "shows", "src": "images/shows/WhatsApp Image 2026-08-30 at 22.46.54 (1).jpeg" },
-    { "id": "shih-tzu-ring", "set": "shows", "src": "images/shows/WhatsApp Image 2026-08-30 at 22.46.55.jpeg" },
-    { "id": "owner-yorkie-portrait", "set": "shows", "src": "images/shows/show_profile.jpg", "crop": { "x": 0, "y": 0, "w": 990, "h": 1340 }, "note": "Screenshot source: crop removes an accessibility-widget icon on the right edge and the bottom watermark strip." },
-
-    { "id": "pomeranian-puppy-blanket", "set": "years", "src": "images/general_dogs/130529.jpg", "crop": { "x": 0, "y": 700, "w": 1848, "h": 2464 } },
-    { "id": "poodle-white-venue", "set": "years", "src": "images/general_dogs/131613.heic", "crop": { "x": 0, "y": 500, "w": 1848, "h": 2464 } },
-    { "id": "poodle-red-heart", "set": "years", "src": "images/general_dogs/136371.heic", "crop": { "x": 0, "y": 900, "w": 1848, "h": 2464 } },
-    { "id": "bichon-puppies-pile", "set": "years", "src": "images/general_dogs/139657.jpg" },
-    { "id": "bichon-puppies-pen", "set": "years", "src": "images/general_dogs/147663.heic", "crop": { "x": 0, "y": 900, "w": 1848, "h": 2464 } },
-    { "id": "bichon-puppy-hands", "set": "years", "src": "images/general_dogs/3607.heic", "crop": { "x": 0, "y": 600, "w": 1868, "h": 2490 } },
-    { "id": "bichon-adult-floor", "set": "years", "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.21 (2).jpeg" },
-    { "id": "bichon-puppy-bows", "set": "years", "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23 (1).jpeg" },
-    { "id": "red-poodle-show-table", "set": "years", "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23.jpeg", "crop": { "x": 60, "y": 0, "w": 1020, "h": 950 } }
+    {
+      "id": "logo",
+      "set": "brand",
+      "src": "images/site_logo.png",
+      "maxEdge": 1254,
+      "format": "png",
+      "note": "Official logo. Opaque white background; a transparent variant is produced separately (see ingest.mjs).",
+      "status": "included"
+    },
+    {
+      "id": "owner-portrait",
+      "set": "brand",
+      "src": "images/profile_pic.jpg",
+      "maxEdge": 886,
+      "status": "included"
+    },
+    {
+      "id": "hero-red-poodle",
+      "set": "brand",
+      "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23.jpeg",
+      "crop": {
+        "x": 170,
+        "y": 0,
+        "w": 740,
+        "h": 925
+      },
+      "note": "Home hero. Crop removes handwritten text and timestamp at the bottom-left.",
+      "status": "included"
+    },
+    {
+      "id": "ring-red-poodle",
+      "set": "shows",
+      "src": "images/shows/1068.jpg",
+      "status": "included"
+    },
+    {
+      "id": "yorkie-ring-044",
+      "set": "shows",
+      "src": "images/shows/1086.jpg",
+      "status": "included"
+    },
+    {
+      "id": "owner-yorkie-stage",
+      "set": "shows",
+      "src": "images/shows/127448.jpg",
+      "note": "Photographer watermark bottom-left (Svetlana Zohar Photography). Confirm usage rights with owner — TODO-004.",
+      "status": "needs_review",
+      "review": "Photographer watermark (Svetlana Zohar Photography): confirm usage rights — TODO-004."
+    },
+    {
+      "id": "trophy-hall",
+      "set": "shows",
+      "src": "images/shows/23670.jpg",
+      "note": "Wide 16:9; used as the Shows page backdrop.",
+      "status": "included"
+    },
+    {
+      "id": "group-awards",
+      "set": "shows",
+      "src": "images/shows/806.jpg",
+      "status": "included"
+    },
+    {
+      "id": "owner-two-yorkies",
+      "set": "shows",
+      "src": "images/shows/812.jpg",
+      "note": "Low resolution (640x960). Only used at card size.",
+      "status": "included"
+    },
+    {
+      "id": "tent-red-poodle",
+      "set": "shows",
+      "src": "images/shows/877.jpg",
+      "status": "included"
+    },
+    {
+      "id": "judging-outdoor",
+      "set": "shows",
+      "src": "images/shows/878.jpg",
+      "status": "included"
+    },
+    {
+      "id": "best-of-breed",
+      "set": "shows",
+      "src": "images/shows/906.jpg",
+      "status": "included"
+    },
+    {
+      "id": "trophies-rosette",
+      "set": "shows",
+      "src": "images/shows/WhatsApp Image 2026-08-30 at 22.46.54 (1).jpeg",
+      "status": "included"
+    },
+    {
+      "id": "shih-tzu-ring",
+      "set": "shows",
+      "src": "images/shows/WhatsApp Image 2026-08-30 at 22.46.55.jpeg",
+      "status": "included"
+    },
+    {
+      "id": "owner-yorkie-portrait",
+      "set": "shows",
+      "src": "images/shows/show_profile.jpg",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "w": 990,
+        "h": 1340
+      },
+      "note": "Screenshot source: crop removes an accessibility-widget icon on the right edge and the bottom watermark strip.",
+      "status": "needs_review",
+      "review": "Screenshot source with photographer watermark cropped out: confirm the original photo and usage rights — TODO-004."
+    },
+    {
+      "id": "pomeranian-puppy-blanket",
+      "set": "years",
+      "src": "images/general_dogs/130529.jpg",
+      "crop": {
+        "x": 0,
+        "y": 700,
+        "w": 1848,
+        "h": 2464
+      },
+      "status": "included"
+    },
+    {
+      "id": "poodle-white-venue",
+      "set": "years",
+      "src": "images/general_dogs/131613.heic",
+      "crop": {
+        "x": 0,
+        "y": 500,
+        "w": 1848,
+        "h": 2464
+      },
+      "status": "included"
+    },
+    {
+      "id": "poodle-red-heart",
+      "set": "years",
+      "src": "images/general_dogs/136371.heic",
+      "crop": {
+        "x": 0,
+        "y": 900,
+        "w": 1848,
+        "h": 2464
+      },
+      "status": "included"
+    },
+    {
+      "id": "bichon-puppies-pile",
+      "set": "years",
+      "src": "images/general_dogs/139657.jpg",
+      "status": "needs_review",
+      "review": "Used on the Bichon listing: confirm whether this is the currently available litter — TODO-006."
+    },
+    {
+      "id": "bichon-puppies-pen",
+      "set": "years",
+      "src": "images/general_dogs/147663.heic",
+      "crop": {
+        "x": 0,
+        "y": 900,
+        "w": 1848,
+        "h": 2464
+      },
+      "status": "included"
+    },
+    {
+      "id": "bichon-puppy-hands",
+      "set": "years",
+      "src": "images/general_dogs/3607.heic",
+      "crop": {
+        "x": 0,
+        "y": 600,
+        "w": 1868,
+        "h": 2490
+      },
+      "status": "needs_review",
+      "review": "Used on the Bichon listing: confirm whether this is the currently available litter — TODO-006."
+    },
+    {
+      "id": "bichon-adult-floor",
+      "set": "years",
+      "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.21 (2).jpeg",
+      "status": "included"
+    },
+    {
+      "id": "bichon-puppy-bows",
+      "set": "years",
+      "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23 (1).jpeg",
+      "status": "needs_review",
+      "review": "Used on the Bichon listing: confirm whether this is the currently available litter — TODO-006."
+    },
+    {
+      "id": "red-poodle-show-table",
+      "set": "years",
+      "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23.jpeg",
+      "crop": {
+        "x": 60,
+        "y": 0,
+        "w": 1020,
+        "h": 950
+      },
+      "status": "included"
+    }
   ],
   "excluded": [
-    { "src": "images/general_dogs/ChatGPT Image Sep 3, 2026, 12_25_37 PM.png", "reason": "AI-tool-processed image of a child with pixelated face. Not real portfolio material and a minor's image; never publish." },
-    { "src": "images/general_dogs/134656.heic", "reason": "Newborn litter photo (wet, umbilical). Too graphic for a premium public site." },
-    { "src": "images/general_dogs/119284.heic", "reason": "Cluttered plastic pen with kitchenware; below the visual bar. Candidate for replacement." }
+    {
+      "src": "images/general_dogs/ChatGPT Image Sep 3, 2026, 12_25_37 PM.png",
+      "reason": "AI-tool-processed image of a child with pixelated face. Not real portfolio material and a minor's image; never publish.",
+      "status": "excluded"
+    },
+    {
+      "src": "images/general_dogs/134656.heic",
+      "reason": "Newborn litter photo (wet, umbilical). Too graphic for a premium public site.",
+      "status": "excluded"
+    },
+    {
+      "src": "images/general_dogs/119284.heic",
+      "reason": "Cluttered plastic pen with kitchenware; below the visual bar. Candidate for replacement.",
+      "status": "excluded"
+    }
   ],
   "videos": [
-    { "id": "bichon-puppy-play", "set": "years", "src": "videos/general_dogs/147656.mp4", "poster": 8, "note": "Portrait 1080x1920 HEVC 10-bit source (rotation -90). 18.5 s." },
-    { "id": "poodle-ring-gait", "set": "shows", "src": "videos/shows/131600.mp4", "poster": 7, "note": "Landscape 1920x1080 HEVC 10-bit source. 13.6 s. White poodle moving on the lead." },
-    { "id": "shih-tzu-ring-video", "set": "shows", "src": "videos/shows/WhatsApp Video 2026-08-30 at 22.46.55.mp4", "poster": 15, "note": "Low-res 478x850 WhatsApp source, no audio, 32 s. Kept for authenticity; candidate for replacement." }
+    {
+      "id": "bichon-puppy-play",
+      "set": "years",
+      "src": "videos/general_dogs/147656.mp4",
+      "poster": 8,
+      "note": "Portrait 1080x1920 HEVC 10-bit source (rotation -90). 18.5 s.",
+      "status": "included"
+    },
+    {
+      "id": "poodle-ring-gait",
+      "set": "shows",
+      "src": "videos/shows/131600.mp4",
+      "poster": 7,
+      "note": "Landscape 1920x1080 HEVC 10-bit source. 13.6 s. White poodle moving on the lead.",
+      "status": "included"
+    },
+    {
+      "id": "shih-tzu-ring-video",
+      "set": "shows",
+      "src": "videos/shows/WhatsApp Video 2026-08-30 at 22.46.55.mp4",
+      "poster": 15,
+      "note": "Low-res 478x850 WhatsApp source, no audio, 32 s. Kept for authenticity; candidate for replacement.",
+      "status": "needs_review",
+      "review": "Low-resolution WhatsApp source; keep unless a better clip is supplied."
+    }
   ]
 }

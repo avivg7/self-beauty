@@ -8,35 +8,36 @@ so the website reads as contemporary and calm rather than ornate.
 Sampled from the logo by region (k-means): crimson `#A40C0B`, deep red `#631A0D`, gold `#D9AE72`/`#C1A583`,
 black `#0C0909`, ivory `#F2EFEA`. Tokens live in `src/styles/tokens.css`.
 
-| Token | Value | Role | Contrast |
-|---|---|---|---|
-| `--c-bg` | `#F8F4EC` | page ground | — |
-| `--c-cream` | `#F1EAE0` | alternate section ground | — |
-| `--c-surface` | `#FFFDF9` | cards, dialogs | — |
-| `--c-border` / `--c-border-strong` | `#E2D8C8` / `#CDBFA8` | hairlines, inputs | — |
-| `--c-burgundy` | `#7B1B22` | primary action, links, emphasis | 9.5:1 on ivory |
-| `--c-burgundy-deep` | `#4F0D14` | pressed state, contact band | 13.7:1 |
-| `--c-crimson` | `#A8121A` | logo red, tiny accents only | 6.9:1 |
-| `--c-charcoal` / `--c-black` | `#1F1B1A` / `#0C0909` | text, dark sections, footer | 15.6:1 / 18:1 |
-| `--c-gold` | `#C9A46A` | lines, frames, chips on dark — never body text on light | 7.3:1 on charcoal |
-| `--c-gold-bright` | `#DDB877` | gold text on dark | 9.1:1 on charcoal |
-| `--c-gold-text` | `#7E603A` | gold-toned text on light (eyebrows) | 5.3:1 |
-| `--c-text-2` | `#5C544F` | secondary text | 6.7:1 |
-| success / warning / error | `#2F6F4E` / `#8A5E0E` / `#A8232B` | status | ≥ 5.2:1 |
+| Token                              | Value                             | Role                                                    | Contrast          |
+| ---------------------------------- | --------------------------------- | ------------------------------------------------------- | ----------------- |
+| `--c-bg`                           | `#F8F4EC`                         | page ground                                             | —                 |
+| `--c-cream`                        | `#F1EAE0`                         | alternate section ground                                | —                 |
+| `--c-surface`                      | `#FFFDF9`                         | cards, dialogs                                          | —                 |
+| `--c-border` / `--c-border-strong` | `#E2D8C8` / `#CDBFA8`             | hairlines, inputs                                       | —                 |
+| `--c-burgundy`                     | `#7B1B22`                         | primary action, links, emphasis                         | 9.5:1 on ivory    |
+| `--c-burgundy-deep`                | `#4F0D14`                         | pressed state, contact band                             | 13.7:1            |
+| `--c-crimson`                      | `#A8121A`                         | logo red, tiny accents only                             | 6.9:1             |
+| `--c-charcoal` / `--c-black`       | `#1F1B1A` / `#0C0909`             | text, dark sections, footer                             | 15.6:1 / 18:1     |
+| `--c-gold`                         | `#C9A46A`                         | lines, frames, chips on dark — never body text on light | 7.3:1 on charcoal |
+| `--c-gold-bright`                  | `#DDB877`                         | gold text on dark                                       | 9.1:1 on charcoal |
+| `--c-gold-text`                    | `#7E603A`                         | gold-toned text on light (eyebrows)                     | 5.3:1             |
+| `--c-text-2`                       | `#5C544F`                         | secondary text                                          | 6.7:1             |
+| success / warning / error          | `#2F6F4E` / `#8A5E0E` / `#A8232B` | status                                                  | ≥ 5.2:1           |
 
 Rules: gold is a line, a frame or a chip, never a background. Burgundy is the action colour. Most of any page
 is ivory and photograph. `.dark` sections swap the tokens; `html[data-contrast="high"]` swaps them again.
 
 ## Typography
 
-- **Display: Bona Nova** (400/700 + italic). One serif that natively covers Hebrew, Cyrillic and Latin, so the
-  brand voice is identical in all three languages. OFL.
-- **Body: IBM Plex Sans** (variable, Latin/Cyrillic) + **IBM Plex Sans Hebrew** (400/500/600). Same family,
-  crisp at 16px on phones. On `html[lang=he]` the Hebrew family is first in the stack.
-- Scale (fluid): `--fs-hero` 2.25–4.5rem, `--fs-3xl` 2.1–3.5rem, `--fs-2xl` 1.75–2.5rem, `--fs-xl` 1.35–1.75rem,
-  body 1rem (1.0625rem ≥ 768px). Body line-height 1.6, display 1.1. Russian headlines get a slightly smaller
-  hero size and wider measure because Cyrillic words run long.
-- Bidi: `.ltr`/`.num` isolate phone numbers and Latin fragments inside RTL copy.
+**Arial everywhere** (client decision, 2026-09-05). No web fonts are loaded: `--font-sans: Arial, Helvetica, sans-serif`
+covers Hebrew, Cyrillic and Latin through the operating system's Arial / Arial Hebrew families, which removes ~150 KB of
+font downloads and any font-swap flash. The ornate brand lettering lives in the logo image only.
+
+- Weights: Arial ships 400 and 700 only, so the system uses exactly those (no synthesized 500/600).
+- Scale (fluid): `--fs-hero` 2.1–4.1rem, `--fs-3xl` 2.1–3.5rem, `--fs-2xl` 1.75–2.5rem, `--fs-xl` 1.35–1.75rem,
+  body 1rem (1.0625rem ≥ 768px). Body line-height 1.6, headings 1.1 with −0.012em tracking.
+- Russian headlines get a slightly smaller hero size and wider measure because Cyrillic words run long.
+- Bidi: `.ltr` / `.num` isolate Latin fragments in RTL copy; `.phone` additionally prevents wrapping at hyphens.
 
 ## Signature elements
 

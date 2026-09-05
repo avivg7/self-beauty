@@ -6,8 +6,7 @@ and the owner admin (architecture gated; see below).
 
 ## Stack
 
-Astro 7 · TypeScript (strictest) · plain CSS with design tokens · self-hosted fonts (Bona Nova, IBM Plex Sans,
-IBM Plex Sans Hebrew) · Astro content collections · sharp image pipeline · Vitest · Playwright + axe · ESLint · Prettier ·
+Astro 7 · TypeScript (strictest) · plain CSS with design tokens · system Arial typography (no web fonts) · Astro content collections · sharp image pipeline · Vitest · Playwright + axe · ESLint · Prettier ·
 GitHub Actions → GitHub Pages.
 
 Details and reasoning: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) ·
@@ -49,22 +48,23 @@ npm run preview
 
 Environment (all optional; see `.env.example`):
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `SITE` | `https://avivg7.github.io` | Absolute origin for canonical/OG/sitemap |
-| `BASE` | `/self-beauty` | Path prefix (GitHub project page). Use `/` for a custom domain. |
-| `SB_INCLUDE_DEMO` | unset | `1` includes records marked `demo: true` (dev always includes them) |
+| Variable           | Default                    | Purpose                                                                                                |
+| ------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `SITE`             | `https://avivg7.github.io` | Absolute origin for canonical/OG/sitemap                                                               |
+| `BASE`             | `/self-beauty`             | Path prefix (GitHub project page). Use `/` for a custom domain.                                        |
+| `SB_INCLUDE_DEMO`  | unset                      | `1` includes records marked `demo: true` (dev always includes them)                                    |
+| `SB_LISTING_LIMIT` | unset                      | Dev only (needs demo mode): truncate the puppies list to n items to review the 1/2/3/6-listing layouts |
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm run verify` | lint → `astro check` → unit tests → build → link check (what CI runs) |
-| `npm run test:e2e` | Playwright on the production build (served by `scripts/serve-dist.mjs`, which mimics GitHub Pages: base path, trailing slashes, real 404, gzip) at 360/390/768/1440 + axe on every page/locale + 320–1440 overflow and tap-target checks. `SHOTS=1` saves full-page screenshots to `artifacts/shots/`. |
-| `npm run serve` | Serve `dist/` locally exactly as GitHub Pages would (`node scripts/serve-dist.mjs [port]`) |
-| `npm run media:ingest` | Convert new originals (HEIC/HEVC → web masters, MP4 tiers, posters). See docs/MEDIA.md. |
-| `node scripts/media/brand.mjs` | Regenerate favicons, OG image, web manifest |
-| `npm run lint` / `npm run format` | ESLint (astro + a11y rules) / Prettier |
+| Command                           | What it does                                                                                                                                                                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run verify`                  | lint → `astro check` → unit tests → build → link check (what CI runs)                                                                                                                                                                                                                                  |
+| `npm run test:e2e`                | Playwright on the production build (served by `scripts/serve-dist.mjs`, which mimics GitHub Pages: base path, trailing slashes, real 404, gzip) at 360/390/768/1440 + axe on every page/locale + 320–1440 overflow and tap-target checks. `SHOTS=1` saves full-page screenshots to `artifacts/shots/`. |
+| `npm run serve`                   | Serve `dist/` locally exactly as GitHub Pages would (`node scripts/serve-dist.mjs [port]`)                                                                                                                                                                                                             |
+| `npm run media:ingest`            | Convert new originals (HEIC/HEVC → web masters, MP4 tiers, posters). See docs/MEDIA.md.                                                                                                                                                                                                                |
+| `node scripts/media/brand.mjs`    | Regenerate favicons, OG image, web manifest                                                                                                                                                                                                                                                            |
+| `npm run lint` / `npm run format` | ESLint (astro + a11y rules) / Prettier                                                                                                                                                                                                                                                                 |
 
 ## Internationalisation
 
@@ -99,14 +99,14 @@ configure DNS. Nothing in the code changes.
 
 Not built yet. GitHub Pages cannot host authentication or uploads, so the admin needs an external backend.
 An architecture gate with 2–3 options (auth, database, storage, cost, security, backups) is presented before any
-integration; nothing is created or paid for without approval. Rules already fixed for the admin: max 3 images per
-listing enforced in UI **and** API, allowlisted image types (jpg/jpeg/png/heic/heif, optionally webp) validated by
-extension, MIME and magic bytes, 10 MB limit, server-side processing (orientation, metadata strip, derivatives),
-safe generated object keys, no storage credentials in the browser.
+integration; nothing is created or paid for without approval. Binding rules for the admin are in [docs/ADMIN_UPLOAD_SPEC.md](docs/ADMIN_UPLOAD_SPEC.md) (max 3 images per
+listing enforced in UI **and** API, allowlisted image types validated by extension, MIME, magic bytes and decoding, 10 MB limit,
+server-side processing, generated object keys, no storage credentials in the browser) and the publication model
+(publish → automatic rebuild, no developer involved) is compared in [docs/ADMIN_ARCHITECTURE_OPTIONS.md](docs/ADMIN_ARCHITECTURE_OPTIONS.md).
 
 ## Security considerations
 
-Static site, no forms, no cookies, no third-party scripts, no analytics. Fonts are self-hosted. External links use
+Static site, no forms, no cookies, no third-party scripts, no analytics, no web fonts. External links use
 `rel="noopener"`. The only outbound integrations are `tel:` and `wa.me` deep links. Secrets never live in this repo.
 
 ## Testing
@@ -117,13 +117,13 @@ nine widths, tap-target sizes).
 
 ## Known TODOs
 
-| ID | Item |
-|---|---|
-| TODO-001 | Logo says "since 2014"; brief says established 2017. Site copy follows the brief — confirm with owner. |
-| TODO-002 | Verified kennel club / association URL (`site.kennelClubUrl`). |
-| TODO-003 | Real grooming before/after material for the grooming portfolio. |
-| TODO-004 | Confirm usage rights for the two watermarked show photos. |
-| TODO-005 | Owner display name (if she wants it shown). |
-| TODO-006 | Current Bichon litter: confirm photos, add names/birth dates through the admin when it exists. |
-| TODO-007 | Admin backend architecture gate → implementation. |
-| TODO-008 | Higher-resolution hero photo (current crop is 740×925). |
+| ID       | Item                                                                                                                                                                   |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TODO-001 | Resolved: Self Beauty was established in 2014 (owner confirmed; matches the logo). Owner's professional education year is 2016. Guarded by `tests/unit/facts.test.ts`. |
+| TODO-002 | Verified kennel club / association URL (`site.kennelClubUrl`).                                                                                                         |
+| TODO-003 | Real grooming before/after material for the grooming portfolio.                                                                                                        |
+| TODO-004 | Confirm usage rights for the two watermarked show photos.                                                                                                              |
+| TODO-005 | Owner display name (if she wants it shown).                                                                                                                            |
+| TODO-006 | Current Bichon litter: confirm photos, add names/birth dates through the admin when it exists.                                                                         |
+| TODO-007 | Admin backend architecture gate → implementation.                                                                                                                      |
+| TODO-008 | Higher-resolution hero photo (current crop is 740×925).                                                                                                                |

@@ -21,15 +21,12 @@ body {
   min-height: 100dvh;
   background: var(--c-bg);
   color: var(--c-text);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: var(--fs-base);
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
-}
-html[lang='he'] body {
-  font-family: var(--font-body-he);
 }
 @media (min-width: 48rem) {
   body {
@@ -74,10 +71,9 @@ ol[role='list'] {
   padding: 0;
 }
 :where(h1, h2, h3, h4) {
-  font-family: var(--font-display);
   font-weight: 700;
   line-height: var(--lh-tight);
-  letter-spacing: -0.005em;
+  letter-spacing: -0.012em;
   text-wrap: balance;
 }
 h1 {
@@ -97,7 +93,7 @@ p {
   max-width: 68ch;
 }
 strong {
-  font-weight: 600;
+  font-weight: 700;
 }
 hr {
   border: 0;
@@ -154,7 +150,7 @@ bdi {
   background: var(--c-charcoal);
   color: var(--c-text-on-dark);
   border-radius: var(--r-sm);
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   transition: top var(--dur-fast) var(--ease-out);
 }
@@ -230,9 +226,8 @@ bdi {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  font-family: var(--font-body);
   font-size: var(--fs-xs);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--c-gold-text);
@@ -254,9 +249,6 @@ html[lang='ru'] .eyebrow {
   font-size: var(--fs-lg);
   color: var(--c-text-2);
   max-width: 60ch;
-}
-.display {
-  font-family: var(--font-display);
 }
 .muted {
   color: var(--c-text-2);
@@ -289,7 +281,7 @@ html[lang='ru'] .eyebrow {
   background: var(--btn-bg);
   color: var(--btn-fg);
   border: 1px solid var(--btn-bd);
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--fs-base);
   line-height: 1.2;
   text-decoration: none;
@@ -410,13 +402,17 @@ html[lang='ru'] .eyebrow {
 /* ---------- Chips ---------- */
 .chip {
   display: inline-flex;
+  width: fit-content;
+  height: auto;
+  align-self: flex-start;
+  white-space: nowrap;
   align-items: center;
   gap: 0.4rem;
   min-height: 1.75rem;
   padding: 0.15rem 0.7rem;
   border-radius: var(--r-pill);
   font-size: var(--fs-xs);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
   background: var(--c-cream);
   color: var(--c-text-2);
@@ -465,7 +461,7 @@ html[lang='ru'] .eyebrow {
   align-items: center;
   gap: 0.5rem;
   font-size: var(--fs-xs);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--c-gold-text);
 }
 .rosette svg {
@@ -547,7 +543,7 @@ html[lang='ru'] .eyebrow {
   gap: 0.4rem;
 }
 .field label {
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--fs-sm);
 }
 .field .hint {
@@ -557,7 +553,7 @@ html[lang='ru'] .eyebrow {
 .field .error {
   font-size: var(--fs-sm);
   color: var(--c-error);
-  font-weight: 500;
+  font-weight: 400;
 }
 .input,
 .select,
@@ -596,7 +592,9 @@ html[lang='ru'] .eyebrow {
   overflow: hidden;
   background: var(--c-cream);
 }
-.ratio > * {
+.ratio > img,
+.ratio > video,
+.ratio > picture > img {
   position: absolute;
   inset: 0;
   width: 100%;

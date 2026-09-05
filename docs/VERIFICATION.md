@@ -4,29 +4,29 @@ Date: 2026-09-05 · Build: local `main` (pre-push) · Base path `/self-beauty/`
 
 ## Automated gates (all green)
 
-| Gate | Result |
-|---|---|
-| ESLint (astro + jsx-a11y strict) | 0 errors |
-| `astro check` (TypeScript strictest) | 0 errors |
-| Vitest unit | 28 passed (i18n parity/placeholders, WhatsApp/tel builders, age, URLs, media manifest ↔ files ↔ catalogue, content honesty rules) |
-| Production build | 35 pages, AVIF/WebP/JPEG srcsets generated |
-| Link checker | 2,179 references, 0 broken |
-| Playwright e2e | 222 passed, 1 skipped by design (mobile-menu test on desktop) across mobile-360, mobile-390, tablet-768, desktop-1440, `a11y`, `widths` |
-| axe (WCAG 2.x A/AA + best-practice) | 0 serious/critical on 11 pages × 3 locales |
-| Overflow / tap targets | 320, 360, 375, 390, 414, 430, 768, 1024, 1440 px: no horizontal overflow; header and sticky-bar targets ≥ 44 px |
+| Gate                                 | Result                                                                                                                                  |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| ESLint (astro + jsx-a11y strict)     | 0 errors                                                                                                                                |
+| `astro check` (TypeScript strictest) | 0 errors                                                                                                                                |
+| Vitest unit                          | 28 passed (i18n parity/placeholders, WhatsApp/tel builders, age, URLs, media manifest ↔ files ↔ catalogue, content honesty rules)       |
+| Production build                     | 35 pages, AVIF/WebP/JPEG srcsets generated                                                                                              |
+| Link checker                         | 2,179 references, 0 broken                                                                                                              |
+| Playwright e2e                       | 222 passed, 1 skipped by design (mobile-menu test on desktop) across mobile-360, mobile-390, tablet-768, desktop-1440, `a11y`, `widths` |
+| axe (WCAG 2.x A/AA + best-practice)  | 0 serious/critical on 11 pages × 3 locales                                                                                              |
+| Overflow / tap targets               | 320, 360, 375, 390, 414, 430, 768, 1024, 1440 px: no horizontal overflow; header and sticky-bar targets ≥ 44 px                         |
 
 ## Lighthouse (production build served with gzip, Chrome headless)
 
-| Page | Form factor | Perf | A11y | Best practices | SEO | LCP | CLS |
-|---|---|---|---|---|---|---|---|
-| /he/ | mobile | 93 | 100 | 100 | 100 | 3.1 s | 0 |
-| /he/ | desktop | 100 | 100 | 100 | 100 | 0.6 s | 0 |
-| /he/shows/ | mobile | 90 | 100 | 100 | 100 | 3.7 s | 0 |
-| /he/shows/ | desktop | 100 | 100 | 100 | 100 | 0.7 s | 0 |
-| /he/gallery/ | mobile | 91 | 100 | 100 | 100 | 3.2 s | 0 |
-| /ru/grooming/ | mobile | 95 | 100 | 100 | 100 | 2.7 s | 0 |
-| /en/puppies/bichon-frise-2026/ | mobile | 97 | 100 | 100 | 100 | 2.6 s | 0 |
-| /he/contact/ | mobile | 95 | 100 | 100 | 100 | 2.6 s | 0.001 |
+| Page                           | Form factor | Perf | A11y | Best practices | SEO | LCP   | CLS   |
+| ------------------------------ | ----------- | ---- | ---- | -------------- | --- | ----- | ----- |
+| /he/                           | mobile      | 93   | 100  | 100            | 100 | 3.1 s | 0     |
+| /he/                           | desktop     | 100  | 100  | 100            | 100 | 0.6 s | 0     |
+| /he/shows/                     | mobile      | 90   | 100  | 100            | 100 | 3.7 s | 0     |
+| /he/shows/                     | desktop     | 100  | 100  | 100            | 100 | 0.7 s | 0     |
+| /he/gallery/                   | mobile      | 91   | 100  | 100            | 100 | 3.2 s | 0     |
+| /ru/grooming/                  | mobile      | 95   | 100  | 100            | 100 | 2.7 s | 0     |
+| /en/puppies/bichon-frise-2026/ | mobile      | 97   | 100  | 100            | 100 | 2.6 s | 0     |
+| /he/contact/                   | mobile      | 95   | 100  | 100            | 100 | 2.6 s | 0.001 |
 
 Mobile numbers use Lighthouse's simulated slow-4G throttling. Nothing was tuned for the test: no lazy hero, no
 hidden content, no user-agent tricks.

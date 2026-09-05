@@ -13,16 +13,19 @@
 
 ## Inventory (2026-09-05)
 
-| Source | Count | Format | Used | Notes |
-|---|---|---|---|---|
-| `images/general_dogs` | 12 | 6 HEIC, 5 JPEG, 1 PNG | 9 | Samsung phone photos 1848×4000 (EXIF dates May–Aug 2026). Excluded: ChatGPT-processed image of a child; newborn litter photo (graphic); cluttered pen photo. |
-| `images/shows` | 12 | JPEG | 12 | 640–2048px, no EXIF dates. Two carry photographer watermarks (kept; confirm rights). One is a screenshot with an accessibility-widget icon (cropped out). |
-| `videos/general_dogs` | 1 | MP4 HEVC 10-bit 1080×1920 | 1 | 18.5 s, portrait |
-| `videos/shows` | 2 | MP4 HEVC 10-bit 1920×1080; MP4 H.264 478×850 | 2 | 13.6 s; 32 s WhatsApp (low-res, no audio) |
-| `images/site_logo.png` | 1 | PNG 1254² opaque | yes | Transparent variant derived (flood-fill from corners) |
-| `images/profile_pic.jpg` | 1 | JPEG 886² | yes | About / home |
+| Source                   | Count | Format                                       | Used | Notes                                                                                                                                                        |
+| ------------------------ | ----- | -------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `images/general_dogs`    | 12    | 6 HEIC, 5 JPEG, 1 PNG                        | 9    | Samsung phone photos 1848×4000 (EXIF dates May–Aug 2026). Excluded: ChatGPT-processed image of a child; newborn litter photo (graphic); cluttered pen photo. |
+| `images/shows`           | 12    | JPEG                                         | 12   | 640–2048px, no EXIF dates. Two carry photographer watermarks (kept; confirm rights). One is a screenshot with an accessibility-widget icon (cropped out).    |
+| `videos/general_dogs`    | 1     | MP4 HEVC 10-bit 1080×1920                    | 1    | 18.5 s, portrait                                                                                                                                             |
+| `videos/shows`           | 2     | MP4 HEVC 10-bit 1920×1080; MP4 H.264 478×850 | 2    | 13.6 s; 32 s WhatsApp (low-res, no audio)                                                                                                                    |
+| `images/site_logo.png`   | 1     | PNG 1254² opaque                             | yes  | Transparent variant derived (flood-fill from corners)                                                                                                        |
+| `images/profile_pic.jpg` | 1     | JPEG 886²                                    | yes  | About / home                                                                                                                                                 |
 
-No duplicates, no unreadable files. Full per-file decisions: `scripts/media/manifest.json`.
+No duplicates, no unreadable files. Full per-file decisions: `scripts/media/manifest.json`, where every entry carries a
+`status`: `included`, `needs_review` (used on the site but with an open question for the owner, e.g. watermark rights or
+whether the Bichon photos show the current litter) or `excluded` (documented, never processed). **Source files are never
+deleted or modified**, including excluded ones; removal from the vault requires explicit approval.
 
 ## Commands
 

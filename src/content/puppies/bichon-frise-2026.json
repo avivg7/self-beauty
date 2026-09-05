@@ -1,5 +1,9 @@
 {
-  "name": { "he": "גורי בישון פריזה", "ru": "Щенки бишон фризе", "en": "Bichon Frise puppies" },
+  "name": {
+    "he": "גורי בישון פריזה",
+    "ru": "Щенки бишон фризе",
+    "en": "Bichon Frise puppies"
+  },
   "breed": "bichon",
   "sex": "mixed",
   "status": "available",
@@ -16,14 +20,40 @@
   "showProspect": false,
   "breedingProspect": false,
   "images": [
-    { "media": "years/bichon-puppy-bows", "alt": { "he": "גור בישון פריזה לבן עם סרטים ורודים", "ru": "Белый щенок бишон фризе с розовыми бантиками", "en": "White Bichon Frise puppy with pink bows" } },
-    { "media": "years/bichon-puppies-pile", "alt": { "he": "גורי בישון פריזה ישנים בערימה ליד כדור", "ru": "Щенки бишон фризе спят рядом с мячиком", "en": "Bichon Frise puppies asleep in a pile beside a ball" } },
-    { "media": "years/bichon-puppy-hands", "alt": { "he": "גור בישון פריזה מוחזק בידיים", "ru": "Щенок бишон фризе на руках", "en": "Bichon Frise puppy held in two hands" } }
+    {
+      "media": "years/bichon-puppy-bows",
+      "alt": {
+        "he": "גור בישון פריזה לבן עם סרטים ורודים",
+        "ru": "Белый щенок бишон фризе с розовыми бантиками",
+        "en": "White Bichon Frise puppy with pink bows"
+      }
+    },
+    {
+      "media": "years/bichon-puppies-pile",
+      "alt": {
+        "he": "גורי בישון פריזה ישנים בערימה ליד כדור",
+        "ru": "Щенки бишон фризе спят рядом с мячиком",
+        "en": "Bichon Frise puppies asleep in a pile beside a ball"
+      }
+    },
+    {
+      "media": "years/bichon-puppy-hands",
+      "alt": {
+        "he": "גור בישון פריזה מוחזק בידיים",
+        "ru": "Щенок бишон фризе на руках",
+        "en": "Bichon Frise puppy held in two hands"
+      }
+    }
   ],
   "order": 1,
   "featured": true,
   "published": true,
   "demo": false,
   "internalNote": "Owner stated Bichon Frise puppies are currently available (Sep 2026). Photos are kennel bichon puppies from Jul–Aug 2026; confirm they show the current litter and add names/birth dates via admin — TODO-006.",
-  "updatedAt": "2026-09-05"
+  "updatedAt": "2026-09-05",
+  "photosNote": {
+    "he": "צילומים של גורי בישון פריזה מבית הגידול.",
+    "ru": "Фотографии щенков бишон фризе из питомника.",
+    "en": "Photos of Bichon Frise puppies from the kennel."
+  }
 }

@@ -27,9 +27,6 @@
   "dependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/sitemap": "^3.7.4",
-    "@fontsource-variable/ibm-plex-sans": "^5.3.0",
-    "@fontsource/bona-nova": "^5.3.0",
-    "@fontsource/ibm-plex-sans-hebrew": "^5.3.0",
     "astro": "^7.3.1",
     "sharp": "^0.35.4",
     "typescript": "^6.0.3"

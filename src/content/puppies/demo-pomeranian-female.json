@@ -1,0 +1,30 @@
+{
+  "name": {
+    "he": "דמו — פומרניאן (נקבה)",
+    "ru": "ДЕМО — шпиц (девочка)",
+    "en": "DEMO — Pomeranian (female)"
+  },
+  "breed": "pomeranian",
+  "sex": "female",
+  "birthDate": "2026-05-02",
+  "status": "placed",
+  "description": {
+    "he": "רשומת דמו לבדיקת עיצוב בלבד.",
+    "ru": "Демо-запись только для проверки дизайна.",
+    "en": "Demo record for design testing only."
+  },
+  "images": [
+    {
+      "media": "years/pomeranian-puppy-blanket",
+      "alt": {
+        "he": "דמו",
+        "ru": "Демо",
+        "en": "Demo"
+      }
+    }
+  ],
+  "order": 90,
+  "published": true,
+  "demo": true,
+  "updatedAt": "2026-09-05"
+}

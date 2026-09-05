@@ -49,6 +49,8 @@ const puppies = defineCollection({
     published: z.boolean().default(false),
     /** DEMO records are excluded from production builds. Never mark real data as demo. */
     demo: z.boolean().default(false),
+    /** Shown under the photos when they are not verified to show these exact puppies (honesty note) */
+    photosNote: localizedOptional,
     internalNote: z.string().optional(),
     updatedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   }),

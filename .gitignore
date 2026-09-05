@@ -26,3 +26,6 @@ Thumbs.db
 /images/
 /videos/
 scripts/media/.cache/
+
+# demo builds for layout review
+.demo-dist/

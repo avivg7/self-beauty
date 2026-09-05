@@ -113,6 +113,7 @@ const parents = [
               </div>
             )
           }
+          {d.photosNote && <p class="muted pdetail__photos-note">{localizedField(d.photosNote, locale)}</p>}
         </div>
 
         <div class="pdetail__info">
@@ -194,6 +195,11 @@ const parents = [
             )
           }
           <p class="muted pdetail__note">{t.puppies.noPriceNote}</p>
+          <p class="muted pdetail__note">
+            {t.puppies.card.updated}: <time datetime={d.updatedAt}
+              >{formatters.date(locale, d.updatedAt)}</time
+            >
+          </p>
           {d.demo && <p class="pdetail__demo">{t.puppies.card.demoNote}</p>}
           <div class="pdetail__actions">
             <a
@@ -229,7 +235,7 @@ const parents = [
     gap: 0.4rem;
     min-height: 2.75rem;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 400;
   }
   .pdetail__back-icon {
     width: 1rem;
@@ -315,10 +321,13 @@ const parents = [
     font-size: var(--fs-sm);
   }
   .facts dd {
-    font-weight: 500;
+    font-weight: 400;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+  .pdetail__photos-note {
+    font-size: var(--fs-xs);
   }
   .pdetail__note {
     font-size: var(--fs-sm);

@@ -50,6 +50,7 @@ const t = getDictionary(locale).a11y.panel;
 
 <style>
   .a11y {
+    margin: auto;
     border: 0;
     padding: 0;
     background: var(--c-surface);
@@ -57,6 +58,15 @@ const t = getDictionary(locale).a11y.panel;
     border-radius: var(--r-lg);
     box-shadow: var(--shadow-lg);
     width: min(92vw, 24rem);
+  }
+  @media (max-width: 47.98rem) {
+    .a11y {
+      margin: auto 0 0;
+      width: 100%;
+      max-width: none;
+      border-radius: var(--r-lg) var(--r-lg) 0 0;
+      padding-bottom: var(--safe-b);
+    }
   }
   .a11y::backdrop {
     background: rgb(12 9 9 / 55%);
@@ -81,7 +91,7 @@ const t = getDictionary(locale).a11y.panel;
     gap: 0.5rem;
   }
   .a11y__group legend {
-    font-weight: 600;
+    font-weight: 700;
     font-size: var(--fs-sm);
     margin-bottom: 0.25rem;
   }
@@ -108,7 +118,7 @@ const t = getDictionary(locale).a11y.panel;
     min-height: 2.75rem;
     border: 1px solid var(--c-border-strong);
     border-radius: var(--r-sm);
-    font-weight: 500;
+    font-weight: 400;
     font-size: var(--fs-sm);
   }
   .a11y__seg input:checked + span {
@@ -126,7 +136,7 @@ const t = getDictionary(locale).a11y.panel;
     justify-content: space-between;
     gap: 1rem;
     min-height: 2.75rem;
-    font-weight: 500;
+    font-weight: 400;
     cursor: pointer;
     position: relative;
   }

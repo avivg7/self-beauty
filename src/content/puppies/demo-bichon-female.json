@@ -1,0 +1,30 @@
+{
+  "name": {
+    "he": "דמו — בישון (נקבה)",
+    "ru": "ДЕМО — бишон (девочка)",
+    "en": "DEMO — Bichon (female)"
+  },
+  "breed": "bichon",
+  "sex": "female",
+  "birthDate": "2026-07-20",
+  "status": "available",
+  "description": {
+    "he": "רשומת דמו לבדיקת עיצוב בלבד. הטקסט הזה אינו מתאר כלב אמיתי.",
+    "ru": "Демо-запись только для проверки дизайна.",
+    "en": "Demo record for design testing only."
+  },
+  "images": [
+    {
+      "media": "years/bichon-adult-floor",
+      "alt": {
+        "he": "דמו",
+        "ru": "Демо",
+        "en": "Demo"
+      }
+    }
+  ],
+  "order": 70,
+  "published": true,
+  "demo": true,
+  "updatedAt": "2026-09-05"
+}

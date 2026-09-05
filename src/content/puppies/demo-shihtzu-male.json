@@ -1,0 +1,29 @@
+{
+  "name": {
+    "he": "דמו — שיצו (זכר)",
+    "ru": "ДЕМО — ши-тцу (мальчик)",
+    "en": "DEMO — Shih Tzu (male)"
+  },
+  "breed": "shihtzu",
+  "sex": "male",
+  "status": "planned",
+  "description": {
+    "he": "רשומת דמו לבדיקת עיצוב בלבד.",
+    "ru": "Демо-запись только для проверки дизайна.",
+    "en": "Demo record for design testing only."
+  },
+  "images": [
+    {
+      "media": "shows/shih-tzu-ring",
+      "alt": {
+        "he": "דמו",
+        "ru": "Демо",
+        "en": "Demo"
+      }
+    }
+  ],
+  "order": 80,
+  "published": true,
+  "demo": true,
+  "updatedAt": "2026-09-05"
+}

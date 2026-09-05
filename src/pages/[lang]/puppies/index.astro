@@ -1,7 +1,7 @@
 ---
 import Base from '@/layouts/Base.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
-import PuppyCard from '@/components/PuppyCard.astro';
+import PuppyGrid from '@/components/PuppyGrid.astro';
 import LitterBanner from '@/components/LitterBanner.astro';
 import CtaBand from '@/components/CtaBand.astro';
 import Icon from '@/components/Icon.astro';
@@ -46,13 +46,13 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
 
       {
         puppies.length ? (
-          <ul role="list" class="plist" data-puppy-list>
-            {puppies.map((p, i) => (
-              <li data-breed={p.data.breed}>
-                <PuppyCard puppy={p} locale={locale} eager={i < 2} headingLevel={2} />
-              </li>
-            ))}
-          </ul>
+          <PuppyGrid
+            puppies={puppies}
+            locale={locale}
+            headingLevel={2}
+            eager={2}
+            listAttrs={{ 'data-puppy-list': '' }}
+          />
         ) : (
           <div class="empty">
             <h2>{t.puppies.empty.title}</h2>
@@ -104,11 +104,6 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
 </script>
 
 <style>
-  .plist {
-    display: grid;
-    gap: var(--sp-5);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 24rem));
-  }
   .pfilters {
     display: flex;
     flex-wrap: wrap;
@@ -135,7 +130,7 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
     padding: 0.3rem 1rem;
     border-radius: var(--r-pill);
     border: 1px solid var(--c-border-strong);
-    font-weight: 500;
+    font-weight: 400;
     font-size: var(--fs-sm);
     background: var(--c-surface);
   }

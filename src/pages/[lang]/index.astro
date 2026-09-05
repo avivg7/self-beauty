@@ -2,7 +2,7 @@
 import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
-import PuppyCard from '@/components/PuppyCard.astro';
+import PuppyGrid from '@/components/PuppyGrid.astro';
 import BreedGrid from '@/components/BreedGrid.astro';
 import StoryExcerpt from '@/components/StoryExcerpt.astro';
 import CtaBand from '@/components/CtaBand.astro';
@@ -117,13 +117,7 @@ const heroPreload = await getImage({
       />
       {
         puppies.length ? (
-          <div class="pgrid">
-            {puppies.map((p, i) => (
-              <div class="reveal" data-delay={String(i)}>
-                <PuppyCard puppy={p} locale={locale} eager={i === 0} />
-              </div>
-            ))}
-          </div>
+          <PuppyGrid puppies={puppies} locale={locale} eager={1} reveal />
         ) : (
           <div class="empty">
             <h3>{t.puppies.empty.title}</h3>
@@ -441,12 +435,6 @@ const heroPreload = await getImage({
   .promise__item p {
     color: var(--c-text-2);
   }
-
-  .pgrid {
-    display: grid;
-    gap: var(--sp-5);
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 24rem));
-  }
   .section__more {
     margin-top: var(--sp-5);
   }
@@ -557,7 +545,7 @@ const heroPreload = await getImage({
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    font-weight: 500;
+    font-weight: 400;
   }
   .checks :global(.icon) {
     width: 1.1rem;
