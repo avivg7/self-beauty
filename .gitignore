@@ -1,0 +1,27 @@
+# dependencies / build
+node_modules/
+dist/
+.astro/
+.tools/
+*.log
+
+# tests
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# env
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Source media vault (originals are never modified; web derivatives are generated
+# by `npm run media:ingest` and committed under src/assets/media and public/media)
+/images/
+/videos/
+scripts/media/.cache/
