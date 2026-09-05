@@ -44,6 +44,15 @@ brought mobile LCP from 2.6–3.7 s down to 1.3–2.5 s. Nothing was tuned for t
   hyphens, ragged gallery masonry, single puppy card in a 3-column grid, lone 40 px header CTA, 1024 px icon-button shrink,
   full-row gallery crops cutting faces, heading order on the puppies list.
 
+## Deployment (2026-09-05)
+
+- Repository: https://github.com/avivg7/self-beauty (public, branch `main`, no force pushes, history intact)
+- GitHub Pages: source "GitHub Actions" (enabled through the API, `build_type: workflow`), site https://avivg7.github.io/self-beauty/
+- First deploy run: all four jobs succeeded — lint/typecheck/unit/build/links, Playwright with axe (including the demo-listings project), Build for Pages, Deploy.
+- Live checks: every locale route and the 404 return the right status; root gateway refreshes to `/self-beauty/he/`; hreflang and canonical are absolute; every asset reference is under `/self-beauty/`; JS, AVIF/WebP/JPEG images, logo and MP4 (range requests) all 200/206; gzip on; JSON-LD `foundingDate` 2014; Arial token.
+- Live Lighthouse (mobile / desktop): home 100/100, puppies 100, shows 100, Russian home 100, English grooming 100; all four categories 100.
+- The production e2e suites (navigation, i18n, conversion, gallery, axe, widths) were run against the live URL with `E2E_BASE_URL`.
+
 ## Production content (final gate, 2026-09-05)
 
 | Content                                                                                   | Production build                  | Why                                                                                                                                                                                   |

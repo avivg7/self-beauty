@@ -23,6 +23,9 @@ export async function isMobileNav(page: Page) {
 
 /** Navigate via the header (desktop) or the menu sheet (mobile). */
 export async function navTo(page: Page, hrefEndsWith: string) {
+  // Module scripts (menu, language menu) run before DOMContentLoaded; on a real network a click can
+  // otherwise land before the listeners exist.
+  await page.waitForLoadState('domcontentloaded');
   if (await isMobileNav(page)) {
     await page.locator('[data-menu-open]').click();
     await expect(page.locator('#menu-sheet')).toBeVisible();
@@ -33,6 +36,9 @@ export async function navTo(page: Page, hrefEndsWith: string) {
 }
 
 export async function switchLanguage(page: Page, locale: 'he' | 'ru' | 'en') {
+  // Module scripts (menu, language menu) run before DOMContentLoaded; on a real network a click can
+  // otherwise land before the listeners exist.
+  await page.waitForLoadState('domcontentloaded');
   if (await isMobileNav(page)) {
     await page.locator('[data-menu-open]').click();
     await page.locator(`#menu-sheet [data-lang-choice="${locale}"]`).click();

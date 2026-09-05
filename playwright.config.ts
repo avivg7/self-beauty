@@ -7,6 +7,8 @@ import { defineConfig, devices } from '@playwright/test';
 const BASE = process.env.BASE ?? '/self-beauty';
 const PORT = 4321;
 const DEMO_PORT = 4322;
+/** Set E2E_BASE_URL=https://avivg7.github.io to run the production projects against the live site (no local servers). */
+const LIVE = process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -15,25 +17,27 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   timeout: 30_000,
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: LIVE ?? `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  webServer: [
-    {
-      command: `node scripts/serve-dist.mjs ${PORT}`,
-      url: `http://localhost:${PORT}${BASE}/he/`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    {
-      // Demo build (SB_INCLUDE_DEMO=1 → .demo-dist/ci): long status strings, ten-card grids and filters in CI
-      command: `DIST=.demo-dist/ci node scripts/serve-dist.mjs ${DEMO_PORT}`,
-      url: `http://localhost:${DEMO_PORT}${BASE}/he/puppies/`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-  ],
+  webServer: LIVE
+    ? undefined
+    : [
+        {
+          command: `node scripts/serve-dist.mjs ${PORT}`,
+          url: `http://localhost:${PORT}${BASE}/he/`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+        },
+        {
+          // Demo build (SB_INCLUDE_DEMO=1 → .demo-dist/ci): long status strings, ten-card grids and filters in CI
+          command: `DIST=.demo-dist/ci node scripts/serve-dist.mjs ${DEMO_PORT}`,
+          url: `http://localhost:${DEMO_PORT}${BASE}/he/puppies/`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+        },
+      ],
   projects: [
     {
       name: 'mobile-360',
