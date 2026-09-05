@@ -5,7 +5,7 @@
     "Originals are never modified. `npm run media:ingest` writes web masters to src/assets/media/<set>/<id>.jpg and videos/posters to public/media/video/.",
     "crop = {x,y,w,h} in display-orientation pixels of the ORIGINAL (after EXIF rotation). Omit for no crop.",
     "excluded items are documented but never processed.",
-    "status: included | needs_review | excluded. needs_review items are used on the site but carry an open question for the owner (see note). excluded items are documented, never processed, and NEVER deleted from the source vault."
+    "status: included | needs_review | excluded. needs_review = usage rights or provenance unconfirmed → excluded from production builds by src/data/media.ts (needsReview) and enforced by scripts/check-links.mjs. excluded = documented, never processed. Source files are NEVER deleted or modified."
   ],
   "images": [
     {
@@ -161,8 +161,8 @@
       "id": "bichon-puppies-pile",
       "set": "years",
       "src": "images/general_dogs/139657.jpg",
-      "status": "needs_review",
-      "review": "Used on the Bichon listing: confirm whether this is the currently available litter — TODO-006."
+      "status": "included",
+      "review": "Kennel Bichon puppies (Jul–Aug 2026); fine for the gallery. Whether they show the CURRENT litter is TODO-006 on the (unpublished) listing."
     },
     {
       "id": "bichon-puppies-pen",
@@ -186,8 +186,8 @@
         "w": 1868,
         "h": 2490
       },
-      "status": "needs_review",
-      "review": "Used on the Bichon listing: confirm whether this is the currently available litter — TODO-006."
+      "status": "included",
+      "review": "Kennel Bichon puppies (Jul–Aug 2026); fine for the gallery. Whether they show the CURRENT litter is TODO-006 on the (unpublished) listing."
     },
     {
       "id": "bichon-adult-floor",
@@ -199,8 +199,8 @@
       "id": "bichon-puppy-bows",
       "set": "years",
       "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23 (1).jpeg",
-      "status": "needs_review",
-      "review": "Used on the Bichon listing: confirm whether this is the currently available litter — TODO-006."
+      "status": "included",
+      "review": "Kennel Bichon puppies (Jul–Aug 2026); fine for the gallery. Whether they show the CURRENT litter is TODO-006 on the (unpublished) listing."
     },
     {
       "id": "red-poodle-show-table",
@@ -255,8 +255,8 @@
       "src": "videos/shows/WhatsApp Video 2026-08-30 at 22.46.55.mp4",
       "poster": 15,
       "note": "Low-res 478x850 WhatsApp source, no audio, 32 s. Kept for authenticity; candidate for replacement.",
-      "status": "needs_review",
-      "review": "Low-resolution WhatsApp source; keep unless a better clip is supplied."
+      "status": "included",
+      "review": "Low-resolution WhatsApp source; quality note only, no rights question."
     }
   ]
 }

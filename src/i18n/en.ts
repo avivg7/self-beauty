@@ -98,7 +98,6 @@ export const en: Dictionary = {
     showsTitle: 'Shows are how we check our own work',
     showsText:
       'Dog shows are not only trophies: they are professional judging of structure, movement, temperament and grooming against the breed standard. Our lines include dogs holding Junior Champion, Israeli Champion, Grand/Supreme Champion and Cyprus Champion titles.',
-    showsImageAlt: 'The breeder holding a groomed Yorkshire Terrier at a dog show',
     groomingEyebrow: 'Professional grooming',
     groomingTitle: 'Breed-correct grooming, at show-preparation standard',
     groomingText:

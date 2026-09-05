@@ -47,9 +47,9 @@
   ],
   "order": 1,
   "featured": true,
-  "published": true,
+  "published": false,
   "demo": false,
-  "internalNote": "Owner stated Bichon Frise puppies are currently available (Sep 2026). Photos are kennel bichon puppies from Jul–Aug 2026; confirm they show the current litter and add names/birth dates via admin — TODO-006.",
+  "internalNote": "UNPUBLISHED until verified (TODO-006). Owner stated Bichon Frise puppies are available (Sep 2026), but names, birth dates and whether these photos show the current litter are unconfirmed. Set published:true (via admin once it exists) only after the owner confirms the listing and its photos are current.",
   "updatedAt": "2026-09-05",
   "photosNote": {
     "he": "בתמונות: גורי בישון פריזה מבית הגידול. תמונות של ההמלטה הנוכחית יתווספו.",

@@ -100,7 +100,26 @@ for (const f of files) {
     if (!ok) problems.push(`${path.relative(DIST, f)}: broken → ${u}`);
   }
 }
-console.log(`[links] ${files.length} pages, ${checked} references checked`);
+// ---- Production content guards (fail the build, never silently ship) ----
+const manifest = JSON.parse(await readFile(path.join(ROOT, 'scripts/media/manifest.json'), 'utf8'));
+const reviewIds = [...manifest.images, ...manifest.videos]
+  .filter((m) => m.status === 'needs_review')
+  .map((m) => m.id);
+const demoMarker = /DEMO —|דמו —|ДЕМО —|chip--demo"|class="chip chip--demo/;
+for (const f of files) {
+  const html = await readFile(f, 'utf8');
+  for (const id of reviewIds)
+    if (html.includes(`/${id}.`) || html.includes(`${id}-`))
+      problems.push(`${path.relative(DIST, f)}: references needs_review media "${id}"`);
+  if (demoMarker.test(html))
+    problems.push(`${path.relative(DIST, f)}: demo listing content in production HTML`);
+  if (/\/puppies\/demo-/.test(html)) problems.push(`${path.relative(DIST, f)}: link to a demo listing page`);
+}
+for (const f of files)
+  if (/\/puppies\/demo-/.test(f)) problems.push(`demo listing page built: ${path.relative(DIST, f)}`);
+console.log(
+  `[links] ${files.length} pages, ${checked} references checked; guards: ${reviewIds.length} needs_review ids, demo markers`,
+);
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);

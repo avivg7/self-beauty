@@ -8,7 +8,7 @@ import Icon from '@/components/Icon.astro';
 import { getDictionary, type Locale } from '@/i18n';
 import { localeHref } from '@/lib/urls';
 import { localePaths } from '@/lib/paths';
-import { images, videos } from '@/data/media';
+import { images, videos, publishable } from '@/data/media';
 import { getImage } from 'astro:assets';
 import trophySrc from '@/assets/media/shows/trophy-hall.jpg';
 
@@ -28,8 +28,11 @@ const order = [
   'shows/owner-two-yorkies',
   'shows/owner-yorkie-portrait',
 ];
-const showImages = order.map((id) => images.find((i) => i.id === id)!).filter(Boolean);
-const showVideos = videos.filter((v) => v.set === 'shows');
+const showImages = order
+  .map((id) => images.find((i) => i.id === id)!)
+  .filter(Boolean)
+  .filter(publishable);
+const showVideos = videos.filter((v) => v.set === 'shows').filter(publishable);
 // Interleave the two videos into the photo flow so the page rhythm mixes motion and stills.
 const items = [
   ...showImages.slice(0, 3),

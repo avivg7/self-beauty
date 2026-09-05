@@ -76,7 +76,8 @@ typed against the Hebrew one, so a missing translation fails `astro check` and t
 ## Content
 
 - **Puppies**: `src/content/puppies/*.json`. No price field exists. Max 3 images. `published: false` hides a
-  listing; `demo: true` excludes it from production builds entirely.
+  listing; `demo: true` excludes it from production builds entirely. A listing is published only once the owner has
+  verified it is current (status, names, photos); `scripts/check-links.mjs` fails the build if demo content leaks.
 - **Planned litters**: `src/content/litters/*.json`.
 - **Family stories**: `src/content/testimonials/*.json` — only real stories; translations are labelled as such.
 - **Business facts**: `src/data/site.ts`. Empty strings are TODOs, never placeholders that render.

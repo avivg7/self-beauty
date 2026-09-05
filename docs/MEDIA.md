@@ -23,8 +23,9 @@
 | `images/profile_pic.jpg` | 1     | JPEG 886²                                    | yes  | About / home                                                                                                                                                 |
 
 No duplicates, no unreadable files. Full per-file decisions: `scripts/media/manifest.json`, where every entry carries a
-`status`: `included`, `needs_review` (used on the site but with an open question for the owner, e.g. watermark rights or
-whether the Bichon photos show the current litter) or `excluded` (documented, never processed). **Source files are never
+`status`: `included`, `needs_review` (usage rights or provenance unconfirmed → **excluded from production builds** via the
+`needsReview` flag in `src/data/media.ts`, enforced by `scripts/check-links.mjs`; `SB_INCLUDE_REVIEW=1` previews locally) or
+`excluded` (documented, never processed). **Source files are never
 deleted or modified**, including excluded ones; removal from the vault requires explicit approval.
 
 ## Commands

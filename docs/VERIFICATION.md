@@ -44,6 +44,16 @@ brought mobile LCP from 2.6–3.7 s down to 1.3–2.5 s. Nothing was tuned for t
   hyphens, ragged gallery masonry, single puppy card in a 3-column grid, lone 40 px header CTA, 1024 px icon-button shrink,
   full-row gallery crops cutting faces, heading order on the puppies list.
 
+## Production content (final gate, 2026-09-05)
+
+| Content                                                                                   | Production build                  | Why                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bichon Frise listing (`bichon-frise-2026`)                                                | **Excluded** (`published: false`) | Owner has not yet confirmed it is current or that the photos show this litter (TODO-006). The puppies page and home show the honest empty state with the planned-litter WhatsApp CTA. |
+| 7 demo fixtures (`demo-*.json`)                                                           | **Excluded**                      | `demo: true`; guarded by unit test (filename ⇔ flag ⇔ label), e2e (no demo markup in production), and the dist guard in `check-links.mjs`.                                            |
+| Watermarked show photos (`owner-yorkie-stage`, `owner-yorkie-portrait`)                   | **Excluded**                      | Usage rights unconfirmed (TODO-004); `needsReview` in the catalogue, dist guard fails the build if referenced. Source files untouched.                                                |
+| Excluded source photos (ChatGPT-processed child photo, newborn litter, cluttered pen)     | **Excluded**                      | Documented in the manifest, never processed, never deleted.                                                                                                                           |
+| Everything else: 21 photos, 3 videos, logo, owner portrait, the real Russian family story | **Included**                      |                                                                                                                                                                                       |
+
 ## Known limitations
 
 - Mobile LCP is bounded by the hero photograph and font fetch on slow 4G; a higher-resolution hero (TODO-008) would not change this.

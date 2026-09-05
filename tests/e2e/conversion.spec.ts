@@ -20,10 +20,19 @@ test.describe('conversion paths', () => {
     }
   });
 
-  test('journey A: home → puppy → WhatsApp with the puppy name prefilled', async ({ page }) => {
+  test('journey A: home → puppies → puppy (or honest empty state) → WhatsApp', async ({ page }) => {
     await page.goto(u('/he/'));
     await page.locator('main a[href$="/he/puppies/"]').first().click();
     await expect(page).toHaveURL(/\/he\/puppies\/$/);
+    if ((await page.locator('article .pcard__title a').count()) === 0) {
+      // No verified listing published: the page must say so and route to planned-litter updates
+      await expect(page.locator('main .empty')).toBeVisible();
+      const cta = page.locator('main .empty a[href^="https://wa.me"]');
+      await expect(cta).toBeVisible();
+      expect(decodeURIComponent((await cta.getAttribute('href'))!)).toContain('המלטות');
+      await expect(page.locator('main')).not.toContainText(/₪|\$|מחיר:|price:/i);
+      return;
+    }
     await page.locator('article .pcard__title a').first().click();
     await expect(page).toHaveURL(/\/he\/puppies\/[\w-]+\/$/);
     const cta = page.locator('main a[href^="https://wa.me"]').first();

@@ -5,8 +5,8 @@ import { images, videos, media } from '@/data/media';
 
 const ROOT = process.cwd();
 const manifest = JSON.parse(readFileSync(path.join(ROOT, 'scripts/media/manifest.json'), 'utf8')) as {
-  images: { id: string; set: string; src: string; format?: string }[];
-  videos: { id: string; set: string }[];
+  images: { id: string; set: string; src: string; format?: string; status?: string }[];
+  videos: { id: string; set: string; status?: string }[];
   excluded: { src: string; reason: string }[];
 };
 
@@ -49,6 +49,15 @@ describe('media manifest ↔ committed derivatives ↔ catalogue', () => {
     const srcs = new Set(manifest.images.map((m) => m.src));
     for (const ex of manifest.excluded) expect(srcs.has(ex.src), ex.src).toBe(false);
     expect(manifest.excluded.some((e) => e.src.includes('ChatGPT'))).toBe(true);
+  });
+  it('needs_review status in the manifest matches needsReview in the catalogue (production exclusion)', () => {
+    const reviewIds = new Set(
+      [...manifest.images, ...manifest.videos]
+        .filter((m) => m.status === 'needs_review')
+        .map((m) => `${m.set}/${m.id}`),
+    );
+    for (const m of media) expect(!!m.needsReview, m.id).toBe(reviewIds.has(m.id));
+    expect(reviewIds.size, 'the two watermarked show photos').toBe(2);
   });
   it('focal points are within bounds', () => {
     for (const im of images) {

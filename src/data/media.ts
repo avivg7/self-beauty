@@ -25,6 +25,8 @@ export interface MediaImage {
   /** Lower-quality source; keep to card sizes */
   small?: boolean;
   credit?: string;
+  /** Usage rights or provenance not yet confirmed: never rendered in a production build */
+  needsReview?: boolean;
 }
 
 export interface MediaVideo {
@@ -40,6 +42,7 @@ export interface MediaVideo {
   hasAudio: boolean;
   /** Seconds; used for the duration badge */
   duration: number;
+  needsReview?: boolean;
 }
 
 export type MediaItem = MediaImage | MediaVideo;
@@ -129,6 +132,7 @@ export const images: MediaImage[] = [
       chapter: 'ring',
       breeds: ['yorkshire'],
       credit: 'Svetlana Zohar Photography',
+      needsReview: true,
       caption: { he: 'אחרי השיפוט', ru: 'После экспертизы', en: 'After judging' },
     },
   ),
@@ -255,7 +259,7 @@ export const images: MediaImage[] = [
       en: 'The breeder in a striped jacket holding a Yorkshire Terrier with a red bow at a show',
     },
     { x: 0.5, y: 0.3 },
-    { chapter: 'ring', breeds: ['yorkshire'] },
+    { chapter: 'ring', breeds: ['yorkshire'], needsReview: true },
   ),
 
   // Through the years (real capture dates from EXIF where available)
@@ -412,6 +416,13 @@ export const videos: MediaVideo[] = [
     caption: { he: 'שיצו בזירה', ru: 'Ши-тцу в ринге', en: 'Shih Tzu in the ring' },
   },
 ];
+
+/**
+ * Items flagged needsReview are excluded from production builds (usage rights / provenance unconfirmed).
+ * SB_INCLUDE_REVIEW=1 shows them locally for review. scripts/check-links.mjs fails the build if one leaks.
+ */
+export const includeReview = import.meta.env.SB_INCLUDE_REVIEW === '1';
+export const publishable = <T extends MediaItem>(m: T): boolean => !m.needsReview || includeReview;
 
 export const media: MediaItem[] = [...images, ...videos];
 export const mediaById = new Map<string, MediaItem>(media.map((m) => [m.id, m]));
