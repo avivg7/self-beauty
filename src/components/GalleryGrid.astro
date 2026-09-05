@@ -52,15 +52,24 @@ const prepared = await Promise.all(
   }),
 );
 // In a 3-column grid every wide tile (2 cols) pairs with one portrait tile (1 col). When wide tiles
-// outnumber portrait ones, the surplus would leave an empty column, so those are promoted to full rows,
-// spread evenly through the sequence.
+// outnumber portrait ones, the surplus would leave an empty column, so those are promoted to full rows
+// (2:1). Only the genuinely wide images are eligible (a 2:1 crop of a near-square photo would cut faces),
+// and the picks are spread evenly through the sequence.
 {
+  const ratio = (p: (typeof prepared)[number]) =>
+    p.m.kind === 'image' && p.lg
+      ? p.lg.w / p.lg.h
+      : p.m.kind === 'video' && p.m.orientation === 'landscape'
+        ? 16 / 9
+        : 0;
   const wideIdx = prepared.map((p, i) => (p.wide ? i : -1)).filter((i) => i >= 0);
   const portrait = prepared.length - wideIdx.length;
   const surplus = Math.max(0, wideIdx.length - portrait);
   if (surplus > 0) {
-    const step = wideIdx.length / surplus;
-    for (let k = 0; k < surplus; k++) prepared[wideIdx[Math.floor(k * step)]!]!.full = true;
+    const eligible = wideIdx.filter((i) => ratio(prepared[i]!) >= 1.45);
+    const pool = eligible.length >= surplus ? eligible : wideIdx;
+    const step = pool.length / surplus;
+    for (let k = 0; k < surplus; k++) prepared[pool[Math.floor(k * step)]!]!.full = true;
   }
 }
 const breeds = Array.from(new Set(items.flatMap((m) => m.breeds ?? []))) as Breed[];
