@@ -1,7 +1,6 @@
 ---
 import '@fontsource/bona-nova/400.css';
 import '@fontsource/bona-nova/700.css';
-import '@fontsource/bona-nova/400-italic.css';
 import '@fontsource-variable/ibm-plex-sans';
 import '@fontsource/ibm-plex-sans-hebrew/400.css';
 import '@fontsource/ibm-plex-sans-hebrew/500.css';
@@ -17,6 +16,18 @@ import Footer from '@/components/Footer.astro';
 import StickyContactBar from '@/components/StickyContactBar.astro';
 import A11yPanel from '@/components/A11yPanel.astro';
 import Lightbox from '@/components/Lightbox.astro';
+// Critical font files per locale (hashed URLs via Vite) — preloaded so headings and body text render in one pass.
+import bonaHe from '@fontsource/bona-nova/files/bona-nova-hebrew-700-normal.woff2?url';
+import bonaCy from '@fontsource/bona-nova/files/bona-nova-cyrillic-700-normal.woff2?url';
+import bonaLa from '@fontsource/bona-nova/files/bona-nova-latin-700-normal.woff2?url';
+import plexHe from '@fontsource/ibm-plex-sans-hebrew/files/ibm-plex-sans-hebrew-hebrew-400-normal.woff2?url';
+import plexCy from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-cyrillic-wght-normal.woff2?url';
+import plexLa from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
+const criticalFonts: Record<Locale, string[]> = {
+  he: [bonaHe, plexHe],
+  ru: [bonaCy, plexCy],
+  en: [bonaLa, plexLa],
+};
 
 interface Props {
   locale: Locale;
@@ -127,6 +138,12 @@ const switchPath = alternates ? path : '/';
     <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
     <link rel="manifest" href={href('/site.webmanifest')} />
     <link rel="sitemap" href={href('/sitemap-index.xml')} />
+    {
+      criticalFonts[locale].map((f) => (
+        <link rel="preload" as="font" type="font/woff2" href={f} crossorigin />
+      ))
+    }
+    <slot name="head" />
     <script is:inline>
       /* Apply saved accessibility preferences before first paint; mark JS availability. */
       (function () {

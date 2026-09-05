@@ -55,6 +55,12 @@ decorative "01/02/03" numbering (the litters "how it works" list is a real seque
 gutter `clamp(1rem, 4vw, 2.5rem)`. Grid helpers `.grid--2/3/4` collapse to two columns on tablet and one on
 phones. Every fixed element reserves space (`body` padding-bottom for the sticky bar; safe-area insets).
 
+## Galleries
+
+Tiles are uniform 4:5 crops (focal-point positioned); landscape photos and videos span two columns, and
+when landscape tiles outnumber portrait ones the surplus are promoted to full-width rows so no column is
+left empty. Icons come from one inline SVG family (`Icon.astro`, 1.75 stroke) and size relative to text.
+
 ## Components
 
 - Buttons `.btn` (pill, 48px min height): primary burgundy, `--secondary` outline, `--ghost`, `--whatsapp`,

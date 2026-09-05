@@ -19,6 +19,8 @@ interface Props {
   /** Override alt (e.g. empty for decorative duplicates) */
   alt?: string;
   formats?: ('avif' | 'webp')[];
+  /** 1–100; lower for large decorative backdrops under overlays */
+  quality?: number;
 }
 const {
   id,
@@ -30,6 +32,7 @@ const {
   class: className,
   alt,
   formats = ['avif', 'webp'],
+  quality,
 } = Astro.props;
 
 const assets = import.meta.glob<{ default: ImageMetadata }>('/src/assets/media/**/*.{jpg,png}', {
@@ -53,6 +56,7 @@ const objectPosition = `${Math.round(item.focal.x * 100)}% ${Math.round(item.foc
   sizes={sizes}
   formats={formats}
   fallbackFormat="jpg"
+  quality={quality}
   loading={loading}
   decoding={loading === 'eager' ? 'sync' : 'async'}
   fetchpriority={fetchpriority}

@@ -14,6 +14,8 @@ import { localePaths } from '@/lib/paths';
 import { getFeaturedPuppies, getTestimonials } from '@/lib/listings';
 import { images } from '@/data/media';
 import { site } from '@/data/site';
+import { getImage } from 'astro:assets';
+import heroSrc from '@/assets/media/brand/hero-red-poodle.jpg';
 
 export const getStaticPaths = localePaths;
 const locale = Astro.params.lang as Locale;
@@ -31,9 +33,24 @@ const strip = [
   .map((id) => images.find((i) => i.id === id)!)
   .filter(Boolean);
 const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
+const heroPreload = await getImage({
+  src: heroSrc,
+  format: 'avif',
+  widths: [420, 640, 740],
+  sizes: '(min-width: 64rem) 520px, (min-width: 40rem) 60vw, 100vw',
+});
 ---
 
 <Base locale={locale} title={t.home.title} description={t.home.description} path="/">
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    type="image/avif"
+    imagesrcset={heroPreload.srcSet.attribute}
+    imagesizes={heroPreload.attributes.sizes}
+    fetchpriority="high"
+  />
   <!-- Hero: the thesis. Copy first on every viewport; the mounted photograph is the signature. -->
   <section class="hero">
     <div class="container hero__grid">
@@ -100,7 +117,7 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
       />
       {
         puppies.length ? (
-          <div class="grid grid--3">
+          <div class="pgrid">
             {puppies.map((p, i) => (
               <div class="reveal" data-delay={String(i)}>
                 <PuppyCard puppy={p} locale={locale} eager={i === 0} />
@@ -124,7 +141,8 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
       }
       <p class="section__more">
         <a class="btn btn--ghost" href={localeHref(locale, 'puppies')}
-          >{t.cta.viewAll} <Icon name="arrow" class="rtl-flip" /></a>
+          >{t.cta.viewAll} <Icon name="arrow" class="rtl-flip" /></a
+        >
       </p>
     </div>
   </section>
@@ -148,7 +166,8 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
         <p class="lede">{t.home.aboutText}</p>
         <p>
           <a class="btn btn--secondary" href={localeHref(locale, 'about')}
-            >{t.cta.aboutUs} <Icon name="arrow" class="rtl-flip" /></a>
+            >{t.cta.aboutUs} <Icon name="arrow" class="rtl-flip" /></a
+          >
         </p>
       </div>
     </div>
@@ -182,7 +201,8 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
         </ul>
         <p>
           <a class="btn btn--on-dark" href={localeHref(locale, 'shows')}
-            >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a>
+            >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a
+          >
         </p>
       </div>
       <div class="shows-band__media reveal" data-delay="1">
@@ -270,7 +290,8 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
       </ul>
       <p class="section__more">
         <a class="btn btn--ghost" href={localeHref(locale, 'gallery')}
-          >{t.cta.viewGallery} <Icon name="arrow" class="rtl-flip" /></a>
+          >{t.cta.viewGallery} <Icon name="arrow" class="rtl-flip" /></a
+        >
       </p>
     </div>
   </section>
@@ -322,7 +343,7 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
     font-size: clamp(2rem, 1.3rem + 3vw, 3.9rem);
   }
   .hero__media {
-    max-width: 34rem;
+    max-width: 36rem;
   }
   .hero__img {
     aspect-ratio: 4 / 5;
@@ -357,7 +378,7 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
       padding-block: clamp(2rem, 5vw, 5rem) var(--section);
     }
     .hero__grid {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
       grid-template-areas: 'top media' 'bottom media';
       column-gap: var(--sp-8);
       align-items: center;
@@ -421,6 +442,11 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
     color: var(--c-text-2);
   }
 
+  .pgrid {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 24rem));
+  }
   .section__more {
     margin-top: var(--sp-5);
   }
@@ -533,7 +559,7 @@ const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
     gap: 0.6rem;
     font-weight: 500;
   }
-  .checks svg {
+  .checks :global(.icon) {
     width: 1.1rem;
     height: 1.1rem;
     color: var(--c-gold-text);

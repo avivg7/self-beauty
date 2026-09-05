@@ -46,7 +46,7 @@ test.describe('multilingual', () => {
     const dir = await page
       .locator('main .ccard__big a[href^="tel:"]')
       .first()
-      .evaluate((el) => getComputedStyle(el.closest('.ltr') ?? el).direction);
+      .evaluate((el) => getComputedStyle(el.closest('.phone, .ltr') ?? el).direction);
     expect(dir).toBe('ltr');
   });
 });

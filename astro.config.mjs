@@ -40,7 +40,9 @@ export default defineConfig({
     responsiveStyles: true,
   },
   build: {
-    inlineStylesheets: 'auto',
+    // GitHub Pages caches assets for only 10 minutes, so an external stylesheet buys little; inlining
+    // removes a render-blocking round trip on every page.
+    inlineStylesheets: 'always',
   },
   vite: {
     build: { assetsInlineLimit: 2048 },

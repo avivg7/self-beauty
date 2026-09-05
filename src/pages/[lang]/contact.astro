@@ -27,7 +27,7 @@ const intents: Record<string, WaIntent> = { puppy: 'general', litters: 'litters'
         <li class="ccard">
           <Icon name="whatsapp" class="ccard__icon" />
           <h2>{t.contact.whatsapp}</h2>
-          <p class="ltr ccard__big">{phoneInternational}</p>
+          <p class="phone ccard__big">{phoneInternational}</p>
           <a class="btn btn--whatsapp" href={whatsappLink(locale)} target="_blank" rel="noopener"
             ><Icon name="whatsapp" /> {t.cta.whatsappUs}</a
           >
@@ -35,7 +35,7 @@ const intents: Record<string, WaIntent> = { puppy: 'general', litters: 'litters'
         <li class="ccard">
           <Icon name="phone" class="ccard__icon" />
           <h2>{t.contact.phone}</h2>
-          <p class="ltr ccard__big"><a href={telLink}>{phoneDisplay}</a></p>
+          <p class="phone ccard__big"><a href={telLink}>{phoneDisplay}</a></p>
           <a class="btn btn--secondary" href={telLink}><Icon name="phone" /> {t.cta.callFull}</a>
         </li>
         <li class="ccard">
@@ -155,7 +155,7 @@ const intents: Record<string, WaIntent> = { puppy: 'general', litters: 'litters'
     font-weight: 600;
     color: var(--c-whatsapp);
   }
-  .quick__go svg {
+  .quick__go :global(.icon) {
     width: 1.1rem;
     height: 1.1rem;
   }

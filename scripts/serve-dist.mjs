@@ -8,11 +8,12 @@
  */
 import { createServer } from 'node:http';
 import { createReadStream, statSync } from 'node:fs';
+import { createGzip } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const DIST = path.join(ROOT, 'dist');
+const DIST = process.env.DIST ? path.resolve(process.env.DIST) : path.join(ROOT, 'dist');
 const BASE = (process.env.BASE ?? '/self-beauty').replace(/\/$/, '');
 const PORT = Number(process.argv[2] ?? process.env.PORT ?? 4321);
 const MIME = {
@@ -43,15 +44,21 @@ const stat = (p) => {
   }
 };
 
+const TEXT = new Set(['.html', '.css', '.js', '.mjs', '.json', '.webmanifest', '.xml', '.txt', '.svg']);
+let currentReq = null;
 function send(res, file, status = 200) {
   const s = stat(file);
   if (!s || !s.isFile()) return notFound(res);
-  res.writeHead(status, {
-    'Content-Type': MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream',
-    'Content-Length': s.size,
-    'Cache-Control': 'no-cache',
-  });
-  createReadStream(file).pipe(res);
+  const ext = path.extname(file).toLowerCase();
+  const type = MIME[ext] ?? 'application/octet-stream';
+  const gz = TEXT.has(ext) && /gzip/.test(currentReq?.headers['accept-encoding'] ?? '');
+  const headers = { 'Content-Type': type, 'Cache-Control': 'no-cache', Vary: 'Accept-Encoding' };
+  if (gz) headers['Content-Encoding'] = 'gzip';
+  else headers['Content-Length'] = s.size;
+  res.writeHead(status, headers);
+  const stream = createReadStream(file);
+  if (gz) stream.pipe(createGzip({ level: 6 })).pipe(res);
+  else stream.pipe(res);
 }
 function notFound(res) {
   const f = path.join(DIST, '404.html');
@@ -66,6 +73,7 @@ function notFound(res) {
 }
 
 createServer((req, res) => {
+  currentReq = req;
   const url = new URL(req.url ?? '/', 'http://localhost');
   let p = decodeURIComponent(url.pathname);
   if (BASE) {

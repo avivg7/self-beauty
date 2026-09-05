@@ -91,7 +91,8 @@ const services = t.grooming.services.map((s) => ({
         />
         <p>
           <a class="btn btn--secondary" href={localeHref(locale, 'shows')}
-            >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a>
+            >{t.cta.viewShows} <Icon name="arrow" class="rtl-flip" /></a
+          >
         </p>
       </div>
       <ul role="list" class="prep__imgs reveal" data-delay="1">
@@ -249,7 +250,7 @@ const services = t.grooming.services.map((s) => ({
     border-radius: var(--r-lg);
     background: var(--c-surface);
   }
-  .portfolio-soon > svg {
+  .portfolio-soon > :global(.icon) {
     width: 2rem;
     height: 2rem;
     color: var(--c-gold-text);
@@ -265,7 +266,7 @@ const services = t.grooming.services.map((s) => ({
     padding: var(--sp-3) 0;
     border-bottom: 1px solid var(--c-border);
   }
-  .tips svg {
+  .tips :global(.icon) {
     width: 1.2rem;
     height: 1.2rem;
     color: var(--c-gold-text);

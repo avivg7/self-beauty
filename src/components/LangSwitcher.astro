@@ -96,7 +96,7 @@ const uid = variant === 'inline' ? 'lang-inline' : 'lang-menu';
     background: var(--c-cream);
     border-color: var(--c-border-strong);
   }
-  .lang__btn svg {
+  .lang__btn :global(.icon) {
     width: 1.15rem;
     height: 1.15rem;
   }
@@ -138,7 +138,7 @@ const uid = variant === 'inline' ? 'lang-inline' : 'lang-menu';
     color: var(--c-burgundy);
     font-weight: 600;
   }
-  .lang__menu a svg {
+  .lang__menu a :global(.icon) {
     width: 1rem;
     height: 1rem;
     color: var(--c-gold-text);

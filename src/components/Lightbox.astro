@@ -120,7 +120,7 @@ const t = getDictionary(locale).gallery_ui;
   .lb__nav:hover {
     background: var(--c-burgundy);
   }
-  .lb__nav svg {
+  .lb__nav :global(.icon) {
     width: 1.3rem;
     height: 1.3rem;
   }
@@ -130,10 +130,10 @@ const t = getDictionary(locale).gallery_ui;
   .lb__nav--next {
     inset-inline-end: 0.5rem;
   }
-  html[dir='ltr'] .lb__nav--prev svg {
+  html[dir='ltr'] .lb__nav--prev :global(.icon) {
     transform: scaleX(-1);
   }
-  html[dir='rtl'] .lb__nav--next svg {
+  html[dir='rtl'] .lb__nav--next :global(.icon) {
     transform: scaleX(-1);
   }
   .lb__nav[disabled] {

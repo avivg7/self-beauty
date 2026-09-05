@@ -9,6 +9,8 @@ import { getDictionary, type Locale } from '@/i18n';
 import { localeHref } from '@/lib/urls';
 import { localePaths } from '@/lib/paths';
 import { images, videos } from '@/data/media';
+import { getImage } from 'astro:assets';
+import trophySrc from '@/assets/media/shows/trophy-hall.jpg';
 
 export const getStaticPaths = localePaths;
 const locale = Astro.params.lang as Locale;
@@ -36,9 +38,25 @@ const items = [
   showVideos[1]!,
   ...showImages.slice(8),
 ];
+const heroPreload = await getImage({
+  src: trophySrc,
+  format: 'avif',
+  quality: 55,
+  widths: [640, 1024, 1600],
+  sizes: '100vw',
+});
 ---
 
 <Base locale={locale} title={t.shows.title} description={t.shows.description} path="/shows/">
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    type="image/avif"
+    imagesrcset={heroPreload.srcSet.attribute}
+    imagesizes="100vw"
+    fetchpriority="high"
+  />
   <section class="shero dark">
     <div class="shero__bg" aria-hidden="true">
       <Picture
@@ -46,10 +64,11 @@ const items = [
         locale={locale}
         alt=""
         sizes="100vw"
-        widths={[640, 1200, 2000]}
+        widths={[640, 1024, 1600]}
         loading="eager"
         fetchpriority="high"
-        formats={['webp']}
+        formats={['avif']}
+        quality={55}
       />
     </div>
     <div class="container shero__inner">
@@ -156,7 +175,7 @@ const items = [
     border-radius: var(--r-md);
     background: var(--c-surface);
   }
-  .title svg {
+  .title :global(.icon) {
     width: 1.5rem;
     height: 1.5rem;
     color: var(--c-gold-text);

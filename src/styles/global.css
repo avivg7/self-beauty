@@ -108,6 +108,19 @@ hr {
 }
 
 /* Bidi safety for phone numbers, brand names and Latin fragments inside RTL copy */
+/* Phone numbers: LTR-isolated, never wrapped at hyphens */
+.phone {
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* Icons (src/components/Icon.astro): sized relative to text unless a parent overrides .icon */
+.icon {
+  width: 1.25em;
+  height: 1.25em;
+  flex: none;
+}
 .ltr,
 .num {
   direction: ltr;
@@ -375,6 +388,8 @@ html[lang='ru'] .eyebrow {
   display: inline-grid;
   place-items: center;
   width: 2.75rem;
+  min-width: 2.75rem;
+  flex: none;
   height: 2.75rem;
   border-radius: var(--r-pill);
   color: var(--c-text);

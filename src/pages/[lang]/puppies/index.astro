@@ -46,7 +46,7 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
 
       {
         puppies.length ? (
-          <ul role="list" class="grid grid--3" data-puppy-list>
+          <ul role="list" class="plist" data-puppy-list>
             {puppies.map((p, i) => (
               <li data-breed={p.data.breed}>
                 <PuppyCard puppy={p} locale={locale} eager={i < 2} />
@@ -104,6 +104,11 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
 </script>
 
 <style>
+  .plist {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 24rem));
+  }
   .pfilters {
     display: flex;
     flex-wrap: wrap;

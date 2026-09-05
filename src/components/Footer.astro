@@ -60,14 +60,16 @@ const links = [
     <div>
       <h2 class="site-footer__h">{t.footer.contactTitle}</h2>
       <ul role="list" class="site-footer__contact">
-        <li><a href={telLink}><Icon name="phone" /><span class="ltr">{phoneDisplay}</span></a></li>
+        <li><a href={telLink}><Icon name="phone" /><span class="phone">{phoneDisplay}</span></a></li>
         <li>
           <a href={whatsappLink(locale)} target="_blank" rel="noopener"
-            ><Icon name="whatsapp" /><span>WhatsApp</span></a>
+            ><Icon name="whatsapp" /><span>WhatsApp</span></a
+          >
         </li>
         <li>
           <a href={facebookUrl} target="_blank" rel="noopener" aria-label={t.footer.facebookAria}
-            ><Icon name="facebook" /><span>Facebook</span></a>
+            ><Icon name="facebook" /><span>Facebook</span></a
+          >
         </li>
         <li><span class="site-footer__pin"><Icon name="pin" /><span>{t.meta.cityCountry}</span></span></li>
       </ul>
@@ -196,7 +198,7 @@ const links = [
     gap: 0.6rem;
     min-height: 2.5rem;
   }
-  .site-footer__contact svg {
+  .site-footer__contact :global(.icon) {
     width: 1.15rem;
     height: 1.15rem;
     color: var(--c-gold);

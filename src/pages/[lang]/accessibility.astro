@@ -33,7 +33,8 @@ const updated = '2026-09-05';
       <p>{t.a11y.controlsText}</p>
       <p>
         <button type="button" class="btn btn--secondary" data-a11y-open
-          ><Icon name="accessibility" /> {t.a11y.panel.open}</button>
+          ><Icon name="accessibility" /> {t.a11y.panel.open}</button
+        >
       </p>
       <h2>{t.a11y.limitsTitle}</h2>
       <ul class="stmt__list stmt__list--plain" role="list">
@@ -78,7 +79,7 @@ const updated = '2026-09-05';
     gap: 0.6rem;
     align-items: flex-start;
   }
-  .stmt__list svg {
+  .stmt__list :global(.icon) {
     width: 1.15rem;
     height: 1.15rem;
     color: var(--c-gold-text);

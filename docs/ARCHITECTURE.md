@@ -66,7 +66,7 @@ components/A11yPanel        <dialog>: text size ×1.125/×1.25, high contrast, r
 components/Picture          catalogue-aware <Picture>: AVIF/WebP/JPEG, widths+sizes, focal object-position
 components/VideoTile        poster-first video; tier chosen at play time (480p on narrow viewports / Save-Data)
 components/Lightbox         single <dialog> reused by all galleries; keyboard, swipe, RTL-aware arrows
-components/GalleryGrid      CSS-columns masonry, type/breed filters, per-group lightbox
+components/GalleryGrid      uniform 4:5 grid, landscape tiles span 2 columns, surplus landscapes become full rows; filters; per-group lightbox
 components/PuppyCard, StatusChip, BreedGrid, StoryExcerpt, LitterBanner, CtaBand, SectionHeading, Icon
 ```
 
@@ -80,7 +80,7 @@ statement. axe runs on every page × locale in CI (`tests/e2e/a11y.spec.ts`); se
 ## Verification
 
 `npm run verify` = lint → `astro check` → unit tests → build → link check. `npm run test:e2e` runs Playwright
-against `astro preview` with the GitHub Pages base path, on 360/390/768/1440 device profiles plus the
+against `scripts/serve-dist.mjs` (a static server that mimics GitHub Pages: base path, trailing slashes, real 404 status, gzip), on 360/390/768/1440 device profiles plus the
 `a11y` and `widths` projects (320–1440 px, overflow, tap-target and sticky-bar checks). `SHOTS=1` writes full-page screenshots.
 
 ## Deployment

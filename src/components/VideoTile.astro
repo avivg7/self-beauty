@@ -56,7 +56,7 @@ const title = v.caption?.[locale] ?? v.alt[locale];
     data-lb-w={w}
     data-lb-h={h}
     aria-label={t.gallery_ui.videoLabel.replace('{title}', title)}
-    style={`aspect-ratio:${w}/${h}`}
+    style={`--vr:${w}/${h}`}
   >
     <picture>
       <source srcset={posterWebp} type="image/webp" />
@@ -71,17 +71,33 @@ const title = v.caption?.[locale] ?? v.alt[locale];
 <style>
   .vtile {
     display: grid;
+    grid-template-rows: 1fr auto;
     gap: 0.5rem;
   }
   .vtile__btn {
     position: relative;
     display: block;
     width: 100%;
+    aspect-ratio: var(--vr, 4 / 5);
     overflow: hidden;
     border-radius: var(--r-sm);
     background: var(--c-charcoal);
   }
+  :global(.gallery__grid) .vtile__btn {
+    aspect-ratio: 4 / 5;
+  }
+  :global(.gallery__item--wide) .vtile__btn {
+    aspect-ratio: auto;
+    height: 100%;
+    min-height: 12rem;
+  }
+  .vtile__btn picture {
+    position: absolute;
+    inset: 0;
+  }
   .vtile__btn img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -110,7 +126,7 @@ const title = v.caption?.[locale] ?? v.alt[locale];
       transform var(--dur-fast) var(--ease-out),
       background var(--dur-fast) var(--ease-out);
   }
-  .vtile__play svg {
+  .vtile__play :global(.icon) {
     width: 1.4rem;
     height: 1.4rem;
     margin-inline-start: 0.15rem;

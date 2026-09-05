@@ -60,7 +60,8 @@ Environment (all optional; see `.env.example`):
 | Command | What it does |
 |---|---|
 | `npm run verify` | lint → `astro check` → unit tests → build → link check (what CI runs) |
-| `npm run test:e2e` | Playwright on the production build at 360/390/768/1440 + axe on every page/locale + 320–1440 overflow checks. `SHOTS=1` saves full-page screenshots to `test-results/shots/`. |
+| `npm run test:e2e` | Playwright on the production build (served by `scripts/serve-dist.mjs`, which mimics GitHub Pages: base path, trailing slashes, real 404, gzip) at 360/390/768/1440 + axe on every page/locale + 320–1440 overflow and tap-target checks. `SHOTS=1` saves full-page screenshots to `artifacts/shots/`. |
+| `npm run serve` | Serve `dist/` locally exactly as GitHub Pages would (`node scripts/serve-dist.mjs [port]`) |
 | `npm run media:ingest` | Convert new originals (HEIC/HEVC → web masters, MP4 tiers, posters). See docs/MEDIA.md. |
 | `node scripts/media/brand.mjs` | Regenerate favicons, OG image, web manifest |
 | `npm run lint` / `npm run format` | ESLint (astro + a11y rules) / Prettier |

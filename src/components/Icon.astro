@@ -65,9 +65,9 @@ const paths: Record<IconName, string> = {
   stroke-width="1.75"
   stroke-linecap="round"
   stroke-linejoin="round"
-  width={size}
-  height={size}
-  class={className}
+  width={size ?? 24}
+  height={size ?? 24}
+  class:list={['icon', className]}
   aria-hidden={title ? undefined : 'true'}
   role={title ? 'img' : undefined}
   focusable="false">{title && <title>{title}</title>}<Fragment set:html={paths[name]} /></svg
