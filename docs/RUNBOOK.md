@@ -42,9 +42,10 @@ Commands load it with `set -a; source ~/.config/self-beauty/prod.env; set +a` in
    is still empty** (it refuses to run otherwise and only deletes the rows and test users it creates):
    `SB_PROD_VERIFY=1 SUPABASE_URL=https://<ref>.supabase.co SUPABASE_PUBLISHABLE_KEY=<anon> npm run test:db`
    with `SUPABASE_SECRET_KEY` loaded from the private env file.
-4. Dashboard → Authentication → Providers → Email: **disable "Allow new users to sign up"**; keep email
-   confirmations off; minimum password length 12. Dashboard → Authentication → URL configuration: site URL
-   `https://avivg7.github.io/self-beauty/admin/`, redirect URLs the same plus `http://localhost:4321/self-beauty/admin/`.
+4. Auth settings come from the version-controlled `supabase/config.toml` (`[auth]` section: sign-ups off, minimum
+   password 12, site URL `https://avivg7.github.io/self-beauty/admin/`, localhost redirect URLs, e-mail provider on,
+   confirmations off): `npx supabase config push` applies them to the linked project. Verify in the dashboard →
+   Authentication → Sign In / Providers.
 5. Create the owner and allowlist her — either route, never through chat or Git:
    - **Dashboard**: Authentication → Users → _Add user_ (email + a 12+ character password, auto-confirm), copy the
      UUID, then SQL editor: `insert into public.admins (user_id) values ('<uuid>');`
