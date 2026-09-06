@@ -255,8 +255,8 @@
       "src": "videos/shows/WhatsApp Video 2026-08-30 at 22.46.55.mp4",
       "poster": 15,
       "note": "Low-res 478x850 WhatsApp source, no audio, 32 s. Kept for authenticity; candidate for replacement.",
-      "status": "included",
-      "review": "Low-resolution WhatsApp source; quality note only, no rights question."
+      "status": "excluded",
+      "review": "Withdrawn from the website at the client's request on 2026-09-06. Source file kept in the vault; derivatives removed from public/media/video (regenerable via npm run media:ingest)."
     }
   ]
 }

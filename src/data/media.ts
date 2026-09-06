@@ -410,6 +410,7 @@ export const videos: MediaVideo[] = [
     orientation: 'portrait',
     hasAudio: false,
     duration: 32.4,
+    excluded: true, // withdrawn at the client's request (2026-09-06); source stays in videos/shows/
     chapter: 'ring',
     breeds: ['shihtzu'],
     alt: {
