@@ -85,7 +85,27 @@ Automated:
   rejected), `updated_at` trigger, retry-safe public upsert, exact RPC key list (no `internal_note`, no admin id),
   archive constraint, cascade delete.
 
-Manual QA before final release (not a gate; requires the production project and the owner's iPhone):
+Production end-to-end (2026-09-06, live site + live Supabase project `qqmtwixiyycgxawirfic`, as the real owner,
+headless iPhone-sized Chromium; screenshots in `artifacts/prod-e2e/`):
+
+| Step                             | Result                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| Login                            | "גורים באתר"                                                                         |
+| Create puppy                     | draft saved, redirected to its edit page                                             |
+| Upload 3 JPGs                    | "תמונות — 3/3", add disabled                                                         |
+| Publish                          | "מפורסם באתר"; public card with chip "זמין", photo served, RPC returns 1 row         |
+| Available → Reserved, Save       | public chip "שמור", RPC status `reserved`; no GitHub deployment involved             |
+| Unpublish                        | public empty state, RPC 0 rows; public bucket emptied, 6 private derivatives kept    |
+| Archive / Restore                | "בארכיון" → "לא מפורסם", still hidden from the site                                  |
+| Permanent delete (typed confirm) | row + 3 image rows gone, private and public objects gone; admins = 1, auth users = 1 |
+| After deletion                   | all public pages 200, RPC `[]`, live empty state, admin login page 200               |
+
+Also verified on the real project: `npm run test:db` with `SB_PROD_VERIFY=1` → 14/14 (RLS, admin permissions, public
+RPC key list, 3-image invariant, per-bucket storage policies), using the publishable/secret key model.
+
+**Only remaining manual QA item**: the physical iPhone HEIC checklist below (not a release gate).
+
+Physical iPhone HEIC checklist (the owner's phone, Safari, real HEIC photos):
 
 | #   | Check                                       | Expected                                                                    |
 | --- | ------------------------------------------- | --------------------------------------------------------------------------- |

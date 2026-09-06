@@ -138,5 +138,5 @@ nine widths, tap-target sizes).
 | TODO-004 | Confirm usage rights for the two watermarked show photos.                                                                                                              |
 | TODO-005 | Owner display name (if she wants it shown).                                                                                                                            |
 | TODO-006 | Current Bichon litter: confirm photos, add names/birth dates through the admin when it exists.                                                                         |
-| TODO-007 | Admin: code complete (Lean V1). Waiting for the production Supabase project + owner e-mail (see docs/RUNBOOK.md), then the real-iPhone HEIC QA.                        |
+| TODO-007 | Admin live in production (Lean V1, 2026-09-06). Remaining: real-iPhone HEIC QA checklist in docs/VERIFICATION.md (not a gate).                                         |
 | TODO-008 | Higher-resolution hero photo (current crop is 740×925).                                                                                                                |

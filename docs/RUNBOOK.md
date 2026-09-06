@@ -35,6 +35,11 @@ Commands load it with `set -a; source ~/.config/self-beauty/prod.env; set +a` in
 
 ## First-time setup (developer, once)
 
+> **Completed 2026-09-06** for project `qqmtwixiyycgxawirfic` (org "Self Beauty", eu-central-1, Free): linked, migration
+> pushed, auth config pushed, owner created and allowlisted, repository variables set, frontend deployed, production
+> end-to-end passed and the test listing removed (see `docs/VERIFICATION.md`). The private env file was only needed for
+> this setup; delete it. Remaining manual QA: the iPhone HEIC checklist.
+
 1. Create the free project in the Supabase dashboard (no card). Region: `eu-central-1`. Note the project ref.
 2. `npx supabase login` (browser flow; the token stays on the developer machine) then `npx supabase link --project-ref <ref>`.
 3. Apply the schema: `npx supabase db push`. Verify in the dashboard: 3 tables with RLS on, 2 buckets, 4 functions.
