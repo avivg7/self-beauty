@@ -34,7 +34,7 @@ jobs:
           BASE: ${{ vars.BASE || '/self-beauty' }}
           # Verification build only (never deployed): a mock backend so Playwright can intercept every request.
           PUBLIC_SUPABASE_URL: https://supabase.mock.invalid
-          PUBLIC_SUPABASE_ANON_KEY: mock-anon-key
+          PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_mock
       - run: npm run links
       - uses: actions/upload-artifact@v6
         with:

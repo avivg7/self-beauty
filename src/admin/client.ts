@@ -1,18 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
 export const SUPABASE_URL = (import.meta.env.PUBLIC_SUPABASE_URL ?? '').replace(/\/$/, '');
-export const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
-export const configured = SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length > 0;
+/** Publishable key (`sb_publishable_…`, current key model); a legacy JWT anon key still works for old setups. */
+export const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
+export const configured = SUPABASE_URL.length > 0 && SUPABASE_PUBLISHABLE_KEY.length > 0;
 
 /** Admin client. Distinct storage key so the session never collides with anything else on the shared Pages origin. */
-export const supabase = createClient(SUPABASE_URL || 'http://localhost', SUPABASE_ANON_KEY || 'anon', {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: 'sb-selfbeauty-admin',
+export const supabase = createClient(
+  SUPABASE_URL || 'http://localhost',
+  SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_unconfigured',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storageKey: 'sb-selfbeauty-admin',
+    },
   },
-});
+);
 
 export const PRIVATE_BUCKET = 'listing-media-private';
 export const PUBLIC_BUCKET = 'listing-media-public';

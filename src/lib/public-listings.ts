@@ -31,9 +31,11 @@ export interface PublicListing {
 }
 
 export const SUPABASE_URL = (import.meta.env.PUBLIC_SUPABASE_URL ?? '').replace(/\/$/, '');
-export const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
+/** Publishable key (`sb_publishable_…`, current key model). A legacy JWT anon key is still accepted for old setups. */
+export const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 export const PUBLIC_BUCKET = 'listing-media-public';
-export const isConfigured = () => SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length > 0;
+export const isConfigured = () => SUPABASE_URL.length > 0 && SUPABASE_PUBLISHABLE_KEY.length > 0;
 
 const BREEDS = new Set<Breed>(['yorkshire', 'poodle', 'bichon', 'pomeranian', 'shihtzu']);
 const STATUSES = new Set<ListingStatus>(['available', 'reserved', 'coming_soon', 'placed']);
@@ -106,8 +108,11 @@ async function rpc(name: string, body: Record<string, unknown>, signal: AbortSig
   const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      // Publishable keys are not JWTs: the gateway maps `apikey` to the anon role. Legacy anon keys go as Bearer too.
+      ...(SUPABASE_PUBLISHABLE_KEY.startsWith('sb_')
+        ? {}
+        : { Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` }),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),

@@ -39,7 +39,7 @@ jobs:
           BASE: ${{ vars.BASE || steps.pages.outputs.base_path || '/' }}
           # Public Supabase values (repository variables, not secrets). Empty → the live sections show the error state.
           PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
-          PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+          PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist

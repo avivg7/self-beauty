@@ -18,14 +18,14 @@ designed for hundreds of listings, and nothing should be added for that reason.
 
 ```
 GitHub Pages (free)                      Supabase free plan ($0, no card)
-├─ public site (static Astro)  ──fetch──▶ rpc public_listings_json()  (anon key, published rows only)
+├─ public site (static Astro)  ──fetch──▶ rpc public_listings_json()  (publishable key, published rows only)
 │   /he/puppies/  /he/puppies/view/?id=   └─▶ images from bucket listing-media-public (URL, CDN)
 └─ /admin/ (static page + Preact island) ─▶ Auth (email+password) · Postgres under RLS · Storage (2 buckets)
 ```
 
 No Edge Functions, no servers, no cron, no monitoring. Content changes touch Supabase only; GitHub Actions
-deploys application code only. The browser bundle holds the project URL and anon key (public by design);
-security is RLS plus the grants in §5. No service-role key exists anywhere in the repository or the site.
+deploys application code only. The browser bundle holds the project URL and publishable key (public by design);
+security is RLS plus the grants in §5. No secret key exists anywhere in the repository or the site.
 
 ## 3. Images (browser-side pipeline, derivatives only)
 
@@ -115,7 +115,7 @@ and is_admin() and is_listing_media_key(name)` (the generated key shape `listing
 
 ## 7. Public site
 
-Static shells unchanged. An island fetches the RPC with plain `fetch` and the anon key (`no-store`, 8 s
+Static shells unchanged. An island fetches the RPC with plain `fetch` and the publishable key (`no-store`, 8 s
 timeout) and clones the existing card template. States: skeleton → listings / empty (successful zero-row fetch)
 / error ("לא הצלחנו לטעון את הגורים כרגע" + WhatsApp CTA — never "no puppies" on failure). Cards use the 640
 derivative, detail/lightbox the 1600. Detail route: `/{lang}/puppies/view/?id=<uuid>` (static page + island);
@@ -135,7 +135,7 @@ button language; `noindex`; excluded from sitemap; distinct session storage key.
 
 ## 9. Environment, CI, migrations, backup
 
-- Build-time public values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (GitHub repository variables; both
+- Build-time public values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` (GitHub repository variables; both
   are public by nature). No secrets in GitHub. Missing values → no dynamic listings: the public island shows the honest empty
   state (identical to the site today) and the admin shows the connect error; the static site is unaffected.
 - CI: existing checks + admin typecheck/unit + Playwright with mocked RPC responses. No Supabase credentials in CI.

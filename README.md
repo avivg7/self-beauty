@@ -107,13 +107,13 @@ operations: [docs/RUNBOOK.md](docs/RUNBOOK.md); upload rules: [docs/ADMIN_UPLOAD
 - Owner flow: **גורים באתר → הוספת גור → up to 3 photos (HEIC converted in the browser) → פרסום**; status changes
   (זמין → שמור) are live on the next page view. Unpublish, archive/restore and permanent delete live in the status
   sheet. No commit, push, Action or rebuild is ever needed for content.
-- Public site reads one read-only RPC (`public_listings_json`) with the anon key: `src/lib/public-listings.ts`,
+- Public site reads one read-only RPC (`public_listings_json`) with the publishable key: `src/lib/public-listings.ts`,
   `src/components/LivePuppies.astro`, detail at `/{lang}/puppies/view/?id=…`. Backend down → friendly error with the
   WhatsApp CTA (never "no puppies"); paused free project → same, see the runbook.
 - Schema: `supabase/migrations/` (version-controlled, applied manually with the Supabase CLI — no DB credentials in
   GitHub). Tests: `npm run test:db` against the local stack (RLS negatives, 3-image invariant, reorder, exact RPC keys);
   `npm run test:e2e` covers the island and the admin against a mocked backend.
-- Build-time values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (repository variables; public by design).
+- Build-time values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` (repository variables; public by design).
   Until they exist, a build has no dynamic listings and the puppies section shows the honest empty state (same as
   today); the admin shows the connect error. Recurring cost: **$0** (Supabase free plan, no card).
 

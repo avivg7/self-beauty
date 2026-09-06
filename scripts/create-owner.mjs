@@ -7,24 +7,22 @@
  *
  * prod.env contains:
  *   SUPABASE_URL=https://<ref>.supabase.co
- *   SUPABASE_SERVICE_ROLE_KEY=...        (dashboard → Project Settings → API keys; delete the file afterwards)
+ *   SUPABASE_SECRET_KEY=...        (dashboard → Project Settings → API keys → Secret keys; delete the file afterwards)
  *   OWNER_EMAIL=owner@example.com
  *   OWNER_PASSWORD=...                   (12+ characters; the owner can change it later via a reset link)
  */
 import { createClient } from '@supabase/supabase-js';
 
-const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OWNER_EMAIL, OWNER_PASSWORD } = process.env;
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !OWNER_EMAIL || !OWNER_PASSWORD) {
-  console.error(
-    'missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / OWNER_EMAIL / OWNER_PASSWORD (see header)',
-  );
+const { SUPABASE_URL, SUPABASE_SECRET_KEY, OWNER_EMAIL, OWNER_PASSWORD } = process.env;
+if (!SUPABASE_URL || !SUPABASE_SECRET_KEY || !OWNER_EMAIL || !OWNER_PASSWORD) {
+  console.error('missing SUPABASE_URL / SUPABASE_SECRET_KEY / OWNER_EMAIL / OWNER_PASSWORD (see header)');
   process.exit(2);
 }
 if (OWNER_PASSWORD.length < 12) {
   console.error('OWNER_PASSWORD must be at least 12 characters (project policy).');
   process.exit(2);
 }
-const svc = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+const svc = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, { auth: { persistSession: false } });
 const { data: list, error: listErr } = await svc.auth.admin.listUsers({ perPage: 1000 });
 if (listErr) throw listErr;
 let user = list.users.find((u) => u.email?.toLowerCase() === OWNER_EMAIL.toLowerCase());

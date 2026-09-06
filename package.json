@@ -25,7 +25,7 @@
     "media:ingest": "node scripts/media/ingest.mjs",
     "verify": "npm run lint && npm run check && npm run test:unit && npm run build && npm run links",
     "build:demo": "SB_INCLUDE_DEMO=1 astro build --outDir .demo-dist/ci",
-    "build:e2e": "PUBLIC_SUPABASE_URL=https://supabase.mock.invalid PUBLIC_SUPABASE_ANON_KEY=mock-anon-key astro build"
+    "build:e2e": "PUBLIC_SUPABASE_URL=https://supabase.mock.invalid PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_mock astro build"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

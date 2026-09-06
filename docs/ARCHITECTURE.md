@@ -96,7 +96,7 @@ repository variables (custom domain), uploads `dist/` and deploys with `actions/
   new id), `image-pipeline.ts` (sniff → native decode / libheif fallback → orientation → 1600 & 640 JPEG),
   `App.tsx` (auth gate, hash routes `#/`, `#/archive`, `#/new`, `#/edit/<id>`), `ListingList`, `ListingForm`,
   `PhotoManager`, `StatusSheet`, `Toast`, `admin.css` (tokens, Arial, 44 px targets, bottom sheet).
-- Public read path: `src/lib/public-listings.ts` (plain fetch, anon key, 8 s timeout, row validation) →
+- Public read path: `src/lib/public-listings.ts` (plain fetch, publishable key, 8 s timeout, row validation) →
   `LivePuppies.astro` (Astro renders the card `<template>`; `src/scripts/live-puppies.ts` clones it) and
   `/[lang]/puppies/view/` + `live-puppy-detail.ts`. Demo builds (`SB_INCLUDE_DEMO=1`) keep the static fixtures and the
   static detail route for layout review; production renders the live island.
