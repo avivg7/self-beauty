@@ -23,9 +23,14 @@ and deploys the static site.
 4. Dashboard → Authentication → Providers → Email: **disable "Allow new users to sign up"**; keep email
    confirmations off; minimum password length 12. Dashboard → Authentication → URL configuration: site URL
    `https://avivg7.github.io/self-beauty/admin/`, redirect URLs the same plus `http://localhost:4321/self-beauty/admin/`.
-5. Create the owner: Authentication → Users → _Add user_ → email + a 12+ character password (send it to the owner
-   privately; she can change it later). Copy the user's UUID.
-6. SQL editor: `insert into public.admins (user_id) values ('<uuid>');`
+5. Create the owner and allowlist her — either route, never through chat or Git:
+   - **Dashboard**: Authentication → Users → _Add user_ (email + a 12+ character password, auto-confirm), copy the
+     UUID, then SQL editor: `insert into public.admins (user_id) values ('<uuid>');`
+   - **Script**: put `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `OWNER_EMAIL`, `OWNER_PASSWORD` in
+     `~/.config/self-beauty/prod.env` (`chmod 600`), run
+     `node --env-file=$HOME/.config/self-beauty/prod.env scripts/create-owner.mjs`, then delete the file.
+6. Treat that password as temporary: the owner changes it after first login (developer sends a reset link from
+   Authentication → Users). Anything ever typed into a chat or an e-mail counts as temporary.
 7. Repository → Settings → Variables: `PUBLIC_SUPABASE_URL` (project URL) and `PUBLIC_SUPABASE_ANON_KEY` (anon key).
    Push anything to `main` (or re-run the deploy workflow) so the site is rebuilt with the values.
 8. Log in at `/self-beauty/admin/` on a phone and run the checklist in `docs/VERIFICATION.md` (HEIC section).
