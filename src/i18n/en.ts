@@ -7,7 +7,7 @@ export const en: Dictionary = {
     city: 'Bat Yam',
     country: 'Israel',
     cityCountry: 'Bat Yam, Israel',
-    since: 'since 2014',
+    since: 'kennel since 2014',
   },
   nav: {
     home: 'Home',

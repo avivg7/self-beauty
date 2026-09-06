@@ -9,7 +9,7 @@ export const he = {
     city: 'בת ים',
     country: 'ישראל',
     cityCountry: 'בת ים, ישראל',
-    since: 'מאז 2014',
+    since: 'בית גידול מאז 2014',
   },
   nav: {
     home: 'דף הבית',

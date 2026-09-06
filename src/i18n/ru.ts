@@ -7,7 +7,7 @@ export const ru: Dictionary = {
     city: 'Бат-Ям',
     country: 'Израиль',
     cityCountry: 'Бат-Ям, Израиль',
-    since: 'с 2014 года',
+    since: 'питомник с 2014 года',
   },
   nav: {
     home: 'Главная',
