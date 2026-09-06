@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HEIC spike</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:1rem;max-width:40rem}label{display:block;margin:.75rem 0;padding:.75rem;border:1px solid #cdbfa8;border-radius:8px}pre{white-space:pre-wrap;font-size:13px;background:#f1eae0;padding:.75rem;border-radius:8px}img{max-width:100%;border-radius:6px}</style>
+<h1>HEIC → JPEG derivatives (design §6)</h1>
+<p>Pick photos (HEIC, JPEG or PNG). Each is decoded natively first; HEIC falls back to libheif WASM. Output: 1600 / 960 / 480 JPEG with timings.</p>
+<label>accept includes HEIC <input id="f1" type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp" multiple></label>
+<label>accept without HEIC (iOS may transcode) <input id="f2" type="file" accept="image/jpeg,image/png" multiple></label>
+<pre id="log">ready</pre><div id="out"></div>
+<script type="module">
+const log = (m) => (document.getElementById('log').textContent += '\n' + m);
+let heif = null;
+async function heifLib() { if (!heif) { const mod = (await import('./libheif-bundle.mjs')).default; heif = typeof mod === 'function' ? await mod() : mod; } return heif; }
+function sniff(buf) { const b = new Uint8Array(buf, 0, 16); if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'jpeg'; if (b[0] === 0x89 && b[1] === 0x50) return 'png'; if (String.fromCharCode(b[4], b[5], b[6], b[7]) === 'ftyp') return 'heic'; if (String.fromCharCode(b[0], b[1], b[2], b[3]) === 'RIFF') return 'webp'; return 'unknown'; }
+async function decode(file, buf, kind) {
+  try { return { bmp: await createImageBitmap(file, { imageOrientation: 'from-image' }), via: 'native' }; } catch (e) { if (kind !== 'heic') throw e; }
+  const lib = await heifLib(); const t = performance.now();
+  const img = new lib.HeifDecoder().decode(buf)[0]; const w = img.get_width(), h = img.get_height();
+  const data = new ImageData(w, h); await new Promise((r, j) => img.display(data, (d) => (d ? r(d) : j(new Error('display')))));
+  const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').putImageData(data, 0, 0);
+  return { bmp: await createImageBitmap(c), via: `libheif ${Math.round(performance.now() - t)}ms` };
+}
+async function derive(bmp, long, q) { const s = Math.min(1, long / Math.max(bmp.width, bmp.height)); const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s); const r = await createImageBitmap(bmp, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' }); const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(r, 0, 0); return new Promise((res) => c.toBlob((b) => res({ blob: b, w, h }), 'image/jpeg', q)); }
+async function handle(e) {
+  for (const file of e.target.files) {
+    const t0 = performance.now(); const buf = await file.arrayBuffer(); const kind = sniff(buf);
+    log(`${file.name}: ${(file.size / 1e6).toFixed(1)} MB, type="${file.type || '-'}", sniffed=${kind}`);
+    if (file.size > 10 * 1024 * 1024) { log('  REJECT >10MB'); continue; }
+    if (!['jpeg', 'png', 'heic', 'webp'].includes(kind)) { log('  REJECT unsupported'); continue; }
+    try {
+      const { bmp, via } = await decode(file, buf, kind);
+      if (bmp.width * bmp.height > 50e6) { log('  REJECT >50MP'); continue; }
+      const [a, b, c] = [await derive(bmp, 1600, 0.85), await derive(bmp, 960, 0.85), await derive(bmp, 480, 0.82)];
+      log(`  decoded ${bmp.width}x${bmp.height} via ${via}; 1600→${a.w}x${a.h} ${Math.round(a.blob.size / 1024)}KB, 960→${Math.round(b.blob.size / 1024)}KB, 480→${Math.round(c.blob.size / 1024)}KB; total ${Math.round(performance.now() - t0)}ms`);
+      const img = new Image(); img.src = URL.createObjectURL(c.blob); document.getElementById('out').append(img);
+    } catch (err) { log('  FAILED ' + err.message); }
+  }
+}
+document.getElementById('f1').addEventListener('change', handle); document.getElementById('f2').addEventListener('change', handle);
+</script></html>

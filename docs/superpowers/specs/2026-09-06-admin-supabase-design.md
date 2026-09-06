@@ -1,282 +1,348 @@
-# Stage 2 — Admin interface and dynamic puppy listings (Supabase) — design
+# Stage 2 — Admin interface and dynamic puppy listings (Supabase) — design, revision 3
 
-Date: 2026-09-06 · Status: **proposed, awaiting approval before any external resource is created**
+Date: 2026-09-06 · Status: **revised after independent security review; awaiting approval before any external resource is created**
 Production baseline: `main` @ `116c328`, https://avivg7.github.io/self-beauty/
 
-## 0. Discovery (what exists today)
+Revision history
 
-- Public site: Astro 7 static, three locales, deployed by GitHub Actions to GitHub Pages under `/self-beauty/`.
-  Puppies pages render from an Astro content collection (`src/content/puppies/*.json`) through
-  `src/lib/listings.ts` → `PuppyGrid.astro` / `PuppyCard.astro`; production currently has **no published
-  listing** and shows the honest empty state. Nine demo fixtures exist for layout review only.
-- Status labels, breeds, WhatsApp intents and the `admin.upload` error messages already exist in all three
-  dictionaries. Breed keys (`yorkshire|poodle|bichon|pomeranian|shihtzu`) are stable internal values.
-- No framework runs on the public site; islands are vanilla TypeScript. No env secrets exist. Docker is
-  installed locally (Supabase CLI local stack is therefore possible); the Supabase CLI is not yet installed.
+- r1: initial proposal (public-by-URL bucket, unguessable paths) — rejected by the client.
+- r2: two-bucket private/public model, journaled publication, hardened RPC, deferrable reorder, header-first
+  validation, no keep-alive, archive keeps media, backup procedure.
+- r3 (this): after an independent security/architecture review — explicit state machine with compare-and-swap
+  transitions and a lease, archive routed through the function, two-sided consistency constraint, per-image
+  public verification instead of a `dirty` state, privilege revokes on every internal RPC and a catch-all grant
+  test, Edge Function caller authorization spelled out, JPEG segment sanitisation, shared-origin hardening,
+  quota hygiene, a card-size derivative, password-reset decision, and the spikes committed to the repository.
 
-## 1. Architecture (final proposal)
+## 0. Discovery (unchanged)
+
+Astro 7 static site on GitHub Pages under `/self-beauty/`, three locales, no framework on public pages, no
+secrets. Puppies pages render from a content collection (production has no published listing; honest empty
+state). Breed keys, status labels, WhatsApp intents and `admin.upload` messages exist in all dictionaries.
+Docker is installed locally (Supabase CLI local stack for tests); the Supabase CLI is not yet installed.
+The public site and the admin share one origin, `https://avivg7.github.io` (see §9 for the consequences).
+
+## 1. Architecture
 
 ```
-Owner's phone ──HTTPS──▶ GitHub Pages  /self-beauty/admin/   (static Astro page + Preact island, no server)
-                                   │  supabase-js (anon key + owner session JWT)
-                                   ▼
-                         Supabase project (free plan)
-                         ├─ Auth (email + password, sign-ups disabled, one admin)
-                         ├─ Postgres: listings, listing_images, admins  + RLS + RPC + triggers
-                         ├─ Storage bucket listing-media (public read by URL, no listing, owner-only write)
-                         └─ Edge Function register-image (service role; validates bytes, enforces ≤3, inserts row)
+Owner (iPhone) ─▶ GitHub Pages /self-beauty/admin/ (static page + Preact island; anon key + owner session)
+                     │ supabase-js: DB reads/writes under RLS; uploads to the PRIVATE bucket, incoming/ prefix only
+                     │ Edge Function `listing-ops` (service role): register, remove, publish, unpublish, archive,
+                     ▼ delete, reconcile — every operation that must be trusted or spans storage + database
+            Supabase (free plan)
+            ├─ Auth: email + password, sign-ups off, one admin (admins table), min password 12, no OAuth/anon
+            ├─ Postgres: admins, listings, listing_images + RLS, RPCs, triggers, publication state machine
+            ├─ Storage: listing-media-private (PRIVATE) · listing-media-public (public by URL, not listable)
+            └─ Edge Function: listing-ops
 
-Visitor ──HTTPS──▶ GitHub Pages /self-beauty/he/puppies/  (static shell)
-                        │ fetch RPC public_listings_json() with anon key, cache: no-store
-                        ▼  Supabase REST (published rows only) + image URLs on the Storage CDN
+Visitor ─▶ GitHub Pages /he/puppies/ (static shell) ─▶ plain fetch of rpc public_listings_json() as ANON
+                                                   ─▶ images from listing-media-public via the CDN
 ```
 
-- Content changes never touch Git, Actions, or Pages. GitHub Actions deploys **code** only.
-- Nothing secret is bundled: the anon key and project URL are public by design (RLS is the security
-  boundary). The service-role key exists only in the Edge Function runtime and in a local git-ignored file.
+Content changes never touch Git, GitHub Actions or Pages. The service-role key lives only in the Edge Function
+runtime (`supabase secrets`) and a git-ignored local file; the browser bundle contains the project URL and anon key
+only, whose safety rests on RLS and the grants in §5.
 
-## 2. Database schema (SQL migrations in `supabase/migrations/`)
+## 2. Storage architecture
+
+| Bucket                  | Visibility                                                        | Contents                                                                                                                                                                                                               | Writes                                                 | Reads                                                 |
+| ----------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------- |
+| `listing-media-private` | **private**: anonymous requests fail even with the exact path     | validated derivatives of every listing (draft, published, unpublished, archived) under `img/<listing_id>/<image_id>-{1600,960,480}.jpg`; transient uploads under `incoming/<listing_id>/<image_id>-{1600,960,480}.jpg` | owner session: `incoming/…` only; function: everything | owner: signed URLs (1 h) for admin previews; function |
+| `listing-media-public`  | public by URL, **not listable** (no `select` policy for any role) | copies of the derivatives of listings that are published right now, under `pub/<listing_id>/<image_id>-{1600,960,480}.jpg`                                                                                             | function only (service role)                           | anyone by URL                                         |
+
+- Three derivatives per image, all JPEG: **1600** (detail/lightbox, ≤ 2 MB), **960** (cards at 2× on phones,
+  ≤ 800 KB), **480** (admin thumbnails, ≤ 300 KB). Paths are derived from ids and never stored.
+- Bucket-level enforcement in addition to the function: private bucket `file_size_limit = 2 MB`,
+  `allowed_mime_types = ['image/jpeg']`; the owner's `insert` policy matches only
+  `incoming/<uuid>/<uuid>-(1600|960|480).jpg` for an existing listing; `select` under `incoming/` and `img/`
+  (signed URLs); `delete` under `incoming/` only. No owner policy on the public bucket at all.
+- Public objects are uploaded with `cache-control: public, max-age=300`. Image ids are immutable, so a 5-minute
+  TTL costs nothing in correctness and bounds the residual visibility after unpublishing to five minutes plus
+  the reconcile retry (no Smart CDN invalidation on the free plan).
+- Copy to public is done by download + upload with `upsert: true` and explicit `cacheControl` (does not depend on
+  `copy` overwrite semantics of the deployed storage-api); after upload the function verifies `size` and `etag`
+  of the public object against the private one.
+- Originals are not stored (client converts/downscales); re-processing at higher resolution needs a re-upload.
+
+## 3. Database schema
 
 ```sql
-create type breed          as enum ('yorkshire','poodle','bichon','pomeranian','shihtzu');
-create type sex            as enum ('male','female','unspecified');
-create type listing_status as enum ('available','reserved','coming_soon','placed');
+create type breed             as enum ('yorkshire','poodle','bichon','pomeranian','shihtzu');
+create type sex               as enum ('male','female','unspecified');
+create type listing_status    as enum ('available','reserved','coming_soon','placed');
+create type publication_state as enum ('private','publishing','published','unpublishing','deleting');
 
-create table admins (
-  user_id    uuid primary key references auth.users(id) on delete cascade,
-  created_at timestamptz not null default now()
-);
+create table admins (user_id uuid primary key references auth.users(id) on delete cascade,
+                     created_at timestamptz not null default now());
 
 create table listings (
-  id              uuid primary key default gen_random_uuid(),
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now(),
-  created_by      uuid not null references auth.users(id),
-  breed           breed not null,
-  sex             sex not null default 'unspecified',
-  birth_date      date,
-  status          listing_status not null default 'available',
-  published       boolean not null default false,
-  published_at    timestamptz,
-  featured        boolean not null default false,
-  archived_at     timestamptz,                       -- archive = soft delete
-  sort_order      int not null default 100,
-  name_he         text not null check (length(name_he) between 1 and 80),
-  name_ru         text check (length(name_ru) <= 80),
-  name_en         text check (length(name_en) <= 80),
-  description_he  text not null default '' check (length(description_he) <= 1500),
-  description_ru  text check (length(description_ru) <= 1500),
-  description_en  text check (length(description_en) <= 1500),
-  pedigree_he     text check (length(pedigree_he) <= 600),
-  pedigree_ru     text check (length(pedigree_ru) <= 600),
-  pedigree_en     text check (length(pedigree_en) <= 600),
-  sire_name       text check (length(sire_name) <= 80),
-  dam_name        text check (length(dam_name) <= 80),
-  show_prospect   boolean not null default false,
-  internal_note   text                               -- owner-only, never exposed
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+  created_by uuid references auth.users(id) on delete set null,      -- nullable for portability/restore
+  breed breed not null, sex sex not null default 'unspecified', birth_date date,
+  status listing_status not null default 'available',
+  published boolean not null default false, published_at timestamptz,
+  publication_state publication_state not null default 'private',
+  state_changed_at timestamptz not null default now(),               -- lease for reconcile
+  featured boolean not null default false, archived_at timestamptz, sort_order int not null default 100,
+  name_he text not null check (length(name_he) between 1 and 80), name_ru text, name_en text,
+  description_he text not null default '' check (length(description_he) <= 1500), description_ru text, description_en text,
+  pedigree_he text, pedigree_ru text, pedigree_en text, sire_name text, dam_name text,
+  show_prospect boolean not null default false,
+  internal_note text,
+  constraint published_iff_state check (published = (publication_state = 'published')),
+  constraint archived_not_published check (archived_at is null or not published)
 );
 
 create table listing_images (
-  id          uuid primary key default gen_random_uuid(),
-  listing_id  uuid not null references listings(id) on delete cascade,
-  position    smallint not null check (position between 1 and 3),   -- position 1 = primary photo
-  path_1600   text not null,      -- listings/<listing_id>/<image_id>-1600.jpg
-  path_480    text not null,      -- listings/<listing_id>/<image_id>-480.jpg
-  width       int not null,  height int not null,   -- of the 1600 derivative (CLS-free rendering)
-  bytes       int not null,
-  created_at  timestamptz not null default now(),
-  unique (listing_id, position)                       -- the 3-image invariant, race-proof
+  id uuid primary key default gen_random_uuid(),
+  listing_id uuid not null references listings(id) on delete cascade,
+  position smallint not null check (position between 1 and 3),        -- 1 = primary photo
+  width int not null, height int not null, bytes int not null,         -- server-measured (1600 derivative)
+  public_verified_at timestamptz,                                      -- set when pub/ copies verified
+  created_at timestamptz not null default now(),
+  constraint listing_images_position_unique unique (listing_id, position) deferrable initially immediate
 );
 ```
 
-Rules encoded in the database, not only in the UI:
+Invariants and rules:
 
-- **≤ 3 images**: `position ∈ {1,2,3}` + `unique(listing_id, position)`. Two concurrent 3rd-image inserts cannot both
-  succeed; a 4th has no legal position. A trigger additionally rejects any insert when 3 rows exist (belt and braces).
-- **Primary photo = position 1**; "set as main" and reordering are position swaps inside one RPC (`reorder_images`)
-  that runs in a transaction, so there is never a moment with two primaries or a gap.
-- **Publish gate** (trigger): `published = true` requires `archived_at is null`, ≥ 1 image, non-empty `name_he` and
-  `description_he`. Archiving sets `published = false`.
-- `updated_at` maintained by trigger. "planned" is **not** a dog status: a planned litter is a litter concept and
-  stays on the static litters page; the dog enum is `available / reserved / coming_soon / placed`.
-- A listing may describe a single dog or a litter ("Bichon Frise puppies"); `sex = unspecified` hides the sex line.
+- **≤ 3 images**: `position ∈ {1,2,3}` + unique `(listing_id, position)`; the register RPC also counts under a
+  per-listing advisory lock. A 4th image has no legal position.
+- **`published` ⇔ `publication_state = 'published'`** (two-sided). No row can be hidden-but-published or
+  published-while-transitioning. Archived rows are never published.
+- **Publish gate** (checked in `finalize_publish`, not a bare trigger): not archived, ≥ 1 image with
+  `public_verified_at`, non-empty `name_he` and `description_he`.
+- Column privileges for the admin role exclude `published`, `published_at`, `publication_state`,
+  `state_changed_at`, `created_by`, `created_at`, `updated_at`, `archived_at` on **both insert and update**;
+  those columns change only through RPCs/functions. `updated_at` by trigger; `created_by` set by trigger from `auth.uid()`.
+- "planned" stays a litter concept (static litters page); dog statuses are the four above.
+- Missing Russian/English: Hebrew required; Russian/English pages show localized breed/status/CTA, the name as
+  entered, and the Hebrew text with an "available in Hebrew — ask us on WhatsApp" note; the admin flags it.
 
-**Missing translations**: Hebrew is required; Russian/English are optional. Public behaviour: the Russian/English
-page shows the localized breed, status and CTA, the name as entered, and the Hebrew description with a small
-"available in Hebrew — ask us on WhatsApp for details in Russian/English" note. The admin marks the listing
-"translation missing". Nothing is machine-translated.
+## 4. Publication state machine
 
-## 3. Authentication and RLS
+Every cross-system operation is journaled in the database first, executed against storage, confirmed in the
+database with a compare-and-swap on the state it expects, and reconcilable if it stops half way.
 
-- Supabase Auth, email + password. Sign-ups disabled (`auth.enable_signup = false`); the single owner user is created
-  once by us in the dashboard; her `user_id` is inserted into `admins`. Password reset by email (built-in provider,
-  2 emails/hour — enough for one owner; custom SMTP optional later).
-- `is_admin()` = `exists (select 1 from admins where user_id = auth.uid())`, `security definer`, `stable`.
-- Failed login shows one generic message ("Email or password incorrect"); no account-existence disclosure.
-- Session: supabase-js persisted session (access + refresh token in the browser's storage, the intended model);
-  `onAuthStateChange` handles refresh/expiry; expired → login view with "session expired" notice; logout everywhere.
+| Current state  | register / remove         | reorder | publish        | unpublish        | archive                        | delete (archived only)        |
+| -------------- | ------------------------- | ------- | -------------- | ---------------- | ------------------------------ | ----------------------------- |
+| `private`      | ok                        | ok      | → `publishing` | INVALID_STATE    | ok (no media work)             | → `deleting`                  |
+| `published`    | ok, with late public copy | ok      | INVALID_STATE  | → `unpublishing` | → `unpublishing` then archived | INVALID_STATE (archive first) |
+| `publishing`   | BUSY                      | ok      | BUSY           | BUSY             | BUSY                           | BUSY                          |
+| `unpublishing` | BUSY                      | ok      | BUSY           | BUSY             | BUSY                           | BUSY                          |
+| `deleting`     | INVALID                   | INVALID | INVALID        | INVALID          | INVALID                        | idempotent retry              |
 
-Policies (RLS enabled on every table; no policy = deny):
+Rules that apply to every transition:
 
-| Table                                      | anon                                                 | authenticated non-admin | admin                                                                                                                           |
-| ------------------------------------------ | ---------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `listings`                                 | none (reads go through the RPC/view)                 | none                    | select all; insert (`created_by = auth.uid()`); update; delete                                                                  |
-| `listing_images`                           | none                                                 | none                    | select; update (position only, via RPC); delete. **No insert** — only the Edge Function (service role) inserts after validation |
-| `admins`                                   | none                                                 | none                    | select own row                                                                                                                  |
-| `storage.objects` (bucket `listing-media`) | no select (bucket is public-by-URL but not listable) | none                    | insert/update/delete only under `listings/<uuid>/…` where that listing exists                                                   |
+- Transitions are `update listings set publication_state = X, state_changed_at = now() where id = $1 and
+publication_state = Y` with a rowcount check; a second tab/device that loses the race gets BUSY and a
+  friendly "this listing is being updated, try again in a moment".
+- `finalize_publish`, `finalize_unpublish`, `register_listing_image`, `remove_listing_image`, `reorder_images`
+  all take `pg_advisory_xact_lock(4242, hashtext(listing_id::text))` so image-set checks and flips are atomic
+  against each other. Storage work happens outside the lock, always guarded by the state.
+- Storage cleanup works on **prefixes** (`list` then delete everything not in the current set), never on an
+  expected-id list, so interleavings cannot leave orphans behind.
+- Reconcile treats an in-progress state younger than **5 minutes** (`state_changed_at`) as live and skips it;
+  older ones are stale and are completed or rolled back. The public RPC filters on `published and archived_at is
+null` and returns only images with `public_verified_at is not null`.
 
-Public read path: `rpc public_listings_json()` — `security definer`, `stable`, returns `jsonb` of
-`published and archived_at is null` listings with their images and only public columns. Granted to `anon`.
-A `public_listings` view exists for humans/tools with the same filter. Direct table access for `anon` is revoked.
-There is deliberately no "authenticated can do everything" policy: a second user without an `admins` row can do nothing.
+Operations:
 
-## 4. Storage and privacy model
+**register** (owner uploads `incoming/…` three derivatives, then calls the function): function authorizes the
+caller (§5), validates and sanitises each derivative (§6), then: (1) DB under the lock: state ∉ {publishing,
+unpublishing, deleting} else BUSY/INVALID; count < 3 else LIMIT_REACHED; insert row at position count+1;
+(2) move objects `incoming/ → img/`; (3) if the listing is `published`, upload copies to `pub/`, verify size and
+etag, set `public_verified_at`. Failure at (2) deletes the row and both prefixes for the image id; failure at (3)
+keeps the row (private data is valid) with `public_verified_at = null`, so the public page shows the listing
+without that photo and the admin shows "the website copy of this photo is pending — retry" (retry = reconcile).
+Abandoned uploads: the health check lists `incoming/` objects older than 24 h and offers to remove them.
 
-- One bucket `listing-media`, **public read by URL, not enumerable** (no `select` policy for anon → `list` is denied),
-  `allowedMimeTypes = image/jpeg`, `fileSizeLimit = 2 MB` (derivatives only, never originals).
-- Object keys are generated: `listings/<listing_uuid>/<image_uuid>-1600.jpg` and `-480.jpg` (two random 122-bit ids).
-  Owner filenames are never used as paths; no traversal or collision is possible.
-- **Originals are not stored.** The browser converts/downscales, so nothing above 1600 px or above ~500 KB ever reaches
-  Supabase, and no HEIC is ever served. (Consequence: "re-process at higher resolution later" needs a re-upload from
-  the phone. Accepted for v1 and documented.)
-- Unpublished content stays private because the only channel that reveals object paths is the public RPC, which returns
-  published rows only. An unpublished listing's images exist at unguessable URLs that no page links to. On
-  **delete** (and on archive, after 30 days) the objects are removed. This is the "unguessable public object" model;
-  the strict alternative (private bucket + signed URLs) was rejected for the public page because every visitor would
-  need a signing round trip and CDN caching would be lost; the copy-on-publish alternative adds failure states
-  (publish succeeded, copy failed) for no practical privacy gain.
-- Caching: objects are uploaded with `cache-control: max-age=31536000, immutable`; replacing a photo creates a new id.
-  Listing data is fetched with `cache: 'no-store'`, so a status change is visible on the visitor's next page load.
+**remove**: DB under the lock: delete the row and re-pack positions 1..n; then delete `pub/` and `img/` objects for
+that image id (prefix-based). Storage failure is reported and left to reconcile (the row is already gone; a
+public copy of a published listing without a row is deleted by the next reconcile's prefix sweep).
 
-## 5. Image pipeline (proven by the spike, see §9)
+**publish**: (1) CAS `private → publishing`; (2) for each image upload the three copies to `pub/`, verify size +
+etag, set `public_verified_at`; (3) `finalize_publish` under the lock: CAS `publishing → published`, gate check
+(≥ 1 verified image, Hebrew text, not archived), `published = true`, `published_at`. Only after (3) commits does
+the function answer "published". Failures: at (2) → delete the `pub/<id>/` prefix, CAS `publishing → private`,
+return PUBLISH_MEDIA_FAILED (`published` never became true); at (3) → same rollback; a crash leaves `publishing`,
+which reconcile rolls back to `private` after the lease expires (prefix cleared).
 
-Client (admin, Preact island):
+**unpublish**: (1) CAS `published → unpublishing`, `published = false` in the same transaction (the listing
+disappears from the RPC immediately); (2) delete the `pub/<id>/` prefix, null `public_verified_at`; (3) CAS
+`unpublishing → private`. Failure at (2) leaves `unpublishing` (recorded; the admin sees "removed from the site;
+photo cleanup pending"); reconcile retries the prefix delete. Residual: unlinked public copies until the retry,
+CDN copies ≤ 5 minutes. Private copies are never touched.
 
-1. Pick: `<input type="file" accept="image/jpeg,image/png,image/heic,image/heif,image/webp" multiple>` — up to
-   `3 − current` files, 10 MB each, checked before any upload; friendly localized errors from `admin.upload`.
-2. Sniff magic bytes (JPEG `FF D8 FF`, PNG signature, HEIC/HEIF `ftyp` brands, WebP `RIFF…WEBP`); anything else is
-   rejected client-side with `unsupportedType`, regardless of extension.
-3. Decode: JPEG/PNG/WebP via `createImageBitmap(file, { imageOrientation: 'from-image' })` (EXIF orientation applied by
-   the browser); HEIC/HEIF via `libheif-js` WASM (2 MB, loaded on demand only when a HEIC is picked; libheif applies the
-   container rotation — verified upright output). On iOS Safari, Photos also transparently hands over HEIC as JPEG
-   when it can; both paths converge.
-4. Downscale with `createImageBitmap(..., resizeQuality: 'high')` to 1600 px long edge and 480 px, encode JPEG
-   q0.85 / q0.82 via canvas (metadata is dropped by re-encoding). ~0.4 s desktop, ~1.5 s on a throttled mobile CPU.
-5. Upload both derivatives to `listing-media` (owner session), then call the Edge Function.
+**republish**: publish again; copies are recreated from `img/`.
 
-Server (Edge Function `register-image`, service role, in `supabase/functions/`):
+**archive** (function action, never a bare DB update when published): if published, run **unpublish** to
+completion, then set `archived_at`. Listing data and private images are preserved indefinitely; there is no
+scheduled cleanup of any kind. Unarchive: clear `archived_at` (state stays `private`; publish is a separate action).
 
-1. Verifies the caller's JWT belongs to an admin.
-2. Downloads both objects, checks size (≤ 2 MB), magic bytes (JPEG only), **decodes** them (`jpeg-js`, ~70 ms for a
-   1600 px image), checks dimensions (long edge ≤ 1600, short edge ≥ 300) and that the thumb matches.
-3. Calls `rpc register_listing_image(listing_id, image_id, paths, dims)` which takes a per-listing transactional lock,
-   assigns the next free position or raises `LIMIT_REACHED`, and inserts the row.
-4. On any failure it deletes the objects and returns a code the admin maps to a localized message. No orphan rows;
-   orphan objects are impossible because the row insert and the cleanup are in the same function. A weekly
-   `sweep-orphans` function (later) reconciles anything left by a crashed browser mid-upload.
+**delete** (permanent; archived listings only; typed confirmation): (1) CAS `private → deleting`; (2) delete
+`pub/`, `img/`, `incoming/` prefixes; (3) delete the row (cascade). A crash leaves `deleting`; reconcile finishes
+it (idempotent prefix deletes, then row delete). `deleting` never maps back to `private`.
 
-Why not server-side HEIC: the spike decoded a 12 MP HEIC in ~0.35 s CPU but peaked at 248–349 MB RSS, above the
-256 MB Edge Function limit; Storage image transformations accept HEIC but are Pro-only ($25/month). Client-side
-conversion is fast, free, and keeps HEIC off the server entirely.
+**reconcile** (function action; runs on admin login for listings whose `(published, state)` is not
+`(false, private)` / `(true, published)` **and** whose lease has expired, and from the "בדיקת תקינות" button for
+every listing): for `published` rows, verify every image's three public copies exist with the right size/etag and
+that the `pub/` prefix holds nothing else; for unpublished rows, ensure the `pub/` prefix is empty; finish
+`deleting`; report `incoming/` leftovers and `img/` objects without a row (removal behind a confirm).
 
-## 6. Public-site integration
+## 5. Authentication, RLS, RPC privileges
 
-- `/{lang}/puppies/` and the home "available puppies" section keep their static shell (copy, empty state, litters
-  banner, CTA band). A vanilla-TypeScript island fetches `public_listings_json()` (8 s timeout, `no-store`) and
-  renders cards by cloning an Astro-rendered `<template>` of the existing `PuppyCard` markup, so the design stays
-  single-sourced. Images use `<img srcset="…-480 480w, …-1600 1600w" sizes width height>` from the DB.
-- States: skeleton (3 placeholder cards) → listings / **empty** ("no puppies right now" + litters WhatsApp CTA, only
-  after a successful fetch with zero rows) / **error** ("couldn't load the puppies right now" + WhatsApp CTA, never
-  claiming there are none). Malformed rows are skipped, not fatal. Image load failures fall back to a neutral tile.
-- Freshness: every page view fetches live data; nothing is cached longer than the request.
-- Static content collection: the `puppies` collection is retired from production paths; the demo fixtures remain only
-  for layout review of the card template (dev/`SB_INCLUDE_DEMO`), and the CI `demo-listings` project moves to a
-  mocked API response (Playwright route interception), so pull requests need no Supabase credentials.
+Auth: email + password, sign-ups disabled, anonymous sign-ins and all OAuth providers disabled, minimum password
+length 12, Site URL `https://avivg7.github.io/self-beauty/admin/`. One owner user created by us; `admins` row
+inserted once. Failed login shows one generic message.
+**Password reset**: the built-in email provider delivers only to organisation members, 2/hour. Decision for v1:
+the owner is **not** added to the Supabase organisation; a reset is performed by the developer from the
+dashboard on request (documented in the runbook). A free custom SMTP can be added later if self-service reset is wanted.
 
-## 7. Puppy detail and routing on GitHub Pages
+Edge Function caller authorization (every action, before any DB or storage work): read the `Authorization`
+bearer, `auth.getUser(jwt)` with the service client, then require an `admins` row for that user id; the anon key
+alone (a valid project JWT) is rejected; `listing_id`/`image_id` must match a strict UUID regex before any storage
+key is composed. `Access-Control-Allow-Origin` is restricted to `https://avivg7.github.io`.
 
-GitHub Pages cannot serve `/puppies/<uuid>/`. Chosen pattern: one static page per locale,
-`/{lang}/puppies/view/?id=<uuid>`, whose island fetches `public_listing_json(id)` (published only) and renders the
-existing detail layout (gallery + lightbox, facts, WhatsApp CTA with the name prefilled). Shareable, back-button
-friendly, works on Pages; unknown or unpublished id → "listing not found" with a link to the catalogue.
-SEO trade-off, documented: dynamic cards and details are not in the static HTML; Google generally renders them, but
-WhatsApp/Facebook link previews show the generic site image, not the puppy. Listings are short-lived, so this is
-accepted rather than adding a server. All existing static routes stay unchanged.
+Grants and policies (RLS on every table; a role without a policy gets nothing):
 
-## 8. Admin UX (mobile-first, `/self-beauty/admin/`)
+| Object                                                                                                                 | anon                  | authenticated non-admin                | admin (`is_admin()`)                                       | service role |
+| ---------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------- | ---------------------------------------------------------- | ------------ |
+| `listings` table                                                                                                       | no grants             | no grants                              | select all; insert/update on the content columns only (§3) | all          |
+| `listing_images`                                                                                                       | none                  | none                                   | select only                                                | all          |
+| `admins`                                                                                                               | none                  | none                                   | select own row                                             | all          |
+| `public_listings_json()`, `public_listing_json(id)`                                                                    | execute               | none                                   | none (the admin previews through the anon path)            | —            |
+| `reorder_images()`                                                                                                     | none                  | execute but raises unless `is_admin()` | execute                                                    | —            |
+| `register_listing_image()`, `remove_listing_image()`, `finalize_publish()`, `finalize_unpublish()`, transition helpers | none                  | none                                   | none                                                       | execute      |
+| `is_admin()`                                                                                                           | none                  | execute                                | execute                                                    | —            |
+| private bucket                                                                                                         | none                  | none                                   | §2                                                         | all          |
+| public bucket                                                                                                          | none (URL reads only) | none                                   | none                                                       | all          |
 
-Design language: same tokens (ivory, burgundy actions, gold hairlines), Arial, 48 px targets, existing button/chip
-classes; utility over decoration. Hebrew default; Russian/English admin strings come from the same dictionaries
-(cheap, so included). Hash-routed single page: `#/` list, `#/new`, `#/edit/<id>`.
+Every function is created with explicit `revoke all on function … from public, anon, authenticated;` followed by
+the single intended grant, because Supabase's default privileges would otherwise grant `execute` to `anon` and
+`authenticated` — the classic escalation through a `security definer` RPC. Public RPCs: `language sql`, `stable`,
+`security definer`, `set search_path = ''`, schema-qualified, `jsonb_build_object` with a fixed public column set
+(`id, breed, sex, birth_date, status, featured, name_*, description_*, pedigree_*, sire_name, dam_name,
+show_prospect, updated_at, images[{position,width,height,path_1600,path_960,path_480}]` — `pub/` paths only),
+filter `published and archived_at is null`, images only where `public_verified_at is not null`. Unknown and
+unpublished ids return the same empty result (no oracle).
 
-- **Login**: email, password (show/hide), one generic error, loading state, "forgot password" link.
-- **גורים באתר (list)**: filter chips _all / published / drafts / archived_; each row = 480 px thumb, name, breed,
-  status pill, published switch, "updated" date, **[עריכה]**. Tapping the status pill opens a bottom sheet with the
-  four statuses (Available → Reserved takes two taps and shows _Saving… → Saved_). Sticky **הוספת גור חדש** button.
-- **Form** (single page, sectioned, validates on blur, unsaved-changes guard): Basics (name, breed select, sex,
-  birth date with native picker, status, show prospect) · Hebrew text (description, pedigree, parents) ·
-  Russian / English (collapsed; "missing translation" indicator) · **Photos** (`0/3`, add up to the remaining count,
-  per-photo progress, ✓/✗, remove, replace, ▲/▼ reorder, "main photo" marker = position 1) · Visibility
-  (published switch disabled with a reason until the publish gate is met; featured) · Save. States shown exactly:
-  _Saving… / Saved / Published / Failed to save (retry)_; nothing claims success before the database confirms.
-- **Archive** is the default destructive action (confirmation sheet); permanent delete lives inside the archived view
-  behind a typed confirmation. **Preview** opens the public detail page (published) or an in-admin preview (draft).
-- Accessibility: labels, focus rings, `aria-live` status, dialogs with focus trap, reduced motion, keyboard reorder.
+Automated security tests (`tests/security/`, run in CI against the Supabase CLI local stack, and the anon + admin
+parts against production after each migration; the "authenticated non-admin" part runs only against the local
+stack because sign-ups are off in production): as anon and as a non-admin user — select/insert/update/delete on
+every table fail; every internal RPC fails with `42501`; every function action returns 401/403; private object
+download by exact path fails; bucket listing fails; the public RPC never returns a draft, `internal_note`,
+`created_by`, `publication_state`, or an `img/`/`incoming/` path. As admin — CRUD works, `published` cannot be
+flipped directly, image insert is refused, reorder works. **Catch-all**: a test enumerates
+`information_schema.role_table_grants`, `column_privileges` and `routine_privileges` and fails if `anon` holds
+anything beyond the two public RPCs or `authenticated` holds anything beyond the narrow lists above, so a future
+migration cannot regress silently.
 
-## 9. HEIC spike results (Phase C, real files from the vault)
+## 6. Image validation and sanitisation (client convenience, server truth)
 
-| Path                                 | Input                                                              | Result                                                                            |
-| ------------------------------------ | ------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Node/WASM (Edge Function proxy)      | 6.3 MB HEIC 4000×1848, EXIF 6                                      | upright 1848×4000 decoded in 344 ms, JPEG 1600 in +86 ms, **peak RSS 248–349 MB** |
-| Chromium, `libheif-js` ESM bundle    | same file                                                          | upright, 739×1600 JPEG 204 KB + 480 px thumb 25 KB in 407 ms; JS heap 45 MB       |
-| Chromium at 4× CPU throttle          | same                                                               | 1.46 s total — acceptable for a phone with a progress indicator                   |
-| Validation (`file-type` + `jpeg-js`) | real JPG/PNG/HEIC, renamed `.exe`→`.jpg`, truncated JPG, SVG, HTML | real files accepted; `.exe`, truncated, SVG, HTML rejected; JPEG decode 72 ms     |
+Client (admin): allowlist `jpg jpeg png heic heif webp`, ≤ 10 MB, magic-byte sniff, decode — **native first**
+(`createImageBitmap(file, { imageOrientation: 'from-image', resizeWidth })`, which iOS Safari can do for HEIC and
+which avoids WASM memory for 48 MP photos), `libheif-js` WASM as the fallback when the browser cannot decode HEIC;
+reject decoded images above 50 MP; render into an sRGB canvas; encode JPEG 1600 (q0.85), 960 (q0.85), 480 (q0.82).
 
-Conclusion: convert in the browser, validate on the server; never rely on Edge Functions for HEIC.
+Server (`listing-ops: register`), each derivative is untrusted input:
 
-## 10. Free plan requirements (verified 2026-09-06 on supabase.com/pricing and docs)
+1. object metadata size check (`list`/`info`) before download: 1600 ≤ 2 MB, 960 ≤ 800 KB, 480 ≤ 300 KB;
+2. magic bytes `FF D8 FF`;
+3. **segment sanitisation**: walk the marker stream; keep SOI, DQT, SOF0/SOF1/SOF2, DHT, DRI, SOS + entropy data,
+   EOI; drop every APPn (EXIF, GPS, ICC, XMP) and COM; truncate at EOI (kills JPEG/ZIP/HTML polyglots); reject any
+   other SOF type (arithmetic, hierarchical, 12-bit) and files with more than one SOF. Dropping ICC is safe only
+   because the client renders into an sRGB canvas (Display P3 photos are converted there); documented as a coupling;
+4. **header-first bounds** on the sanitised buffer: long edge ≤ 1600/960/480 respectively, short edge ≥ 300/180/120,
+   ≤ 2.6 MP, 1 or 3 components (grayscale and progressive are fine); a 30000×30000 header bomb dies here in 0 ms;
+5. real decode with `jpeg-js` (`maxResolutionInMP: 3`, `maxMemoryUsageInMB: 64`); decoded dimensions must equal
+   the header; any error rejects;
+6. the **sanitised** bytes are what gets stored (`img/`) and later copied to `pub/`; `width/height/bytes` are the
+   server-measured values of the 1600 derivative.
 
-Free: $0, 2 active projects, 500 MB database, 1 GB storage, 5 GB egress + 5 GB cached egress, 50k MAU,
-500k Edge Function invocations, **paused after 1 week of inactivity**, no backups, 1-day logs, no image transformations.
-Edge Functions: 256 MB memory, 2 s CPU, 150 s wall. Auth built-in email: 2 emails/hour. Pro is $25/month (no pausing,
-daily backups, 100 GB storage, transformations). No credit card is required for the free plan; this will be confirmed
-on the signup screen before proceeding.
+**HEIC is not production-ready until the real-device matrix passes on the owner's iPhone (Phase H)**: normal HEIC,
+portrait HEIC, rotated/orientation case, 5–10 MB HEIC, three HEICs selected together, replacing one of three,
+low-memory/reload recovery (form draft in `sessionStorage`; registered uploads are never lost) — each run with
+both `accept` configurations (with and without `image/heic`), because iOS often hands over JPEG when HEIC is not
+listed. JPEG/PNG upload keeps the owner unblocked meanwhile.
 
-Expected usage: < 5 MB database, < 100 MB storage for 50 listings, egress far below 5 GB. Pause mitigation: visitor
-traffic to the puppies page counts as activity, plus a weekly GitHub Actions ping of the public RPC. If a pause ever
-happens, the public page shows the graceful error state and the admin cannot log in until the project is restored
-from the dashboard (documented runbook).
+## 7. Race-safe reordering and the 3-image invariant
 
-## 11. Deployment, CI, secrets, backups
+`reorder_images(listing_id, ordered_image_ids uuid[])` — `security definer`, `set search_path = ''`, first
+statement `if not public.is_admin() then raise insufficient_privilege`; then `pg_advisory_xact_lock(4242,
+hashtext($1::text))`; verify the array equals the listing's current image ids (else STALE_ORDER); `set constraints
+public.listing_images_position_unique deferred;` update positions from the array; commit checks the constraint
+once. PostgREST wraps the RPC in one transaction, so the deferred check runs at its commit and a violation surfaces
+as the RPC error. Reorder is allowed in every non-deleting state because it never touches storage paths.
+`register_listing_image` and `remove_listing_image` (service role) take the same lock; register counts and raises
+LIMIT_REACHED at 3; remove re-packs 1..n. Concurrency tests: two concurrent reorders (both succeed or one
+STALE_ORDER; final positions a permutation of 1..n); two concurrent registrations for the third slot (exactly one
+succeeds); register racing reorder (serialised); publish racing unpublish from two tabs (one BUSY); reconcile
+during a live publish (skipped by the lease); archive crash between unpublish and archive (state recorded, reconciled).
 
-- New repo folders: `supabase/` (`config.toml`, `migrations/*.sql`, `functions/register-image/`), `src/pages/admin/`,
-  `src/admin/` (Preact app), `src/lib/public-listings.ts`, `tests/security/` (RLS negative tests).
-- Public env (bundled, safe): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` — repository **variables**.
-- Secrets (never bundled): `SUPABASE_ACCESS_TOKEN` (CLI: migrations + function deploy), `SUPABASE_DB_PASSWORD`,
-  `SUPABASE_PROJECT_REF` — GitHub Actions secrets for a manual/`main`-only `supabase-deploy` job; locally in a
-  git-ignored `.env.supabase`. The service-role key is used only inside the Edge Function runtime (set with
-  `supabase secrets`) and never leaves Supabase.
-- CI on pull requests: unchanged public checks + admin typecheck/unit tests + Playwright with **mocked** Supabase
-  responses (route interception) — no credentials. RLS negative tests run against the Supabase CLI local stack
-  (Docker) in a separate job, and against production once after each migration (manual workflow).
-- Backups/portability: nightly `supabase db dump` (SQL) uploaded as a GitHub Actions artifact (90 days) and an image
-  manifest + download of `listing-media` objects; restore = `psql < dump` + copy objects. The public adapter is one
-  small module, so moving off Supabase means replacing one fetch function and the auth client.
+## 8. Public-site integration, detail routing, freshness, SEO
+
+Static shells keep copy, empty state, litters banner and CTA band. The island is **plain `fetch`** to
+`/rest/v1/rpc/public_listings_json` with the anon key in both `apikey` and `Authorization` headers — never
+supabase-js and never the owner's session, so a logged-in owner browsing the site is still anon and the
+`authenticated` revoke cannot bite. Strings are rendered with `textContent` only. `cache: 'no-store'`, 8 s
+timeout. States: skeleton → listings / empty (successful zero-row fetch) / error ("couldn't load the puppies right
+now" + WhatsApp CTA). Cards use the 960 derivative with `sizes`; detail/lightbox the 1600. Malformed rows skipped.
+Detail: `/{lang}/puppies/view/?id=<uuid>` static page + island; unknown or unpublished → "not found". Status
+changes appear on the next page view; images cache for 5 minutes. SEO trade-off accepted for short-lived listings;
+business pages stay static.
+
+## 9. Admin app security and UX
+
+- The admin's supabase-js client uses a distinct `storageKey`; the page sets `<meta name="referrer"
+content="no-referrer">`, is `noindex`, and is excluded from the sitemap. Operational rule, documented: while the
+  admin lives on `avivg7.github.io`, **no other GitHub Pages site may be created on the `avivg7` account** (all
+  project sites share one origin and therefore one `localStorage`); moving to the custom domain lifts this.
+- Hebrew default, Russian/English from the dictionaries; hash-routed single page. List "גורים באתר" (filters,
+  thumb, name, breed, status pill, published switch, updated, **[עריכה]**), two-tap status change, sticky
+  "הוספת גור חדש". Form: sectioned, validate on blur, unsaved-changes guard, photos `0/3` with per-file progress.
+  Honest states via `aria-live`: _Saving… / Saved / Publishing… / Published / Removed from site / Failed — retry /
+  Being updated — try again_ (BUSY) plus the pending-cleanup notices. Archive is the default destructive action
+  ("hidden from the site, kept for you"); permanent delete only in the archived view behind typing the dog's
+  name. If Supabase is unreachable or paused: "השירות אינו זמין כרגע" with the runbook link.
+
+## 10. Free plan behaviour (verified 2026-09-06)
+
+$0, 2 projects, 500 MB DB, 1 GB storage, 5 GB egress + 5 GB cached, pause after 1 idle week, no backups, Edge
+Functions 256 MB / 2 s CPU / 150 s, built-in email 2/hour to organisation members only. Expected usage < 5 % of
+every limit. No keep-alive hack. Runbook: dashboard → project → "Restore project"; data is retained (retention
+for long-paused projects to be re-checked on the pricing page before relying on it). A paid plan is a separate decision.
+
+## 11. Backup and export (no paid service)
+
+`scripts/backup/export.mjs` (developer, local, service role from git-ignored `.env.supabase`, session pooler
+connection string): `supabase db dump` (note: excludes `auth` and `storage` schemas by design) → `listings.json` +
+`listing_images.json` via PostgREST → download all `img/` (and optionally `pub/`) objects into
+`backups/<date>/media/` → manifest with counts and sizes. `restore.mjs`: restore SQL, re-create the owner user and
+the `admins` row, re-upload media through the Storage API (never by restoring `storage.objects`). Cadence: before
+every migration and monthly; `backups/` is git-ignored and a copy is kept off the developer's machine. Owner-level
+"ייצוא רשימה" button exports listings as JSON. Portability: plain Postgres + files; the public adapter is one module.
 
 ## 12. Risks and trade-offs
 
-- Free-tier pause after 7 idle days → graceful public error state + weekly ping; owner restores from dashboard if needed.
-- Client-side processing depends on the owner's browser (iOS Safari): WASM HEIC decode is proven in Chromium; will be
-  verified on the owner's iPhone in Phase H (Safari also hands over JPEG for HEIC in most picker flows).
-- Unguessable-URL privacy for unpublished images (not enumerable, never linked) instead of signed URLs — accepted.
-- No originals stored — re-upload needed for future higher-resolution derivatives.
-- SEO for listings is client-rendered — accepted for short-lived content; business pages stay static.
-- Single owner account; adding a second admin is a one-row insert, not a policy change.
+- Cross-system consistency now rests on the state machine, CAS transitions, lease and prefix-based reconcile;
+  the worst residual is a public copy surviving ≤ 5 min of CDN TTL plus one reconcile retry after a failed
+  unpublish — recorded and surfaced, never silent.
+- Shared GitHub Pages origin: mitigated by distinct storage key, referrer policy, anon-only public fetch, no
+  `innerHTML`, and the "no other Pages site" rule until the custom domain.
+- More trusted code in the function; mitigated by typed actions, shared validators, security and concurrency suites.
+- iPhone HEIC path unproven on hardware until Phase H; JPEG/PNG keeps the owner unblocked.
+- Password reset is developer-assisted in v1.
+- Free-tier pause handled gracefully, not prevented. Listing SEO client-rendered; accepted.
 
-## 13. External resources to be created (only after approval)
+## 13. Readiness and external resources
 
-1. Supabase account (yours, free plan) and one project `self-beauty`, region `eu-central-1` (Frankfurt, closest to Israel).
-2. Inside it: Auth settings (sign-ups off, Site URL `https://avivg7.github.io/self-beauty/admin/`), the owner user,
-   database schema/RLS via migrations, bucket `listing-media`, Edge Function `register-image`, function secrets.
-3. GitHub: two repository variables (URL, anon key) and three secrets (access token, DB password, project ref).
-   Nothing paid, no card, no other third-party service.
+Ready for Supabase project creation once approved. Resources (free plan, no card, nothing else):
+
+1. Your Supabase account + project `self-beauty`, `eu-central-1`.
+2. In it: auth settings (§5), the owner user + `admins` row, migrations (schema, policies, RPCs, revokes, triggers),
+   buckets `listing-media-private` (2 MB, JPEG only) and `listing-media-public`, Edge Function `listing-ops` + secrets.
+3. GitHub: variables `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`; secrets `SUPABASE_ACCESS_TOKEN`,
+   `SUPABASE_DB_PASSWORD`, `SUPABASE_PROJECT_REF` for the manual migration/deploy job.
+   Spikes are committed under `spikes/` so the numbers in §6 are reproducible and Phase H has a page to run on the phone.

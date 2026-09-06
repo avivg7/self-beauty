@@ -2,7 +2,7 @@
   "name": "self-beauty",
   "version": "0.1.0",
   "private": true,
-  "description": "Self Beauty \u2014 pedigree dog kennel and professional grooming, Bat Yam. Public website and owner admin.",
+  "description": "Self Beauty — pedigree dog kennel and professional grooming, Bat Yam. Public website and owner admin.",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
@@ -40,8 +40,11 @@
     "eslint-plugin-astro": "^3.1.0",
     "ffmpeg-static": "^5.3.0",
     "ffprobe-static": "^3.1.0",
+    "file-type": "^22.0.2",
     "globals": "^17.12.0",
     "heic-convert": "^2.1.0",
+    "jpeg-js": "^0.4.4",
+    "libheif-js": "^1.23.2",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "typescript-eslint": "^8.69.0",

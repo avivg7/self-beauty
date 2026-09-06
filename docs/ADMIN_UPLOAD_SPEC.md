@@ -15,23 +15,43 @@ implementation are held to the same contract. Nothing here is implemented yet.
 Why 10 MB: a 12 MP phone HEIC is 2–4 MB and a JPEG 4–7 MB; 10 MB leaves headroom without inviting 40 MB RAW-like uploads
 that time out on mobile connections. Change only with an argued reason.
 
-## Validation layers (server side; the client repeats the cheap ones for instant feedback)
+## Validation layers
 
-1. **Extension** against the allowlist (case-insensitive).
-2. **Declared MIME** against the allowlist (`image/jpeg`, `image/png`, `image/heic`, `image/heif`, optional `image/webp`).
-3. **Magic bytes** of the received buffer: JPEG `FF D8 FF`, PNG `89 50 4E 47 0D 0A 1A 0A`, HEIC/HEIF `ftyp` box with brand `heic|heix|hevc|hevx|heif|mif1|msf1`, WebP `RIFF….WEBP`. A `.jpg` whose bytes are not JPEG is rejected — this is the case of `malware.exe` renamed to `puppy.jpg`.
-4. **Decode** the image with the processing library; any decode failure rejects the file.
-5. **Sanity**: dimensions ≥ 400 px on the short side (owner gets a friendly "photo is too small to look good" message), ≤ 12 000 px on the long side (decompression-bomb guard).
+The browser does the cheap checks for instant feedback; the Edge Function repeats everything that matters on
+the derivatives it receives, treating them as untrusted input (nothing the browser reports is used).
+
+Client (before upload): extension allowlist → declared MIME allowlist → magic bytes (JPEG `FF D8 FF`, PNG
+signature, HEIC/HEIF `ftyp` brands `heic|heix|hevc|hevx|heif|mif1|msf1`, WebP `RIFF….WEBP`) → decode
+(HEIC via libheif WASM, others via `createImageBitmap` with EXIF orientation) → reject decoded images above
+50 MP → downscale/encode JPEG 1600 px (q0.85) and 480 px (q0.82). A renamed `malware.exe` fails at the magic
+bytes; a truncated photo fails at decode.
+
+Server (`listing-ops: register`), per derivative:
+
+1. **Bytes** (checked from object metadata before download): `-1600` ≤ 2 MB, `-960` ≤ 800 KB, `-480` ≤ 300 KB.
+2. **Magic bytes**: JPEG only (`FF D8 FF`); the client never produces other derivative formats, so anything else is rejected.
+   2b. **Segment sanitisation**: keep SOI, DQT, SOF0/1/2, DHT, DRI, SOS + entropy data, EOI; drop every APPn (EXIF, GPS,
+   ICC, XMP) and COM; truncate at EOI (defeats JPEG/ZIP/HTML polyglots); reject other SOF types and multiple SOFs.
+   The sanitised bytes are what gets stored. ICC may be dropped only because the client renders into an sRGB canvas.
+3. **Header-first pixel bounds** (parsed from the SOF marker of the sanitised buffer before any pixel buffer is allocated):
+   long edge ≤ 1600 / 960 / 480, short edge ≥ 300 / 180 / 120, ≤ 2.6 MP, 1 or 3 components (grayscale and progressive are fine). A 2 MB file whose header claims
+   30000×30000 is rejected in under a millisecond — this is the decompression-bomb guard.
+4. **Real decode** with `jpeg-js` capped at `maxResolutionInMP: 3` and `maxMemoryUsageInMB: 64`; decoded dimensions
+   must equal the header; any decode error rejects (truncated, garbage entropy data).
+5. Stored `width`, `height`, `bytes` are the server-measured values.
+
+Why these numbers: a 1600 px long-edge derivative is at most 1600×1600 = 2.56 MP → ~10 MB RGBA, far inside the
+256 MB Edge Function memory; a 12–48 MP phone photo is handled on the client, never on the server.
 
 ## Processing (never serve an owner upload as-is)
 
 - Apply EXIF/HEIF orientation, then strip all metadata (location, device, timestamps).
-- Produce: display 1600 px long edge (JPEG q82 + WebP), thumb 480 px, both with generated names `<uuid>-1600.jpg`,
-  `<uuid>-480.jpg` … Original filename is stored as metadata for the owner's benefit only, never used as a key.
+- Produce three JPEG derivatives in the browser: 1600 px long edge (q0.85, detail/lightbox), 960 px (q0.85, cards),
+  480 px (q0.82, admin thumbnails), named `<uuid>-1600.jpg`, `<uuid>-960.jpg`, `<uuid>-480.jpg`. The original
+  filename is shown to the owner only, never used as a key.
 - HEIC/HEIF → JPEG **before** upload in the admin UI (libheif WASM), so an iPhone photo "just works"; the server still
   validates and decodes what it receives and rejects raw HEIC it cannot decode (with the friendly type message).
-- Originals: kept in the private bucket for 30 days (re-processing safety), then deleted. Nothing private is ever
-  publicly listable.
+- Originals are not stored (the browser converts and downscales); re-processing at a higher resolution needs a re-upload.
 
 ## Owner experience (mobile-first)
 
@@ -57,6 +77,8 @@ Technical details (MIME types, server errors, stack traces) are never shown to t
 ## Security
 
 - Object keys are generated UUIDs; user filenames never touch a path.
-- Storage credentials live server-side only; the browser uploads through short-lived signed URLs or the authenticated API.
-- Public bucket contains derivatives only; private bucket has no public read policy.
+- Two buckets: `listing-media-private` (all validated derivatives; owner uploads land in `incoming/` and are moved by the
+  function after validation; anonymous reads fail even with the exact path) and `listing-media-public` (copies for
+  currently published listings only; written by the Edge Function alone; public by URL, not listable; 1-hour CDN TTL).
+- Storage credentials live server-side only; the browser uploads with the owner's session under a narrow `incoming/` policy.
 - Rate limit uploads per session; reject oversized bodies before buffering.
