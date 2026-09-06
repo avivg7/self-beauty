@@ -33,12 +33,12 @@ const showImages = order
   .filter(Boolean)
   .filter(publishable);
 const showVideos = videos.filter((v) => v.set === 'shows').filter(publishable);
-// Interleave the two videos into the photo flow so the page rhythm mixes motion and stills.
+// Interleave whatever show videos are publishable (0–2) into the photo flow so the rhythm mixes motion and stills.
 const items = [
   ...showImages.slice(0, 3),
-  showVideos[0]!,
+  ...showVideos.slice(0, 1),
   ...showImages.slice(3, 8),
-  showVideos[1]!,
+  ...showVideos.slice(1, 2),
   ...showImages.slice(8),
 ];
 const heroPreload = await getImage({

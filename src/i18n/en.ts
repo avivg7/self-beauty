@@ -90,7 +90,7 @@ export const en: Dictionary = {
     aboutEyebrow: 'Who is behind Self Beauty',
     aboutTitle: 'Breeder, professional groomer, and the person who answers your call',
     aboutText:
-      'A graduate of professional canine studies (2016), professional groomer and home breeder in Bat Yam since 2014. Her work spans grooming, show preparation and guiding new owners — from choosing the puppy to keeping its coat in shape at home.',
+      'A home breeder in Bat Yam since Self Beauty was founded in 2014. She completed her professional dog-grooming training in 2016 and has worked as a professional groomer since then: grooming, show preparation and guiding new owners — from choosing the puppy to keeping its coat at home.',
     ownerImageAlt: 'The Self Beauty breeder hugging a Yorkshire Terrier wearing a red bow',
     breedsEyebrow: 'Our breeds',
     breedsTitle: 'Five small breeds. Real familiarity with each of them.',
@@ -309,13 +309,13 @@ export const en: Dictionary = {
   about: {
     title: 'About Self Beauty · Home-based kennel in Bat Yam',
     description:
-      'Self Beauty: a home-based pedigree kennel in Bat Yam since 2014, led by a professional groomer with canine studies (2016). Registered pedigrees, champion lines and personal guidance for owners.',
+      'Self Beauty: a home-based pedigree kennel in Bat Yam since 2014, led by a breeder who has worked as a professional groomer since 2016. Registered pedigrees, champion lines and personal guidance for owners.',
     eyebrow: 'About',
     h1: 'A small home, a high standard',
     lede: 'Self Beauty was founded in 2014 as a home-based kennel in Bat Yam. The puppies grow up in a home, not a facility; the parents are chosen for health, temperament and fit to the standard; and the person who raises them is the one who guides you afterwards.',
     ownerTitle: 'The breeder',
     ownerText: [
-      'A graduate of professional canine studies through the Israeli canine community (2016), professional groomer, and home breeder since 2014.',
+      'A home breeder in Bat Yam since Self Beauty was founded in 2014. She completed her professional dog-grooming training in 2016 and has been a professional groomer ever since.',
       'Her work moves between the grooming table and the show ring: preparing dogs for judging, breed-specific coat care, and guiding new owners — from how to brush to what to watch for in the first weeks.',
       'The Self Beauty lines include dogs with Israeli and international champion titles, and every puppy leaves with registered pedigree papers.',
     ],
@@ -346,7 +346,10 @@ export const en: Dictionary = {
     timelineTitle: 'Milestones',
     timeline: [
       { year: '2014', text: 'Self Beauty founded as a home-based kennel in Bat Yam.' },
-      { year: '2016', text: 'Completed professional canine studies.' },
+      {
+        year: '2016',
+        text: 'Completed professional dog-grooming training and began working as a professional groomer.',
+      },
     ],
   },
   stories: {

@@ -29,7 +29,9 @@ test.describe('galleries and lightbox', () => {
   });
 
   test('video tiles do not load media until opened, then play inside the lightbox', async ({ page }) => {
+    // Shows or the years gallery — whichever still presents a video (show videos can be excluded by the client).
     await page.goto(u('/he/shows/'));
+    if ((await page.locator('[data-lb-type="video"]').count()) === 0) await page.goto(u('/he/gallery/'));
     expect(await page.locator('main video').count()).toBe(0);
     const tile = page.locator('[data-lb-type="video"]').first();
     await tile.scrollIntoViewIfNeeded();
@@ -43,7 +45,13 @@ test.describe('galleries and lightbox', () => {
 
   test('type filter narrows the grid and the lightbox group follows', async ({ page }) => {
     await page.goto(u('/en/shows/'));
-    await page.locator('input[data-filter="type"][value="video"]').check({ force: true });
+    const videoFilter = page.locator('input[data-filter="type"][value="video"]');
+    if ((await videoFilter.count()) === 0) {
+      // No show videos → the video filter must not be rendered at all (no empty control)
+      await expect(page.locator('[data-lb-type="video"]')).toHaveCount(0);
+      return;
+    }
+    await videoFilter.check({ force: true });
     const visible = page.locator('.gallery__item:not([hidden])');
     await expect(visible.first()).toBeVisible();
     const n = await visible.count();

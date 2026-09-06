@@ -29,6 +29,21 @@ describe('establishment year is 2014 everywhere', () => {
     expect(d.about.timeline[0]?.year).toBe('2014');
     expect(d.about.timeline.some((m) => m.year === '2016')).toBe(true);
   });
+  it.each(Object.entries(dicts))(
+    '%s: no grooming claim is tied to 2014 without the 2016 grooming start',
+    (_l, d) => {
+      const walk = (v: unknown): string[] =>
+        typeof v === 'string'
+          ? [v]
+          : v && typeof v === 'object'
+            ? Object.values(v as object).flatMap(walk)
+            : [];
+      const grooming = /groom|грум|ספרית כלבים|מטפחת|גרומר|מספרה/i;
+      for (const str of walk(d)) {
+        if (grooming.test(str) && /\b2014\b/.test(str)) expect(str, str).toMatch(/\b2016\b/);
+      }
+    },
+  );
   it('content collections never claim another founding year', () => {
     for (const dir of ['puppies', 'litters', 'testimonials']) {
       for (const f of readdirSync(path.join(ROOT, 'src/content', dir))) {
