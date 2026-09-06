@@ -21,20 +21,25 @@ test.describe('conversion paths', () => {
   });
 
   test('journey A: home → puppies → puppy (or honest empty state) → WhatsApp', async ({ page }) => {
+    // e2e builds point at a mock backend: answer "no listings" so the honest empty state is exercised.
+    await page.route('https://supabase.mock.invalid/**', (route) => route.fulfill({ json: [] }));
     await page.goto(u('/he/'));
     await page.locator('main a[href$="/he/puppies/"]').first().click();
     await expect(page).toHaveURL(/\/he\/puppies\/$/);
+    const island = page.locator('[data-live-puppies]');
+    if (await island.count())
+      await expect(island.locator('[data-live-skeleton]')).toBeHidden({ timeout: 15_000 });
     if ((await page.locator('article .pcard__title a').count()) === 0) {
       // No verified listing published: the page must say so and route to planned-litter updates
-      await expect(page.locator('main .empty')).toBeVisible();
-      const cta = page.locator('main .empty a[href^="https://wa.me"]');
+      await expect(page.locator('main .empty:visible')).toBeVisible();
+      const cta = page.locator('main .empty:visible a[href^="https://wa.me"]');
       await expect(cta).toBeVisible();
       expect(decodeURIComponent((await cta.getAttribute('href'))!)).toContain('המלטות');
       await expect(page.locator('main')).not.toContainText(/₪|\$|מחיר:|price:/i);
       return;
     }
     await page.locator('article .pcard__title a').first().click();
-    await expect(page).toHaveURL(/\/he\/puppies\/[\w-]+\/$/);
+    await expect(page).toHaveURL(/\/he\/puppies\/(?:[\w-]+\/|view\/\?id=[\w-]+)$/);
     const cta = page.locator('main a[href^="https://wa.me"]').first();
     await expect(cta).toContainText('דברו איתנו על הגור');
     const href = await cta.getAttribute('href');

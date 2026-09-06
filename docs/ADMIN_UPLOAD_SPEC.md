@@ -3,6 +3,12 @@
 Binding rules for the owner admin (Part B). Written before the backend exists so the architecture gate and the
 implementation are held to the same contract. Nothing here is implemented yet.
 
+> **Lean V1 (2026-09-06):** the implemented pipeline produces **two** derivatives, `<uuid>-1600.jpg` (detail) and
+> `<uuid>-640.jpg` (cards, admin previews), entirely in the browser (`src/admin/image-pipeline.ts`); nothing is
+> processed server-side and no original is stored. The 960/480 tiers and the Edge-Function validator below are the
+> earlier research design (kept as reference; see `spikes/`). Everything about limits, allowlist, magic bytes and the
+> 3-image rule still applies.
+
 ## Limits
 
 | Rule               | Value                                                                                              | Enforced in                                                                                                       |

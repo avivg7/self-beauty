@@ -18,12 +18,14 @@
     "format:check": "prettier --check .",
     "test": "npm run test:unit",
     "test:unit": "vitest run",
-    "test:e2e": "npm run build:demo --silent && playwright test",
+    "test:db": "vitest run --config vitest.db.config.ts",
+    "test:e2e": "npm run build:e2e --silent && npm run build:demo --silent && playwright test",
     "test:a11y": "playwright test --project=a11y",
     "links": "node scripts/check-links.mjs",
     "media:ingest": "node scripts/media/ingest.mjs",
     "verify": "npm run lint && npm run check && npm run test:unit && npm run build && npm run links",
-    "build:demo": "SB_INCLUDE_DEMO=1 astro build --outDir .demo-dist/ci"
+    "build:demo": "SB_INCLUDE_DEMO=1 astro build --outDir .demo-dist/ci",
+    "build:e2e": "PUBLIC_SUPABASE_URL=https://supabase.mock.invalid PUBLIC_SUPABASE_ANON_KEY=mock-anon-key astro build"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

@@ -69,24 +69,38 @@ create table listing_images (
 
 - **Max 3 images** is the database invariant (`position between 1 and 3` + unique). Position 1 = main photo.
 - `is_admin()` = `exists (select 1 from admins where user_id = auth.uid())` (`security definer`, `set search_path = ''`).
+- RLS is **explicit in the migration**: `enable row level security` on `admins`, `listings`, `listing_images` in the
+  same file that creates them; `revoke all on all tables/sequences in schema public from public, anon, authenticated`;
+  `alter default privileges … revoke … from anon` for tables, sequences and functions. Nothing depends on dashboard defaults.
 - Policies: `anon` has no table grants at all. `authenticated` gets policies only where `is_admin()`:
   `listings` select/insert/update/delete; `listing_images` select/insert/delete (insert limited by the constraint;
   position updates only through the reorder RPC); `admins` select own row. Storage: owner insert/select/update/delete
   in both buckets under `listings/<uuid>/`; anon nothing (public bucket is readable by URL only).
-- `reorder_images(listing_id, ids uuid[])`: one SQL function that checks `is_admin()`, verifies the id set,
-  `set constraints public.listing_images_position_unique deferred`, rewrites positions, done. No locks: there is one owner
-  and the admin disables its controls while saving.
+- `reorder_images(listing_id, ids uuid[])`: `security definer`, `set search_path = ''`, executable by
+  `authenticated` only (revoked from `public`/`anon`); raises unless `is_admin()`; rejects null/empty/duplicate ids,
+  more than 3 ids, or an id set that differs from the listing's actual images (`STALE_ORDER`); then
+  `set constraints public.listing_images_position_unique deferred` and one `update … from unnest(ids) with ordinality`.
+  No locks: there is one owner and the admin disables its controls while saving.
 - `public_listings_json()` and `public_listing_json(id)`: `security definer`, `stable`, `set search_path = ''`,
   fixed public columns via `jsonb_build_object` (never `internal_note`, admin ids, or anything private), filter
-  `published and archived_at is null`, images with derived **public** paths only. `revoke all … from public,
-authenticated; grant execute … to anon`. Sign-ups disabled, minimum password 12, no OAuth, no anonymous auth.
-  Automated negative tests (local stack): anon cannot read tables, write anything, read private objects, or see drafts.
+  `published and archived_at is null`, images with derived **public** paths only. `revoke all … from public;
+grant execute … to anon, authenticated` (the filter lives inside the function, so the owner's session gets the same
+  view). Sign-ups disabled, minimum password 12, no OAuth, no anonymous auth.
+  Automated negative tests (local stack, `npm run test:db`): anon cannot read tables, write anything, read private
+  objects, list either bucket, or see drafts; a non-admin user gets nothing; the RPC response has exactly the
+  documented keys (`internal_note` and admin ids can never creep in through a `to_jsonb(listings.*)` refactor).
+- Storage policies are written out per bucket and per operation with exact predicates: `bucket_id = '<bucket>'
+and is_admin() and is_listing_media_key(name)` (the generated key shape `listings/<uuid>/<uuid>-(1600|640).jpg`).
+  The `owner` column is never used, so recreating the owner's auth user cannot orphan files. No anon policy on
+  either bucket.
+- `updated_at` is set by a `before update` trigger; clients never set it.
 
 ## 6. Publish / unpublish / archive / delete (plain, retryable)
 
 - **Publish** (admin): validate the form → require ≥ 1 image → copy both derivatives of every image to the public
-  bucket (upsert) → only then `update … set published = true` → "פורסם". If any copy fails: `published` stays
-  false, clear error, Retry button. No intermediate states.
+  bucket with **upsert** (a destination that already exists from an earlier partial publish is the same generated
+  file, so Retry succeeds) → only then `update … set published = true` → "פורסם". If any copy fails: `published`
+  stays false, clear error, Retry button. No intermediate states.
 - **Unpublish**: `published = false` (the RPC stops returning it immediately) → delete public copies. If a delete
   fails: error message with Retry; nothing links to those objects any more, acceptable for V1.
 - **Save** (content/status change): plain update; if the listing is published its data is live on the next page view.
@@ -94,7 +108,9 @@ authenticated; grant execute … to anon`. Sign-ups disabled, minimum password 1
   hidden from the normal list and from the site. Restore = clear `archived_at`.
 - **Permanent delete** (from the archive view, typed confirmation): delete public copies → delete private
   derivatives → delete the row. A partial failure shows an understandable error and can be retried.
-- **Images** on a published listing: adding/replacing copies to public as well; removing deletes both copies;
+- **Images** on a published listing — order matters because the public site derives paths from rows:
+  **add** = private upload → public upload → row insert; **remove** = row delete → storage cleanup (both buckets,
+  best effort); **replace** = remove + add under a **new image id** (never overwrite a cached public key);
   reorder is data only.
 
 ## 7. Public site
@@ -134,9 +150,21 @@ button language; `noindex`; excluded from sitemap; distinct session storage key.
 tens of listings × 2 derivatives × ~250 KB ≈ well under 100 MB; API calls negligible. If a limit is approached:
 identify it, propose free optimisations (smaller derivatives, remove unused public copies), and stop before any
 paid change. Pause → public graceful error + admin retry message; the developer restores from the dashboard.
+A paused free project is restorable for a limited period only (Supabase's current docs say ~90 days, then
+removal); `docs/RUNBOOK.md` records this and the rule "run the manual export before any long quiet period".
+No health checks, keepalive, synthetic traffic, scheduled pings or monitoring are built.
 
 ## 11. Future options (not requirements)
 
 Server-side byte validation in an Edge Function; publication journal/reconcile if multi-device edits ever cause
 inconsistencies; scheduled backups; custom SMTP for self-service password reset; a 960 px card derivative if
 visual QA shows softness on 3× phones.
+
+## 12. Review outcome (2026-09-06, concise security review)
+
+Eight findings, all accepted and applied: (1) explicit RLS + anon privilege removal + safe default privileges;
+(2) `reorder_images` as a small `security definer` function with admin, id-set and max-3 checks; (3) publish
+retry-safe via upsert copies; (4) exact per-bucket storage predicates, no `owner` column, no anon policy;
+(5) public RPCs granted to `anon, authenticated` with a fixed key list and a test on the exact keys;
+(6) add/remove/replace ordering for published listings; (7) `updated_at` trigger; (8) pause note in the runbook
+(documentation only). No anonymous-reachable hole was found in the design. No further architecture cycle.

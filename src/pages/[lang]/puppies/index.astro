@@ -2,19 +2,20 @@
 import Base from '@/layouts/Base.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import PuppyGrid from '@/components/PuppyGrid.astro';
+import LivePuppies from '@/components/LivePuppies.astro';
+import { includeDemo } from '@/data/site';
 import LitterBanner from '@/components/LitterBanner.astro';
 import CtaBand from '@/components/CtaBand.astro';
-import Icon from '@/components/Icon.astro';
 import { getDictionary, type Locale } from '@/i18n';
 import { localePaths } from '@/lib/paths';
 import { getPuppies } from '@/lib/listings';
-import { whatsappLink } from '@/lib/contact';
 import { site } from '@/data/site';
 
 export const getStaticPaths = localePaths;
 const locale = Astro.params.lang as Locale;
 const t = getDictionary(locale);
-const puppies = await getPuppies();
+// Demo builds (SB_INCLUDE_DEMO=1) render the static fixtures for layout review; production renders live data.
+const puppies = includeDemo ? await getPuppies() : [];
 const breedsPresent = site.breeds.filter((b) => puppies.some((p) => p.data.breed === b));
 const showFilters = puppies.length > 3 && breedsPresent.length > 1;
 ---
@@ -45,7 +46,7 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
       }
 
       {
-        puppies.length ? (
+        includeDemo ? (
           <PuppyGrid
             puppies={puppies}
             locale={locale}
@@ -54,18 +55,7 @@ const showFilters = puppies.length > 3 && breedsPresent.length > 1;
             listAttrs={{ 'data-puppy-list': '' }}
           />
         ) : (
-          <div class="empty">
-            <h2>{t.puppies.empty.title}</h2>
-            <p>{t.puppies.empty.text}</p>
-            <a
-              class="btn btn--whatsapp"
-              href={whatsappLink(locale, 'litters')}
-              target="_blank"
-              rel="noopener"
-            >
-              <Icon name="whatsapp" /> {t.cta.litterUpdates}
-            </a>
-          </div>
+          <LivePuppies locale={locale} headingLevel={2} />
         )
       }
       <p class="muted pnote" data-none hidden>{t.puppies.filters.none}</p>

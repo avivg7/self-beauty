@@ -28,7 +28,7 @@ const d = puppy.data;
 const name = localizedField(d.name, locale);
 const breed = t.breeds[d.breed].name;
 const cover = d.images[0]!;
-const url = localeHref(locale, `puppies/${puppy.id}`);
+const url = localeHref(locale, `puppies/${puppy.id}`); // static fixtures (demo builds) keep the static detail route
 const age = d.birthDate ? ageLabel(locale, d.birthDate) : '';
 const titleId = `puppy-${puppy.id}-title`;
 const featured = variant === 'featured';

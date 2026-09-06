@@ -1,0 +1,34 @@
+---
+/**
+ * Owner admin (Lean V1). Standalone page: no public layout, noindex, Hebrew RTL by default, Arial only.
+ * The whole UI is a Preact island rendered client-only (it needs the browser: session storage, canvas, HEIC decode).
+ */
+import '@/styles/tokens.css';
+import '@/styles/global.css';
+import '@/admin/admin.css';
+import App from '@/admin/App';
+import { he } from '@/i18n/he';
+import { localeHref } from '@/lib/urls';
+
+const siteHref = localeHref('he', '');
+---
+
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#7b1b22" />
+    <title>{he.admin.ui.title} · Self Beauty</title>
+    <link
+      rel="icon"
+      href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/favicon.svg`}
+      type="image/svg+xml"
+    />
+  </head>
+  <body class="adm-body">
+    <noscript><p class="adm-noscript">{he.admin.ui.login.unavailable}</p></noscript>
+    <App client:only="preact" siteHref={siteHref} />
+  </body>
+</html>

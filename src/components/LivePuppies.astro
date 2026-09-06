@@ -1,0 +1,301 @@
+---
+/**
+ * Live puppy listings from Supabase (Lean V1). The card markup is rendered once by Astro as a <template>
+ * (same structure and classes as PuppyCard) and cloned by the island, so the design stays single-sourced.
+ * States: skeleton → listings | empty (successful zero-row fetch) | error (never claims "no puppies").
+ */
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { whatsappLink } from '@/lib/contact';
+import { isConfigured } from '@/lib/public-listings';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  /** Home page shows up to 3 (featured first); the catalogue shows all */
+  limit?: number;
+  headingLevel?: 2 | 3;
+}
+const { locale, limit, headingLevel = 3 } = Astro.props;
+const t = getDictionary(locale);
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+const detailBase = localeHref(locale, 'puppies/view');
+const statusLabels = JSON.stringify(t.status);
+const sexLabels = JSON.stringify(t.sex);
+const breedLabels = JSON.stringify(Object.fromEntries(Object.entries(t.breeds).map(([k, v]) => [k, v.name])));
+const strings = JSON.stringify({
+  talk: t.cta.talkAboutPuppy,
+  details: t.cta.details,
+  updated: t.puppies.card.updated,
+  showProspect: t.puppies.card.showProspect,
+  age: t.puppies.card.age,
+  sex: t.puppies.card.sex,
+  hebrewOnly: t.puppies.live.hebrewOnly,
+  statusLabel: t.puppies.card.status,
+  imageAlt: t.puppies.live.imageAlt,
+  wa: t.wa.puppy,
+});
+---
+
+<div
+  class="live"
+  data-live-puppies
+  data-locale={locale}
+  data-limit={limit ?? ''}
+  data-detail-base={detailBase}
+  data-configured={isConfigured() ? '1' : '0'}
+  data-status-labels={statusLabels}
+  data-sex-labels={sexLabels}
+  data-breed-labels={breedLabels}
+  data-strings={strings}
+>
+  <div class="live__skeleton" data-live-skeleton aria-busy="true" aria-label={t.puppies.live.loading}>
+    {
+      [0, 1, 2].map(() => (
+        <div class="card skel">
+          <div class="skel__img ratio ratio--4x5" />
+          <div class="card__body">
+            <div class="skel__line skel__line--short" />
+            <div class="skel__line" />
+            <div class="skel__line" />
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <ul role="list" class="pgrid" data-live-list hidden></ul>
+
+  <div class="empty" data-live-empty hidden>
+    <Heading>{t.puppies.empty.title}</Heading>
+    <p>{t.puppies.empty.text}</p>
+    <a class="btn btn--whatsapp" href={whatsappLink(locale, 'litters')} target="_blank" rel="noopener">
+      <Icon name="whatsapp" />
+      {t.cta.litterUpdates}
+    </a>
+  </div>
+
+  <div class="empty live__error" data-live-error hidden role="status">
+    <p>{t.puppies.live.error}</p>
+    <a class="btn btn--whatsapp" href={whatsappLink(locale, 'general')} target="_blank" rel="noopener">
+      <Icon name="whatsapp" />
+      {t.cta.whatsappUs}
+    </a>
+  </div>
+
+  <template data-live-card>
+    <li data-breed="">
+      <article class="card pcard">
+        <a
+          class="pcard__media card__media ratio ratio--4x5"
+          data-slot="link"
+          tabindex="-1"
+          aria-hidden="true"
+        >
+          <img data-slot="img" alt="" loading="lazy" decoding="async" />
+          <span class="pcard__chips"><span class="chip" data-slot="status"></span></span>
+        </a>
+        <div class="card__body pcard__body">
+          <p class="sr-only" data-slot="sr-status"></p>
+          <p class="pcard__breed" data-slot="breed"></p>
+          <Heading class="pcard__title"><a data-slot="title-link"></a></Heading>
+          <dl class="pcard__facts" data-slot="facts"></dl>
+          <p class="pcard__desc pcard__desc--clamp" data-slot="desc"></p>
+          <p class="pcard__note muted" data-slot="note" hidden></p>
+          <p class="pcard__updated muted" data-slot="updated"></p>
+          <div class="pcard__actions">
+            <a class="btn btn--whatsapp" data-slot="wa" target="_blank" rel="noopener"
+              ><Icon name="whatsapp" /><span data-slot="wa-label"></span></a
+            >
+            <a class="btn btn--ghost" data-slot="details"
+              ><span data-slot="details-label"></span><Icon name="arrow" class="rtl-flip" /></a
+            >
+          </div>
+        </div>
+      </article>
+    </li>
+  </template>
+</div>
+<script>
+  import '@/scripts/live-puppies';
+</script>
+
+<style>
+  .live__skeleton {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+  @media (min-width: 64rem) {
+    .live__skeleton {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .skel__img {
+    background: var(--c-cream);
+  }
+  .skel__line {
+    height: 0.9rem;
+    margin: 0.6rem 0;
+    border-radius: 4px;
+    background: var(--c-cream);
+  }
+  .skel__line--short {
+    width: 40%;
+  }
+  html:not([data-motion='reduce']) .skel__img,
+  html:not([data-motion='reduce']) .skel__line {
+    animation: skel 1.2s ease-in-out infinite;
+  }
+  @keyframes skel {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+  .live__error p {
+    max-width: 48ch;
+  }
+  .empty {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    padding: var(--sp-6);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+  }
+</style>
+<style is:global>
+  /* Live cards reuse PuppyCard's classes; these mirror its scoped rules for the cloned markup. */
+  [data-live-list] {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+  @media (min-width: 64rem) {
+    [data-live-list] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  [data-live-list][data-count='1'],
+  [data-live-list][data-count='2'] {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 24rem));
+    justify-content: center;
+  }
+  [data-live-list] > li {
+    min-width: 0;
+    display: grid;
+  }
+  [data-live-list] .pcard {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  [data-live-list] .pcard__media {
+    display: block;
+  }
+  [data-live-list] .pcard__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  [data-live-list] .pcard__chips {
+    position: absolute;
+    top: 0.75rem;
+    inset-inline-start: 0.75rem;
+    display: flex;
+    gap: 0.35rem;
+    z-index: 1;
+    pointer-events: none;
+  }
+  [data-live-list] .pcard__chips .chip {
+    align-self: flex-start;
+    background: rgb(255 253 249 / 94%);
+    border-color: rgb(31 27 26 / 8%);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-live-list] .pcard__body {
+    display: grid;
+    gap: 0.6rem;
+    flex: 1;
+    align-content: start;
+    min-width: 0;
+  }
+  [data-live-list] .pcard__body > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  [data-live-list] .pcard .btn {
+    white-space: normal;
+    text-align: center;
+  }
+  [data-live-list] .pcard__breed {
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--c-gold-text);
+  }
+  [data-live-list] .pcard__title {
+    font-size: var(--fs-xl);
+    overflow-wrap: anywhere;
+  }
+  [data-live-list] .pcard__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  [data-live-list] .pcard__title a:hover {
+    color: var(--c-burgundy);
+  }
+  [data-live-list] .pcard__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    font-size: var(--fs-sm);
+  }
+  [data-live-list] .pcard__facts div {
+    display: flex;
+    gap: 0.35rem;
+  }
+  [data-live-list] .pcard__facts dt {
+    color: var(--c-text-2);
+  }
+  [data-live-list] .pcard__facts dt::after {
+    content: ':';
+  }
+  [data-live-list] .pcard__facts dd {
+    font-weight: 700;
+  }
+  [data-live-list] .pcard__desc {
+    color: var(--c-text-2);
+    font-size: var(--fs-sm);
+  }
+  [data-live-list] .pcard__desc--clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  [data-live-list] .pcard__note {
+    font-size: var(--fs-xs);
+  }
+  [data-live-list] .pcard__updated {
+    font-size: var(--fs-xs);
+  }
+  [data-live-list] .pcard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+  [data-live-list] .pcard__actions .btn--whatsapp {
+    flex: 1 1 11rem;
+  }
+</style>

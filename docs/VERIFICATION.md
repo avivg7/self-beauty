@@ -68,3 +68,31 @@ brought mobile LCP from 2.6–3.7 s down to 1.3–2.5 s. Nothing was tuned for t
 - Mobile LCP is bounded by the hero photograph and font fetch on slow 4G; a higher-resolution hero (TODO-008) would not change this.
 - The Shih Tzu ring video is 478×850 source quality.
 - Grooming portfolio shows an honest "in preparation" state (TODO-003).
+
+## Admin + live listings (Lean V1, 2026-09-06)
+
+Automated:
+
+- `npm run check` / `npm run lint` / `npm run test:unit` — green with the admin, island and public-listings modules.
+- `npm run test:e2e` — builds against `https://supabase.mock.invalid`, then Playwright intercepts every request:
+  live cards / detail / empty / error / Russian fallback / home featured (`tests/e2e/live.spec.ts`); admin login
+  (bad credentials, backend down), owner workflow to "תמונות — 0/3", 3/3 disables adding, status sheet
+  (`tests/e2e/admin.spec.ts`).
+- `npm run test:db` — local Supabase stack (`npx supabase start`, `npx supabase db reset`): anon has no table access
+  and no writes, cannot call admin functions, cannot list buckets or read private objects; a non-admin user sees nothing;
+  the owner's CRUD, `NO_IMAGE` publish gate, 3-image invariant, `reorder_images` (stale/duplicate/oversized sets
+  rejected), `updated_at` trigger, retry-safe public upsert, exact RPC key list (no `internal_note`, no admin id),
+  archive constraint, cascade delete.
+
+Manual QA before final release (not a gate; requires the production project and the owner's iPhone):
+
+| #   | Check                                       | Expected                                                                    |
+| --- | ------------------------------------------- | --------------------------------------------------------------------------- |
+| H1  | Add a normal iPhone HEIC photo              | converts in ≤ 3 s, upright, appears as tile                                 |
+| H2  | Portrait photo taken with the phone rotated | upright on the site (orientation applied)                                   |
+| H3  | Large (12 MP+, ~4–8 MB) HEIC                | converts; derivative ≤ 2 MB                                                 |
+| H4  | Three photos at once                        | all three tiles, add button disabled at 3/3                                 |
+| H5  | Replace the main photo                      | new image id, main chip on the new tile, old public copy gone after publish |
+| H6  | Publish → open site in Safari               | card and detail show within one reload; chip/status correct                 |
+| H7  | זמין → שמור → Save                          | site reflects it on the next page view                                      |
+| H8  | Airplane mode → any action                  | clear error, nothing half-saved, retry works after reconnecting             |

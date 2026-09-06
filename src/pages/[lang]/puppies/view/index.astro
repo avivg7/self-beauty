@@ -1,0 +1,249 @@
+---
+/**
+ * Puppy detail (Lean V1): static shell + island. GitHub Pages cannot serve /puppies/<id>/, so the id travels in
+ * the query string: /{lang}/puppies/view/?id=<uuid>. Unknown or unpublished → "not found" state.
+ */
+import Base from '@/layouts/Base.astro';
+import Icon from '@/components/Icon.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { getDictionary, type Locale } from '@/i18n';
+import { localeHref } from '@/lib/urls';
+import { localePaths } from '@/lib/paths';
+import { isConfigured } from '@/lib/public-listings';
+import { whatsappLink } from '@/lib/contact';
+
+export const getStaticPaths = localePaths;
+const locale = Astro.params.lang as Locale;
+const t = getDictionary(locale);
+const strings = JSON.stringify({
+  about: t.puppies.detail.aboutTitle,
+  pedigree: t.puppies.detail.pedigreeTitle,
+  breed: t.puppies.card.breed,
+  sex: t.puppies.card.sex,
+  born: t.puppies.card.born,
+  status: t.puppies.card.status,
+  sire: t.puppies.card.sire,
+  dam: t.puppies.card.dam,
+  showProspect: t.puppies.card.showProspect,
+  updated: t.puppies.card.updated,
+  noPrice: t.puppies.noPriceNote,
+  talk: t.cta.talkAboutPuppy,
+  hebrewOnly: t.puppies.live.hebrewOnly,
+  imageAlt: t.puppies.live.imageAlt,
+  open: t.gallery_ui.open,
+  wa: t.wa.puppy,
+  title: t.puppies.title,
+});
+---
+
+<Base
+  locale={locale}
+  title={t.puppies.title}
+  description={t.puppies.description}
+  path="/puppies/view/"
+  noindex
+  alternates={false}
+>
+  <article
+    class="section pdetail"
+    data-live-detail
+    data-locale={locale}
+    data-configured={isConfigured() ? '1' : '0'}
+    data-strings={strings}
+    data-status-labels={JSON.stringify(t.status)}
+    data-sex-labels={JSON.stringify(t.sex)}
+    data-breed-labels={JSON.stringify(
+      Object.fromEntries(Object.entries(t.breeds).map(([k, v]) => [k, v.name])),
+    )}
+  >
+    <div class="container">
+      <p class="pdetail__back">
+        <a href={localeHref(locale, 'puppies')}
+          ><Icon name="arrow" class="pdetail__back-icon" /> {t.cta.backToPuppies}</a
+        >
+      </p>
+      <p class="muted" data-live-loading aria-busy="true">{t.puppies.live.loading}</p>
+      <div class="empty" data-live-notfound hidden>
+        <h1>{t.puppies.live.notFound}</h1>
+        <a class="btn btn--secondary" href={localeHref(locale, 'puppies')}>{t.cta.backToPuppies}</a>
+      </div>
+      <div class="empty" data-live-error hidden role="status">
+        <p>{t.puppies.live.error}</p>
+        <a class="btn btn--whatsapp" href={whatsappLink(locale, 'general')} target="_blank" rel="noopener"
+          ><Icon name="whatsapp" /> {t.cta.whatsappUs}</a
+        >
+      </div>
+      <div class="pdetail__grid" data-live-content hidden>
+        <div class="pdetail__gallery">
+          <div class="frame pdetail__main">
+            <button
+              type="button"
+              class="pdetail__mainbtn"
+              data-lb-item
+              data-lb-type="image"
+              data-lb-group="live-detail"
+              data-slot="main-btn"
+            >
+              <img class="pdetail__img" data-slot="main-img" alt="" decoding="async" />
+            </button>
+          </div>
+          <ul role="list" class="pdetail__thumbs" data-slot="thumbs"></ul>
+        </div>
+        <div class="pdetail__info">
+          <p class="cluster">
+            <span class="chip" data-slot="status"></span><span class="rosette" data-slot="prospect" hidden
+              ><Icon name="rosette" /><span data-slot="prospect-label"></span></span
+            >
+          </p>
+          <p class="eyebrow" data-slot="breed"></p>
+          <h1 data-slot="name"></h1>
+          <dl class="facts" data-slot="facts"></dl>
+          <h2 class="pdetail__h" data-slot="about-h"></h2>
+          <p data-slot="desc"></p>
+          <p class="muted pdetail__note" data-slot="note" hidden></p>
+          <h2 class="pdetail__h" data-slot="pedigree-h" hidden></h2>
+          <p data-slot="pedigree" hidden></p>
+          <dl class="facts" data-slot="parents" hidden></dl>
+          <p class="muted pdetail__note" data-slot="noprice"></p>
+          <p class="muted pdetail__note" data-slot="updated"></p>
+          <div class="pdetail__actions">
+            <a class="btn btn--lg btn--whatsapp" data-slot="wa" target="_blank" rel="noopener"
+              ><Icon name="whatsapp" /><span data-slot="wa-label"></span></a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+  <CtaBand locale={locale} title={t.home.contactTitle} text={t.home.contactText} intent="general" />
+</Base>
+<script>
+  import '@/scripts/live-puppy-detail';
+</script>
+
+<style>
+  .pdetail__back {
+    margin-bottom: var(--sp-5);
+    font-size: var(--fs-sm);
+  }
+  .pdetail__back a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    text-decoration: none;
+    font-weight: 700;
+  }
+  .pdetail__back-icon {
+    width: 1rem;
+    height: 1rem;
+    transform: scaleX(-1);
+  }
+  html[dir='rtl'] .pdetail__back-icon {
+    transform: none;
+  }
+  .pdetail__grid {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  @media (min-width: 64rem) {
+    .pdetail__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: var(--sp-8);
+      align-items: start;
+    }
+  }
+  .pdetail__gallery {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .pdetail__main {
+    margin: var(--frame-offset);
+  }
+  .pdetail__mainbtn {
+    display: block;
+    width: 100%;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--c-cream);
+  }
+  .pdetail__img {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    object-fit: cover;
+  }
+  .pdetail__thumbs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-3);
+  }
+  .pdetail__thumbs:empty {
+    display: none;
+  }
+  .pdetail__thumbs button {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--c-cream);
+  }
+  .pdetail__thumbs img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pdetail__info {
+    display: grid;
+    gap: var(--sp-3);
+    align-content: start;
+  }
+  .pdetail__info h1 {
+    font-size: var(--fs-3xl);
+  }
+  .pdetail__h {
+    font-size: var(--fs-lg);
+    margin-top: var(--sp-3);
+  }
+  .facts {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .facts:empty {
+    display: none;
+  }
+  .facts div {
+    display: grid;
+    grid-template-columns: minmax(6rem, auto) 1fr;
+    gap: 0.75rem;
+    padding-block: 0.4rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .facts dt {
+    color: var(--c-text-2);
+    font-size: var(--fs-sm);
+  }
+  .facts dd {
+    font-weight: 700;
+  }
+  .pdetail__note {
+    font-size: var(--fs-sm);
+  }
+  .pdetail__actions {
+    margin-top: var(--sp-3);
+  }
+  @media (max-width: 30rem) {
+    .pdetail__actions .btn {
+      width: 100%;
+    }
+  }
+  .empty {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    padding: var(--sp-6);
+    border: 1px dashed var(--c-border-strong);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+  }
+</style>

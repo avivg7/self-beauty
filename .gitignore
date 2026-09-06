@@ -29,3 +29,6 @@ scripts/media/.cache/
 
 # demo builds for layout review
 .demo-dist/
+
+# manual exports (see docs/RUNBOOK.md)
+backups/

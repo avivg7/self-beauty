@@ -96,14 +96,25 @@ Repository settings → Pages → Source: **GitHub Actions**. No secrets are nee
 Custom domain later: add `public/CNAME`, set repository variables `SITE=https://example.co.il` and `BASE=/`,
 configure DNS. Nothing in the code changes.
 
-## Admin (owner interface)
+## Admin (owner interface) — Lean V1
 
-Not built yet. GitHub Pages cannot host authentication or uploads, so the admin needs an external backend.
-An architecture gate with 2–3 options (auth, database, storage, cost, security, backups) is presented before any
-integration; nothing is created or paid for without approval. Binding rules for the admin are in [docs/ADMIN_UPLOAD_SPEC.md](docs/ADMIN_UPLOAD_SPEC.md) (max 3 images per
-listing enforced in UI **and** API, allowlisted image types validated by extension, MIME, magic bytes and decoding, 10 MB limit,
-server-side processing, generated object keys, no storage credentials in the browser) and the publication model
-(publish → automatic rebuild, no developer involved) is compared in [docs/ADMIN_ARCHITECTURE_OPTIONS.md](docs/ADMIN_ARCHITECTURE_OPTIONS.md).
+Built, awaiting the production Supabase project. Design: [docs/superpowers/specs/2026-09-06-admin-supabase-design.md](docs/superpowers/specs/2026-09-06-admin-supabase-design.md);
+operations: [docs/RUNBOOK.md](docs/RUNBOOK.md); upload rules: [docs/ADMIN_UPLOAD_SPEC.md](docs/ADMIN_UPLOAD_SPEC.md).
+
+- `/admin/` is a Preact island (`src/admin/`) on the same GitHub Pages site: Supabase Auth (email + password, one
+  owner, sign-ups disabled, `admins` allowlist), Postgres with RLS, two storage buckets (private derivatives, public
+  copies of published listings only). Hebrew RTL first, Russian/English switch, Arial, iPhone-sized layout.
+- Owner flow: **גורים באתר → הוספת גור → up to 3 photos (HEIC converted in the browser) → פרסום**; status changes
+  (זמין → שמור) are live on the next page view. Unpublish, archive/restore and permanent delete live in the status
+  sheet. No commit, push, Action or rebuild is ever needed for content.
+- Public site reads one read-only RPC (`public_listings_json`) with the anon key: `src/lib/public-listings.ts`,
+  `src/components/LivePuppies.astro`, detail at `/{lang}/puppies/view/?id=…`. Backend down → friendly error with the
+  WhatsApp CTA (never "no puppies"); paused free project → same, see the runbook.
+- Schema: `supabase/migrations/` (version-controlled, applied manually with the Supabase CLI — no DB credentials in
+  GitHub). Tests: `npm run test:db` against the local stack (RLS negatives, 3-image invariant, reorder, exact RPC keys);
+  `npm run test:e2e` covers the island and the admin against a mocked backend.
+- Build-time values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (repository variables; public by design).
+  Recurring cost: **$0** (Supabase free plan, no card).
 
 ## Security considerations
 
@@ -126,5 +137,5 @@ nine widths, tap-target sizes).
 | TODO-004 | Confirm usage rights for the two watermarked show photos.                                                                                                              |
 | TODO-005 | Owner display name (if she wants it shown).                                                                                                                            |
 | TODO-006 | Current Bichon litter: confirm photos, add names/birth dates through the admin when it exists.                                                                         |
-| TODO-007 | Admin backend architecture gate → implementation.                                                                                                                      |
+| TODO-007 | Admin: code complete (Lean V1). Waiting for the production Supabase project + owner e-mail (see docs/RUNBOOK.md), then the real-iPhone HEIC QA.                        |
 | TODO-008 | Higher-resolution hero photo (current crop is 740×925).                                                                                                                |

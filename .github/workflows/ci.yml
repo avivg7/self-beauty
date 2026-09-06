@@ -32,6 +32,9 @@ jobs:
         env:
           SITE: ${{ vars.SITE || 'https://avivg7.github.io' }}
           BASE: ${{ vars.BASE || '/self-beauty' }}
+          # Verification build only (never deployed): a mock backend so Playwright can intercept every request.
+          PUBLIC_SUPABASE_URL: https://supabase.mock.invalid
+          PUBLIC_SUPABASE_ANON_KEY: mock-anon-key
       - run: npm run links
       - uses: actions/upload-artifact@v6
         with:

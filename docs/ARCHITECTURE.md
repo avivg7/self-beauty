@@ -88,8 +88,18 @@ against `scripts/serve-dist.mjs` (a static server that mimics GitHub Pages: base
 `deploy.yml` runs the CI gates, builds with `SITE`/`BASE` from `actions/configure-pages` (project page) or
 repository variables (custom domain), uploads `dist/` and deploys with `actions/deploy-pages`. No secrets.
 
-## Admin (Part B)
+## Admin (Part B, Lean V1)
 
-Not implemented yet. The architecture gate (options, recommendation, approval) precedes any authentication or
-persistence work. The public site is designed so listings can later be fed from a backend at build time
-(webhook → workflow) or read at runtime from a public, read-only endpoint, without changing the page templates.
+- `src/pages/admin/index.astro` — standalone noindex page mounting the Preact app (`client:only`).
+- `src/admin/` — `client.ts` (supabase-js, distinct storage key), `api.ts` (all data access under RLS; publish =
+  copy public files then flip `published`; unpublish = flip then clean; add image = private → public → row; replace =
+  new id), `image-pipeline.ts` (sniff → native decode / libheif fallback → orientation → 1600 & 640 JPEG),
+  `App.tsx` (auth gate, hash routes `#/`, `#/archive`, `#/new`, `#/edit/<id>`), `ListingList`, `ListingForm`,
+  `PhotoManager`, `StatusSheet`, `Toast`, `admin.css` (tokens, Arial, 44 px targets, bottom sheet).
+- Public read path: `src/lib/public-listings.ts` (plain fetch, anon key, 8 s timeout, row validation) →
+  `LivePuppies.astro` (Astro renders the card `<template>`; `src/scripts/live-puppies.ts` clones it) and
+  `/[lang]/puppies/view/` + `live-puppy-detail.ts`. Demo builds (`SB_INCLUDE_DEMO=1`) keep the static fixtures and the
+  static detail route for layout review; production renders the live island.
+- Backend: `supabase/migrations/20260906000000_lean_v1.sql` (enums, tables, explicit RLS, `is_admin()`,
+  `reorder_images()`, public RPCs with a fixed key list, buckets, per-bucket storage policies). Rationale and the
+  review outcome: `docs/superpowers/specs/2026-09-06-admin-supabase-design.md`.

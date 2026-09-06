@@ -3,6 +3,8 @@ import Base from '@/layouts/Base.astro';
 import Picture from '@/components/Picture.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import PuppyGrid from '@/components/PuppyGrid.astro';
+import LivePuppies from '@/components/LivePuppies.astro';
+import { includeDemo } from '@/data/site';
 import BreedGrid from '@/components/BreedGrid.astro';
 import StoryExcerpt from '@/components/StoryExcerpt.astro';
 import CtaBand from '@/components/CtaBand.astro';
@@ -20,7 +22,7 @@ import heroSrc from '@/assets/media/brand/hero-red-poodle.jpg';
 export const getStaticPaths = localePaths;
 const locale = Astro.params.lang as Locale;
 const t = getDictionary(locale);
-const puppies = await getFeaturedPuppies(3);
+const puppies = includeDemo ? await getFeaturedPuppies(3) : [];
 const story = (await getTestimonials()).find((s) => s.data.featured);
 const strip = [
   'years/bichon-puppy-bows',
@@ -117,21 +119,10 @@ const heroPreload = await getImage({
         lede={t.home.puppiesLede}
       />
       {
-        puppies.length ? (
+        includeDemo ? (
           <PuppyGrid puppies={puppies} locale={locale} eager={1} reveal />
         ) : (
-          <div class="empty">
-            <h3>{t.puppies.empty.title}</h3>
-            <p>{t.puppies.empty.text}</p>
-            <a
-              class="btn btn--whatsapp"
-              href={whatsappLink(locale, 'litters')}
-              target="_blank"
-              rel="noopener"
-            >
-              <Icon name="whatsapp" /> {t.cta.litterUpdates}
-            </a>
-          </div>
+          <LivePuppies locale={locale} limit={3} />
         )
       }
       <p class="section__more">

@@ -7,3 +7,4 @@ src/assets
 package-lock.json
 .demo-dist
 artifacts
+supabase/

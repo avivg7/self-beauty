@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import preact from '@astrojs/preact';
 
 /**
  * Deployment target configuration.
@@ -27,12 +28,14 @@ export default defineConfig({
     },
   },
   integrations: [
+    // Preact is used by the /admin/ island only; public pages stay framework-free.
+    preact(),
     sitemap({
       i18n: {
         defaultLocale: 'he',
         locales: { he: 'he-IL', ru: 'ru', en: 'en' },
       },
-      filter: (page) => !page.includes('/admin/'),
+      filter: (page) => !page.includes('/admin/') && !page.includes('/puppies/view/'),
     }),
   ],
   image: {

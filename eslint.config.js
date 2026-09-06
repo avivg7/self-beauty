@@ -16,6 +16,7 @@ export default defineConfig([
       'test-results/**',
       '.demo-dist/**',
       'artifacts/**',
+      'spikes/**',
     ],
   },
   js.configs.recommended,
