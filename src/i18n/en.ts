@@ -590,6 +590,8 @@ export const en: Dictionary = {
         failed: 'Upload failed',
         removeConfirm: 'Remove this photo?',
         limitReached: 'You have reached 3 photos.',
+        lastOnPublished:
+          'This is the last photo of a published puppy. Unpublish the puppy first, or replace the photo.',
         websiteCopyPending: 'The photo was saved but not copied to the site. Press "Publish" to retry.',
         heicNote: 'iPhone photos (HEIC) are converted automatically.',
       },

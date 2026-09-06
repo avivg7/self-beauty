@@ -50,6 +50,8 @@ export type ListingInput = Omit<
   Listing,
   'id' | 'created_at' | 'updated_at' | 'published' | 'archived_at' | 'listing_images'
 >;
+/** Fields the admin may change on an existing row (publish/archive flags included). */
+export type ListingPatch = Partial<ListingInput & Pick<Listing, 'published' | 'archived_at'>>;
 
 export class ApiError extends Error {
   constructor(
@@ -98,7 +100,7 @@ export async function createListing(input: ListingInput): Promise<Listing> {
   if (error) wrap(error);
   return sortImages(data as Listing);
 }
-export async function updateListing(id: string, patch: Partial<ListingInput>): Promise<Listing> {
+export async function updateListing(id: string, patch: ListingPatch): Promise<Listing> {
   const { data, error } = await supabase.from('listings').update(patch).eq('id', id).select(SELECT).single();
   if (error) wrap(error);
   return sortImages(data as Listing);
@@ -251,14 +253,14 @@ export async function publishListing(listing: Listing): Promise<Listing> {
   if (!listing.listing_images.length) throw new ApiError('NO_IMAGE');
   if (!listing.name_he.trim() || !listing.description_he.trim()) throw new ApiError('MISSING_HEBREW_TEXT');
   for (const im of listing.listing_images) await copyToPublic(listing.id, im.id); // public copies first
-  return updateListing(listing.id, { published: true } as Partial<ListingInput>); // then flip
+  return updateListing(listing.id, { published: true }); // then flip
 }
 export interface UnpublishResult {
   listing: Listing;
   cleanupFailed: boolean;
 }
 export async function unpublishListing(listing: Listing): Promise<UnpublishResult> {
-  const updated = await updateListing(listing.id, { published: false } as Partial<ListingInput>); // hide first
+  const updated = await updateListing(listing.id, { published: false }); // hide first
   let cleanupFailed = false;
   try {
     await removeFromBucket(
@@ -274,11 +276,11 @@ export async function archiveListing(listing: Listing): Promise<UnpublishResult>
   const r = listing.published ? await unpublishListing(listing) : { listing, cleanupFailed: false };
   const updated = await updateListing(listing.id, {
     archived_at: new Date().toISOString(),
-  } as Partial<ListingInput>);
+  });
   return { listing: updated, cleanupFailed: r.cleanupFailed };
 }
 export async function restoreListing(listing: Listing): Promise<Listing> {
-  return updateListing(listing.id, { archived_at: null } as Partial<ListingInput>);
+  return updateListing(listing.id, { archived_at: null });
 }
 export async function deleteListing(listing: Listing): Promise<void> {
   const paths = listing.listing_images.flatMap((i) => privatePaths(listing.id, i.id));

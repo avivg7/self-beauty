@@ -148,6 +148,10 @@ export function PhotoManager({ listing, onChange }: { listing: Listing; onChange
     void reorder([id, ...ids]);
   };
   const remove = (id: string) => {
+    if (listing.published && images.length === 1) {
+      toast(ui.photos.lastOnPublished, 'error');
+      return;
+    }
     if (!window.confirm(ui.photos.removeConfirm)) return;
     void withBusy(async () => {
       await removeImage(listing, id);
