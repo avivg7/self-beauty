@@ -114,7 +114,8 @@ operations: [docs/RUNBOOK.md](docs/RUNBOOK.md); upload rules: [docs/ADMIN_UPLOAD
   GitHub). Tests: `npm run test:db` against the local stack (RLS negatives, 3-image invariant, reorder, exact RPC keys);
   `npm run test:e2e` covers the island and the admin against a mocked backend.
 - Build-time values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (repository variables; public by design).
-  Recurring cost: **$0** (Supabase free plan, no card).
+  Until they exist, a build has no dynamic listings and the puppies section shows the honest empty state (same as
+  today); the admin shows the connect error. Recurring cost: **$0** (Supabase free plan, no card).
 
 ## Security considerations
 

@@ -136,8 +136,8 @@ button language; `noindex`; excluded from sitemap; distinct session storage key.
 ## 9. Environment, CI, migrations, backup
 
 - Build-time public values: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (GitHub repository variables; both
-  are public by nature). No secrets in GitHub. Missing values → the public island shows the error state and the
-  admin shows the connect error; the static site is unaffected.
+  are public by nature). No secrets in GitHub. Missing values → no dynamic listings: the public island shows the honest empty
+  state (identical to the site today) and the admin shows the connect error; the static site is unaffected.
 - CI: existing checks + admin typecheck/unit + Playwright with mocked RPC responses. No Supabase credentials in CI.
 - Migrations live in `supabase/migrations/` and are applied with the Supabase CLI by the developer during setup
   (`supabase db push`); no automatic migration deployment.

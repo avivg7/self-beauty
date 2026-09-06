@@ -35,8 +35,10 @@ document.querySelectorAll<HTMLElement>('[data-live-puppies]').forEach(async (roo
     for (const x of [skeleton, list, empty, error]) x.hidden = x !== el;
   };
 
+  // No backend configured at build time means there are no dynamic listings: that is the honest empty state,
+  // not an outage (the outage state is reserved for a configured backend that fails to answer).
   if (root.dataset.configured !== '1') {
-    show(error);
+    show(empty);
     return;
   }
 

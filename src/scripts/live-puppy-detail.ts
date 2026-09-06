@@ -22,7 +22,7 @@ if (root) {
     const q = <T extends Element>(slot: string) => root.querySelector<T>(`[data-slot="${slot}"]`)!;
     const id = new URLSearchParams(location.search).get('id') ?? '';
     if (root.dataset.configured !== '1') {
-      show(error);
+      show(notFound); // no backend → no listing can exist under this id
       return;
     }
     let l;
