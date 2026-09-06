@@ -74,11 +74,12 @@ brought mobile LCP from 2.6–3.7 s down to 1.3–2.5 s. Nothing was tuned for t
 Automated:
 
 - `npm run check` / `npm run lint` / `npm run test:unit` — green with the admin, island and public-listings modules.
-- `npm run test:e2e` — builds against `https://supabase.mock.invalid`, then Playwright intercepts every request:
+- `npm run test:e2e` — **275/275 passed on 2026-09-06** (4 device projects + a11y + widths + demo). Builds against
+  `https://supabase.mock.invalid`, then Playwright intercepts every request:
   live cards / detail / empty / error / Russian fallback / home featured (`tests/e2e/live.spec.ts`); admin login
   (bad credentials, backend down), owner workflow to "תמונות — 0/3", 3/3 disables adding, status sheet
   (`tests/e2e/admin.spec.ts`).
-- `npm run test:db` — local Supabase stack (`npx supabase start`, `npx supabase db reset`): anon has no table access
+- `npm run test:db` — **14/14 passed on 2026-09-06** against the local Supabase stack (`npx supabase start`): anon has no table access
   and no writes, cannot call admin functions, cannot list buckets or read private objects; a non-admin user sees nothing;
   the owner's CRUD, `NO_IMAGE` publish gate, 3-image invariant, `reorder_images` (stale/duplicate/oversized sets
   rejected), `updated_at` trigger, retry-safe public upsert, exact RPC key list (no `internal_note`, no admin id),
