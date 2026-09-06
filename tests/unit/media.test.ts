@@ -66,8 +66,11 @@ describe('media manifest ↔ committed derivatives ↔ catalogue', () => {
         .map((m) => `${m.set}/${m.id}`),
     );
     for (const m of media) expect(!!m.excluded, m.id).toBe(excludedIds.has(m.id));
+    // The source vault (videos/, images/) is git-ignored and only present on the developer machine.
+    const vault = existsSync(path.join(ROOT, 'videos'));
     for (const m of [...manifest.images, ...manifest.videos].filter((m) => m.status === 'excluded'))
-      if (m.src) expect(existsSync(path.join(ROOT, m.src)), `${m.src} must stay in the vault`).toBe(true);
+      if (m.src && vault)
+        expect(existsSync(path.join(ROOT, m.src)), `${m.src} must stay in the vault`).toBe(true);
   });
   it('focal points are within bounds', () => {
     for (const im of images) {
