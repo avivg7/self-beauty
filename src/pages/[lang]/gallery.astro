@@ -6,14 +6,14 @@ import CtaBand from '@/components/CtaBand.astro';
 import { getDictionary, type Locale } from '@/i18n';
 import { localeHref } from '@/lib/urls';
 import { localePaths } from '@/lib/paths';
-import { images, videos, type MediaItem } from '@/data/media';
+import { images, videos, publishable, type MediaItem } from '@/data/media';
 
 export const getStaticPaths = localePaths;
 const locale = Astro.params.lang as Locale;
 const t = getDictionary(locale);
 const years: MediaItem[] = [
-  ...images.filter((i) => i.set === 'years'),
-  ...videos.filter((v) => v.set === 'years'),
+  ...images.filter((i) => i.set === 'years').filter(publishable),
+  ...videos.filter((v) => v.set === 'years').filter(publishable),
 ];
 const chapters = ['puppies', 'home', 'table'] as const;
 const byChapter = chapters

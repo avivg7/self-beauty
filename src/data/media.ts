@@ -27,6 +27,8 @@ export interface MediaImage {
   credit?: string;
   /** Usage rights or provenance not yet confirmed: never rendered in a production build */
   needsReview?: boolean;
+  /** Withdrawn at the client's request: never presented in any build; the source file stays in the vault */
+  excluded?: boolean;
 }
 
 export interface MediaVideo {
@@ -43,6 +45,8 @@ export interface MediaVideo {
   /** Seconds; used for the duration badge */
   duration: number;
   needsReview?: boolean;
+  /** Withdrawn at the client's request: never presented in any build; the source file stays in the vault */
+  excluded?: boolean;
 }
 
 export type MediaItem = MediaImage | MediaVideo;
@@ -422,7 +426,8 @@ export const videos: MediaVideo[] = [
  * SB_INCLUDE_REVIEW=1 shows them locally for review. scripts/check-links.mjs fails the build if one leaks.
  */
 export const includeReview = import.meta.env.SB_INCLUDE_REVIEW === '1';
-export const publishable = <T extends MediaItem>(m: T): boolean => !m.needsReview || includeReview;
+export const publishable = <T extends MediaItem>(m: T): boolean =>
+  !m.excluded && (!m.needsReview || includeReview);
 
 export const media: MediaItem[] = [...images, ...videos];
 export const mediaById = new Map<string, MediaItem>(media.map((m) => [m.id, m]));

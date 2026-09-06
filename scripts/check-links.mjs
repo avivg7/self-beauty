@@ -103,14 +103,14 @@ for (const f of files) {
 // ---- Production content guards (fail the build, never silently ship) ----
 const manifest = JSON.parse(await readFile(path.join(ROOT, 'scripts/media/manifest.json'), 'utf8'));
 const reviewIds = [...manifest.images, ...manifest.videos]
-  .filter((m) => m.status === 'needs_review')
+  .filter((m) => m.status === 'needs_review' || m.status === 'excluded')
   .map((m) => m.id);
 const demoMarker = /DEMO —|דמו —|ДЕМО —|chip--demo"|class="chip chip--demo/;
 for (const f of files) {
   const html = await readFile(f, 'utf8');
   for (const id of reviewIds)
     if (html.includes(`/${id}.`) || html.includes(`${id}-`))
-      problems.push(`${path.relative(DIST, f)}: references needs_review media "${id}"`);
+      problems.push(`${path.relative(DIST, f)}: references needs_review/excluded media "${id}"`);
   if (demoMarker.test(html))
     problems.push(`${path.relative(DIST, f)}: demo listing content in production HTML`);
   if (/\/puppies\/demo-/.test(html)) problems.push(`${path.relative(DIST, f)}: link to a demo listing page`);
