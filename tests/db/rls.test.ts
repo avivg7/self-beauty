@@ -4,7 +4,7 @@
  */
 import { beforeAll, afterAll, describe, expect, it } from 'vitest';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { localStack } from './setup';
+import { target } from './setup';
 
 const JPEG = Buffer.from(
   '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AVN//2Q==',
@@ -14,7 +14,7 @@ const ADMIN_EMAIL = 'owner-test@example.com';
 const OTHER_EMAIL = 'stranger-test@example.com';
 const PASSWORD = 'correct-horse-battery-12';
 
-let env: Awaited<ReturnType<typeof localStack>>;
+let env: Awaited<ReturnType<typeof target>>;
 let service: SupabaseClient;
 let anon: SupabaseClient;
 let admin: SupabaseClient;
@@ -28,10 +28,19 @@ async function userClient(email: string): Promise<SupabaseClient> {
   return c;
 }
 
+const createdUserIds: string[] = [];
+const createdListingIds: string[] = [];
+
 beforeAll(async () => {
-  env = await localStack();
+  env = await target();
   service = createClient(env.url, env.serviceKey, { auth: { persistSession: false } });
   anon = createClient(env.url, env.anonKey, { auth: { persistSession: false } });
+  if (env.remote) {
+    // Production guard: only on an empty database; the suite never touches rows it did not create.
+    const { count, error } = await service.from('listings').select('*', { count: 'exact', head: true });
+    if (error) throw error;
+    if (count) throw new Error(`refusing to run against a remote project with ${count} existing listing(s)`);
+  }
   // fresh users each run
   const { data: users } = await service.auth.admin.listUsers({ perPage: 1000 });
   for (const u of users.users)
@@ -43,20 +52,35 @@ beforeAll(async () => {
   });
   if (a.error) throw a.error;
   adminId = a.data.user.id;
+  createdUserIds.push(adminId);
   const o = await service.auth.admin.createUser({
     email: OTHER_EMAIL,
     password: PASSWORD,
     email_confirm: true,
   });
   if (o.error) throw o.error;
+  createdUserIds.push(o.data.user.id);
   const ins = await service.from('admins').insert({ user_id: adminId });
   if (ins.error) throw ins.error;
-  await service.from('listings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  if (!env.remote) await service.from('listings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   admin = await userClient(ADMIN_EMAIL);
   other = await userClient(OTHER_EMAIL);
 });
 afterAll(async () => {
-  await service?.from('listings').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  if (!service) return;
+  if (createdListingIds.length) await service.from('listings').delete().in('id', createdListingIds);
+  for (const id of createdUserIds) await service.auth.admin.deleteUser(id).catch(() => {}); // cascades admins row
+  for (const bucket of ['listing-media-private', 'listing-media-public']) {
+    for (const lid of createdListingIds) {
+      const { data } = await service.storage.from(bucket).list(`listings/${lid}`);
+      const paths = (data ?? []).map((o) => `listings/${lid}/${o.name}`);
+      if (paths.length)
+        await service.storage
+          .from(bucket)
+          .remove(paths)
+          .catch(() => {});
+    }
+  }
 });
 
 const draft = { breed: 'bichon', name_he: 'טיוטה', description_he: 'תיאור', internal_note: 'SECRET-NOTE' };
@@ -117,6 +141,7 @@ describe('the owner (admins row) manages listings under RLS', () => {
     const { data, error } = await admin.from('listings').insert(draft).select('*').single();
     expect(error).toBeNull();
     listingId = data!.id;
+    createdListingIds.push(listingId);
     expect(data!.published).toBe(false);
   });
   it('cannot publish without an image (NO_IMAGE) and drafts stay invisible to anon', async () => {

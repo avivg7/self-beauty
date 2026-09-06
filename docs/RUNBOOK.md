@@ -15,11 +15,33 @@ scheduled job by design. Everything below is manual and takes minutes.
 No database password, service-role key or Supabase access token is stored in GitHub. GitHub Actions only builds
 and deploys the static site.
 
+## Private env file (developer machine only)
+
+Everything secret lives in **one file outside the repository**, `~/.config/self-beauty/prod.env`, mode 600, created by
+the developer and deleted when setup is done. Nothing in it is ever pasted into chat, committed, or put in GitHub.
+
+```bash
+mkdir -p ~/.config/self-beauty && touch ~/.config/self-beauty/prod.env && chmod 600 ~/.config/self-beauty/prod.env
+```
+
+| Key                             | Used for                                      | Where it comes from                                   |
+| ------------------------------- | --------------------------------------------- | ----------------------------------------------------- |
+| `SUPABASE_DB_PASSWORD`          | `supabase link` / `db push` (non-interactive) | chosen when the project was created                   |
+| `SUPABASE_SERVICE_ROLE_KEY`     | one-time RLS verification, owner creation     | Project Settings → API keys → `service_role` (secret) |
+| `OWNER_EMAIL`, `OWNER_PASSWORD` | owner account creation                        | typed by the developer, 12+ characters                |
+| `SUPABASE_ACCESS_TOKEN`         | only if `npx supabase login` cannot be used   | Account → Access tokens                               |
+
+Commands load it with `set -a; source ~/.config/self-beauty/prod.env; set +a` in the same shell, never globally.
+
 ## First-time setup (developer, once)
 
 1. Create the free project in the Supabase dashboard (no card). Region: `eu-central-1`. Note the project ref.
 2. `npx supabase login` (browser flow; the token stays on the developer machine) then `npx supabase link --project-ref <ref>`.
 3. Apply the schema: `npx supabase db push`. Verify in the dashboard: 3 tables with RLS on, 2 buckets, 4 functions.
+   Then run the same security suite that guards the local stack against the real project, **once, while the database
+   is still empty** (it refuses to run otherwise and only deletes the rows and test users it creates):
+   `SB_PROD_VERIFY=1 SUPABASE_URL=https://<ref>.supabase.co SUPABASE_ANON_KEY=<anon> npm run test:db`
+   with `SUPABASE_SERVICE_ROLE_KEY` loaded from the private env file.
 4. Dashboard → Authentication → Providers → Email: **disable "Allow new users to sign up"**; keep email
    confirmations off; minimum password length 12. Dashboard → Authentication → URL configuration: site URL
    `https://avivg7.github.io/self-beauty/admin/`, redirect URLs the same plus `http://localhost:4321/self-beauty/admin/`.
