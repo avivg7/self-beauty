@@ -60,5 +60,5 @@ for (const [name, buf, tier] of cases) {
 const s = sanitizeJpeg(withExif);
 const pg = sanitizeJpeg(polyglot);
 console.log(
-  `\nsanitised EXIF sample still contains 'GPSDATA'? ${s.buffer?.includes('GPSDATA') ? 'YES (BUG)' : 'no'}; polyglot tail survives? ${pg.buffer?.includes('PK') ? 'YES (BUG)' : 'no'}`,
+  `\nsanitised EXIF sample still contains 'GPSDATA'? ${s.buffer?.includes('GPSDATA') ? 'YES (BUG)' : 'no'}; polyglot tail survives? ${pg.buffer?.includes('trailing zip payload') ? 'YES (BUG)' : 'no'}`,
 );
