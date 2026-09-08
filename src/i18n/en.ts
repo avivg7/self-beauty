@@ -62,10 +62,15 @@ export const en: Dictionary = {
     title: 'Self Beauty · Pedigree dog kennel and professional grooming in Bat Yam',
     description:
       'Self Beauty is a home-based kennel breeding Yorkshire Terriers, Poodles, Bichon Frise, Pomeranians and Shih Tzu with registered pedigrees and champion bloodlines, plus a professional grooming studio with show preparation. Bat Yam, Israel.',
-    heroEyebrow: 'Kennel and professional grooming · Bat Yam',
-    heroTitle: 'Champion bloodlines. Home breeding. Personal guidance.',
+    heroEyebrow: 'Kennel and grooming studio · Bat Yam',
+    heroTitle: ['Champion bloodlines.', 'Home-raised.', 'Personal guidance.'],
     heroLede:
-      'Self Beauty is a home-based pedigree kennel in Bat Yam and a professional grooming studio with show preparation. Yorkshire Terriers, Poodles, Bichon Frise, Pomeranians and Shih Tzu — with registered pedigrees, Israeli and international champion lines, and guidance that continues after your puppy comes home.',
+      'Self Beauty is a home-based pedigree kennel in Bat Yam and a professional grooming studio with show preparation. Puppies with registered pedigrees and champion bloodlines, and personal guidance that continues after your puppy comes home.',
+    heroFact: 'Show dogs and champion bloodlines',
+    heroProof: {
+      label: 'Titles in our lines',
+      titles: ['Junior Champion', 'Israeli Champion', 'Grand / Supreme Champion', 'Cyprus Champion'],
+    },
     heroImageAlt: 'Apricot Toy Poodle in show trim sitting on a grooming table',
     promiseEyebrow: 'What you get from us',
     promiseTitle: 'A puppy is a decision for years. We treat it that way.',

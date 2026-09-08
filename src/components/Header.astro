@@ -172,24 +172,30 @@ const isCurrent = (rest: string) => path === `/${rest}/` || path.startsWith(`/${
       gap: var(--sp-5);
     }
   }
+  @media (min-width: 80rem) {
+    .site-header__inner {
+      gap: var(--sp-6);
+    }
+  }
 
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     text-decoration: none;
     color: var(--c-text);
     margin-inline-end: auto;
     min-height: 2.75rem;
   }
+  /* Emblem large enough to read as the crest it is; the header height does not change */
   .brand__badge {
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 3.25rem;
+    height: 3.25rem;
   }
   @media (min-width: 64rem) {
     .brand__badge {
-      width: 3.25rem;
-      height: 3.25rem;
+      width: 3.75rem;
+      height: 3.75rem;
     }
   }
   .brand__word {
@@ -197,6 +203,12 @@ const isCurrent = (rest: string) => path === `/${rest}/` || path.startsWith(`/${
     font-size: 1.25rem;
     letter-spacing: 0.01em;
     line-height: 1;
+    white-space: nowrap;
+  }
+  @media (min-width: 80rem) {
+    .brand__word {
+      font-size: 1.35rem;
+    }
   }
   @media (max-width: 22.5rem) {
     .brand__word {
@@ -211,11 +223,17 @@ const isCurrent = (rest: string) => path === `/${rest}/` || path.startsWith(`/${
     display: flex;
     gap: 0.25rem;
   }
+  @media (min-width: 80rem) {
+    .site-nav__list {
+      gap: 0.5rem;
+    }
+  }
   .site-nav__list a {
     display: inline-flex;
     align-items: center;
     min-height: 2.75rem;
-    padding: 0.25rem 0.8rem;
+    padding: 0.25rem 0.7rem;
+    white-space: nowrap;
     border-radius: var(--r-pill);
     color: var(--c-text);
     text-decoration: none;
@@ -247,17 +265,28 @@ const isCurrent = (rest: string) => path === `/${rest}/` || path.startsWith(`/${
       display: block;
     }
   }
+  @media (min-width: 80rem) {
+    .site-nav__list a {
+      padding-inline: 1rem;
+    }
+  }
 
   .site-header__actions {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.4rem;
   }
+  /* Header WhatsApp: recognisable green, but a compact pill so the burgundy CTAs in the page lead */
   .site-header__cta {
     display: none;
-    min-height: 2.75rem;
-    padding-block: 0.4rem;
-    font-size: var(--fs-sm);
+    min-height: 2.75rem; /* 44 px tap target; the quieter look comes from the narrower pill and smaller label */
+    padding: 0.3rem 0.9rem;
+    gap: 0.4rem;
+    font-size: var(--fs-xs);
+  }
+  .site-header__cta :global(.icon) {
+    width: 1rem;
+    height: 1rem;
   }
   .a11y-open {
     display: none;

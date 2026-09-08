@@ -15,7 +15,6 @@ import { whatsappLink } from '@/lib/contact';
 import { localePaths } from '@/lib/paths';
 import { getFeaturedPuppies, getTestimonials } from '@/lib/listings';
 import { images, publishable } from '@/data/media';
-import { site } from '@/data/site';
 import { getImage } from 'astro:assets';
 import heroSrc from '@/assets/media/brand/hero-red-poodle.jpg';
 
@@ -35,7 +34,6 @@ const strip = [
   .map((id) => images.find((i) => i.id === id)!)
   .filter(Boolean)
   .filter(publishable);
-const breedNames = site.breeds.map((b) => t.breeds[b].short).join(' · ');
 const heroPreload = await getImage({
   src: heroSrc,
   format: 'avif',
@@ -58,8 +56,17 @@ const heroPreload = await getImage({
   <section class="hero">
     <div class="container hero__grid">
       <div class="hero__top">
-        <p class="eyebrow hero__anim" style="--i:0">{t.home.heroEyebrow}</p>
-        <h1 class="hero__title hero__anim" style="--i:1">{t.home.heroTitle}</h1>
+        <p class="eyebrow eyebrow--hero hero__anim" style="--i:0">{t.home.heroEyebrow}</p>
+        <h1 class="hero__title hero__anim" style="--i:1">
+          {
+            t.home.heroTitle.map((line, i) => (
+              <>
+                <span class="hero__line">{line}</span>
+                {i < t.home.heroTitle.length - 1 && ' '}
+              </>
+            ))
+          }
+        </h1>
       </div>
       <div class="hero__media hero__anim" style="--i:2">
         <div class="frame">
@@ -83,11 +90,21 @@ const heroPreload = await getImage({
           <a class="btn btn--lg btn--secondary" href={localeHref(locale, 'grooming')}>{t.cta.bookGrooming}</a>
         </div>
         <p class="hero__facts hero__anim muted" style="--i:4">
-          <span>{t.meta.cityCountry}</span><span class="hero__dot" aria-hidden="true"></span><span
-            >{t.meta.since}</span
-          ><span class="hero__dot" aria-hidden="true"></span><span>{breedNames}</span>
+          <span class="hero__fact">{t.meta.cityCountry}</span>
+          <span class="hero__fact">{t.meta.since}</span>
+          <span class="hero__fact">{t.home.heroFact}</span>
         </p>
       </div>
+    </div>
+    <!-- Proof strip: titles associated with Self Beauty lines (never a claim about one dog or the owner). -->
+    <div class="container hero__proof">
+      <a class="hero__proof-label" href={localeHref(locale, 'shows')}>
+        <Icon name="rosette" />
+        <span>{t.home.heroProof.label}</span>
+      </a>
+      <ul role="list" class="hero__proof-list">
+        {t.home.heroProof.titles.map((title) => <li>{title}</li>)}
+      </ul>
     </div>
   </section>
 
@@ -306,32 +323,56 @@ const heroPreload = await getImage({
 <style>
   /* Hero */
   .hero {
-    padding-block: clamp(1.5rem, 4vw, 4rem) var(--section);
+    padding-block: clamp(1.25rem, 3vw, 4rem) clamp(2rem, 4vw, 3.5rem);
     overflow: clip;
   }
   .hero__grid {
     display: grid;
-    gap: var(--sp-5);
+    gap: var(--sp-4);
   }
-  .hero__top,
+  @media (min-width: 64rem) {
+    .hero__grid {
+      gap: var(--sp-5);
+    }
+  }
+  .hero__top {
+    display: grid;
+    gap: var(--sp-3);
+  }
   .hero__bottom {
     display: grid;
     gap: var(--sp-4);
   }
+  /* Editorial eyebrow: quiet weight, a longer hairline, no label/chip feel */
+  .eyebrow--hero {
+    font-weight: 400;
+    font-size: var(--fs-sm);
+    letter-spacing: 0.04em;
+    text-transform: none;
+    gap: 0.75rem;
+  }
+  .eyebrow--hero::before {
+    width: 2.25rem;
+  }
   .hero__title {
     font-size: var(--fs-hero);
-    line-height: 1.05;
-    max-width: 14ch;
+    line-height: 1.06;
   }
+  .hero__line {
+    display: block;
+  }
+  /* Cyrillic and Latin lines run wider than Hebrew: separate curves keep each line on one row from 360 px up */
   html[lang='ru'] .hero__title {
-    max-width: 16ch;
-    font-size: clamp(2rem, 1.3rem + 3vw, 3.9rem);
+    font-size: clamp(1.6rem, 0.5rem + 3.2vw, 3rem);
+  }
+  html[lang='en'] .hero__title {
+    font-size: clamp(1.8rem, 0.5rem + 3.4vw, 3.3rem);
   }
   .hero__media {
     max-width: 36rem;
   }
   .hero__img {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 740 / 896;
     width: 100%;
     object-fit: cover;
   }
@@ -349,21 +390,88 @@ const heroPreload = await getImage({
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem 0.7rem;
+    gap: 0.35rem 0;
     font-size: var(--fs-sm);
   }
-  .hero__dot {
+  .hero__fact {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .hero__fact + .hero__fact::before {
+    content: '';
     width: 4px;
     height: 4px;
     border-radius: 50%;
     background: var(--c-gold);
+    margin-inline: 0.7rem;
+  }
+  /* Proof strip: the transition out of the hero. Charcoal titles, gold only for the rosette and dots. */
+  .hero__proof {
+    margin-top: clamp(1.75rem, 4vw, 3rem);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem var(--sp-6);
+    font-size: var(--fs-sm);
+  }
+  .hero__proof-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    color: var(--c-text-2);
+    text-decoration: none;
+  }
+  @media (max-width: 39.99rem) {
+    .hero__proof-label {
+      flex-basis: 100%;
+      min-height: 2rem;
+    }
+  }
+  .hero__proof-label :global(.icon) {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: var(--c-gold);
+  }
+  .hero__proof-label:hover {
+    color: var(--c-burgundy);
+  }
+  .hero__proof-list {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-content: start;
+    gap: 0.4rem 1.5rem;
+    font-weight: 700;
+    color: var(--c-text);
+  }
+  @media (min-width: 40rem) {
+    .hero__proof-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0;
+    }
+    .hero__proof-list li {
+      display: inline-flex;
+      align-items: center;
+    }
+    .hero__proof-list li + li::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--c-gold);
+      margin-inline: 0.75rem;
+    }
   }
   @media (min-width: 64rem) {
     .hero {
-      padding-block: clamp(2rem, 5vw, 5rem) var(--section);
+      padding-block: clamp(2rem, 5vw, 5rem) clamp(2.5rem, 4vw, 4rem);
     }
     .hero__grid {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
       grid-template-areas: 'top media' 'bottom media';
       column-gap: var(--sp-8);
       align-items: center;

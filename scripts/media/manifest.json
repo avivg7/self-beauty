@@ -32,9 +32,9 @@
         "x": 170,
         "y": 0,
         "w": 740,
-        "h": 925
+        "h": 896
       },
-      "note": "Home hero. Crop removes handwritten text and timestamp at the bottom-left.",
+      "note": "Home hero. Crop removes the handwritten text/timestamp at the bottom-left and the red mark under the paws (rows ≥ 908 of the 925-tall 4:5 crop); paws end at row 871.",
       "status": "included"
     },
     {
