@@ -29,13 +29,25 @@
       "set": "brand",
       "src": "images/general_dogs/WhatsApp Image 2026-08-31 at 09.32.23.jpeg",
       "crop": {
-        "x": 170,
+        "x": 140,
         "y": 0,
         "w": 740,
         "h": 896
       },
-      "note": "Home hero. Crop removes the handwritten text/timestamp at the bottom-left and the red mark under the paws (rows ≥ 908 of the 925-tall 4:5 crop); paws end at row 871.",
-      "status": "included"
+      "note": "Home hero. Crop recentres the face (x 140) and removes the handwritten text/timestamp at the bottom-left and the red mark under the paws (source rows ≥ 908). `enhance` = hero-grade master: 1.5× Lanczos to 1110×1344, gentle contrast, mild sharpen, q90 4:4:4 (the only source is a 1080-px WhatsApp JPEG).",
+      "status": "included",
+      "enhance": {
+        "scale": 1.5,
+        "contrast": [1.05, -3],
+        "saturation": 1.02,
+        "sharpen": {
+          "sigma": 1.2,
+          "m1": 0.55,
+          "m2": 1.3
+        },
+        "quality": 90,
+        "chroma": "4:4:4"
+      }
     },
     {
       "id": "ring-red-poodle",

@@ -74,9 +74,28 @@ async function ingestImage(item) {
     img = img.extract({ left: x, top: y, width: w, height: h });
   }
   const maxEdge = item.maxEdge ?? 2000;
-  img = img.resize({ width: maxEdge, height: maxEdge, fit: 'inside', withoutEnlargement: true });
+  const enhance = item.enhance;
+  if (enhance?.scale && item.crop) {
+    // Hero-grade master: Lanczos upscale so retina screens are not left to upscale in the browser,
+    // then a gentle tonal lift and a mild sharpen. Parameters live in the manifest, per item.
+    img = img.resize({
+      width: Math.round(item.crop.w * enhance.scale),
+      height: Math.round(item.crop.h * enhance.scale),
+      kernel: 'lanczos3',
+    });
+  } else {
+    img = img.resize({ width: maxEdge, height: maxEdge, fit: 'inside', withoutEnlargement: true });
+  }
+  if (enhance?.contrast) img = img.linear(enhance.contrast[0], enhance.contrast[1]);
+  if (enhance?.saturation) img = img.modulate({ saturation: enhance.saturation });
+  if (enhance?.sharpen) img = img.sharpen(enhance.sharpen);
   if (format === 'png') img = img.png({ compressionLevel: 9, palette: false });
-  else img = img.jpeg({ quality: 84, mozjpeg: true, chromaSubsampling: '4:2:0' });
+  else
+    img = img.jpeg({
+      quality: enhance?.quality ?? 84,
+      mozjpeg: true,
+      chromaSubsampling: enhance?.chroma ?? '4:2:0',
+    });
   const info = await img.toFile(outPath);
   log(
     'image',

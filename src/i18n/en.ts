@@ -65,7 +65,7 @@ export const en: Dictionary = {
     heroEyebrow: 'Kennel and grooming studio · Bat Yam',
     heroTitle: ['Champion bloodlines.', 'Home-raised.', 'Personal guidance.'],
     heroLede:
-      'Self Beauty is a home-based pedigree kennel in Bat Yam and a professional grooming studio with show preparation. Puppies with registered pedigrees and champion bloodlines, and personal guidance that continues after your puppy comes home.',
+      'Self Beauty is a home-based pedigree kennel in Bat Yam and a professional grooming studio with show preparation. Puppies with registered pedigrees and champion bloodlines — and personal guidance after your puppy comes home.',
     heroFact: 'Show dogs and champion bloodlines',
     heroProof: {
       label: 'Titles in our lines',
